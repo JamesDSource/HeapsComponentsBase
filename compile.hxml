@@ -1,0 +1,9 @@
+-lib heaps
+-lib hldx
+-lib ldtk-haxe-api
+-lib domkit
+-hl compiled/Game.hl
+-main Main
+-D windowTitle=Test
+-D windowSize=1920x1080
+-debug
