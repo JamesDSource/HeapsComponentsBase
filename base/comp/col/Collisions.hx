@@ -16,6 +16,20 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionRay)) {
             return rayWithRay(cast(shape1, CollisionRay), cast(shape2, CollisionRay)) != null;
         }
+        // * Circle with circle
+        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionCircle)) {
+            // ^ We already tested for a radius intersection, so if the code made it this far,
+            // ^ circleWithCircle is already true
+            return true;
+        }
+        // * Circle with ray
+        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionRay)) {
+            return circleWithRay(cast(shape1, CollisionCircle), cast(shape2, CollisionRay)) != null;
+        }
+        // * Ray with circle
+        else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionCircle)) {
+            return circleWithRay(cast(shape2, CollisionCircle), cast(shape1, CollisionRay)) != null;
+        }
         // * Poly with ray
         else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionRay)) {
             return polyWithRay(cast(shape1, CollisionPolygon), cast(shape2, CollisionRay)) != null;
@@ -138,6 +152,60 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         return closestIntersection;
     }
 
+    public static function circleWithRay(circle: CollisionCircle, ray: CollisionRay): Vector2 {
+        // * Feilds
+        var circlePos = circle.getAbsPosition(),
+            radius = circle.getRadius(),
+            rayPos = ray.getAbsPosition(),
+            castPoint = ray.getGlobalTransformedCastPoint(),
+            
+            dx = castPoint.x - rayPos.x,
+            dy = castPoint.y - rayPos.y,
+
+            a = dx*dx + dy*dy,
+            b = 2*(dx*(rayPos.x - circlePos.x) + dy*(rayPos.y - circlePos.y)),
+            c = (rayPos.x - circlePos.x)*(rayPos.x - circlePos.x) + (rayPos.y - circlePos.y)*(rayPos.y - circlePos.y) - radius*radius,
+
+            det = b*b -4*a*c;
+        
+        var intersectionPoint: Vector2;
+        
+        if(a <= 0.0000001 || det < 0) {
+            // * There are no real solutions
+            return null;
+        }
+        else if(det == 0) {
+            // * There is one solution
+            var t = -b/(2*a);
+            intersectionPoint = new Vector2(rayPos.x + t*dx, rayPos.y + t*dy);
+        }
+        else {
+            // * There are two solutions, we will return the solution closest to the
+            // * origin point of the ray
+            var t = (-b + Math.sqrt(det))/(2*a);
+            var intersection1 = new Vector2(rayPos.x + t*dx, rayPos.y + t*dy);
+
+            t = (-b - Math.sqrt(det))/(2*a);
+            var intersection2 = new Vector2(rayPos.x + t*dx, rayPos.y + t*dy);
+            intersectionPoint = intersection1.distanceTo(rayPos) < intersection2.distanceTo(rayPos)
+                                ? intersection1 : intersection2;
+        }
+
+
+        // * Checking if the intersection point is within the line
+        var rx = (intersectionPoint.x - rayPos.x) / (castPoint.x - rayPos.x),
+            ry = (intersectionPoint.y - rayPos.y) / (castPoint.y - rayPos.y);
+
+        if((rx >= 0 && rx <= 1) || (ry >= 0 && ry <=1) || ray.infinite) {
+            return intersectionPoint;
+        }
+        else {
+            return null;
+        }
+        
+
+    }
+
     public static function radiusIntersection(pos1: Vector2, pos2: Vector2, radius1: Float, radius2: Float): Bool {
         var distance = pos1.subtract(pos2).getLength();
         return distance < radius1 + radius2;
@@ -166,7 +234,7 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
             rx1 = (x - l2P1.x) / (l2P2.x - l2P1.x),
             ry1 = (y - l2P1.y) / (l2P2.y - l2P1.y);
         
-        if(((rx0 >= 0 && rx0 <= 1) || (ry0 >= 0 && ry0 <=1)) && ((rx1 >= 0 && rx1 <= 1) || (ry1 >= 0 && ry1 <=1))) {
+        if(((rx0 >= 0 && rx0 <= 1) || (ry0 >= 0 && ry0 <=1) || l1Infinite) && ((rx1 >= 0 && rx1 <= 1) || (ry1 >= 0 && ry1 <=1)) || l2Infinite) {
             return new Vector2(x, y);
         }
         else {
