@@ -9,7 +9,7 @@ class PlayerController implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
 
-    public var speed: Float = 24;
+    public var speed: Float = 6;
 
     public function new() {}
 

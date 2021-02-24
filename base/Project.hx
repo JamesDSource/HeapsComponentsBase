@@ -28,8 +28,10 @@ class Project {
     }
 
     public function update(delta: Float) {
+        var targetDelta: Float = 1/60;
+        var deltaMult = Math.min(delta/targetDelta, 3);
         for(entity in entities) {
-            entity.update(delta);
+            entity.update(deltaMult);
         }
     }
 
