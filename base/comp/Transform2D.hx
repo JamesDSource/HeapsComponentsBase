@@ -6,7 +6,8 @@ import base.comp.Component;
 class Transform2D implements Component {
     public var parentEntity: Entity = null;
     @:readOnly public var updateable = false;
-    public function update(delta: Float): Void {};
+    public function init() {}
+    public function update(delta: Float): Void {}
 
     public var position: Vector2;
 

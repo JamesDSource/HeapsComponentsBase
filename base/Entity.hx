@@ -17,6 +17,7 @@ class Entity {
             updatableComponents.push(component);
         }
         component.parentEntity = this;
+        component.init();
     }
 
     public function removeComponent(component: Component): Void {
@@ -39,6 +40,7 @@ class Entity {
         }
     }
 
+    // & Get's all components of the type you pass though, but you must cast it manually to an array of the type you want
     public function getComponentsOfType(t: Dynamic): Array<Component> {
         var returnList: Array<Component> = [];
         

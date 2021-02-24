@@ -20,9 +20,13 @@ enum Origin {
 class AnimationPlayer implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
-    
-    public function update(delta: Float) {    
-        var transforms: Array<Transform2D> = cast parentEntity.getComponentsOfType(Transform2D);
+
+    public function init() {
+        
+    }
+
+    public function update(delta: Float) { 
+        var transforms: Array<Component> = parentEntity.getComponentsOfType(Transform2D);
         
         if(transforms.length > 0) {
             for(animation in animations) {
@@ -32,8 +36,9 @@ class AnimationPlayer implements Component {
                 }
 
                 // * Updating the position
-                animation.x = transforms[0].position.x;
-                animation.y = transforms[0].position.y;
+                var transform: Transform2D = cast(transforms[0], Transform2D);
+                animation.x = transform.position.x;
+                animation.y = transform.position.y;
             }
         }
         else {

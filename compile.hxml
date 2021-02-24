@@ -1,3 +1,4 @@
+-cp sample
 -lib heaps
 -lib hldx
 -lib ldtk-haxe-api

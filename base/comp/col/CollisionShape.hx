@@ -1,12 +1,12 @@
 package base.comp.col;
 
-import base.collisions.Collisions;
 import base.comp.Component.ComponentType;
 import base.math.Vector2;
 
 class CollisionShape implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = false;
+    public function init() {}
     public function update(delta: Float): Void {}
 
     public var active: Bool = true;
