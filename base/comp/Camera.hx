@@ -3,12 +3,14 @@ package base.comp;
 class Camera implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
+    public var name: String;
 
     private var follow: h2d.Object = new h2d.Object();
 
     private var autoEnable: Bool;
 
-    public function new(autoEnable: Bool) {
+    public function new(name: String, autoEnable: Bool) {
+        this.name = name;
         this.autoEnable = autoEnable;
     }
 
@@ -16,6 +18,10 @@ class Camera implements Component {
         if(autoEnable) {
             setActiveCamera();
         }
+    }
+
+    public function onDestroy() {
+        
     }
 
     public function update(delta: Float): Void {

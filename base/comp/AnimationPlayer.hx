@@ -20,15 +20,20 @@ enum Origin {
 class AnimationPlayer implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
+    public var name: String;
 
     public function init() {
         
     }
 
-    public function update(delta: Float) { 
-        var transforms: Array<Component> = parentEntity.getComponentsOfType(Transform2D);
+    public function onDestroy() {
         
-        if(transforms.length > 0) {
+    }
+
+    public function update(delta: Float) { 
+        var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
+        
+        if(transform != null) {
             for(animation in animations) {
                 // * Adding the animation to the correct layer
                 if(animation.parent == null) {
@@ -36,7 +41,6 @@ class AnimationPlayer implements Component {
                 }
 
                 // * Updating the position
-                var transform: Transform2D = cast(transforms[0], Transform2D);
                 animation.x = transform.position.x;
                 animation.y = transform.position.y;
             }
@@ -51,7 +55,8 @@ class AnimationPlayer implements Component {
 
     private var layer: Int;
 
-    public function new(layer: Int) {
+    public function new(name: String, layer: Int) {
+        this.name = name;
         this.layer = layer;
     }
 

@@ -11,6 +11,8 @@ class Project {
 
     public var camera: h2d.Camera;
 
+    public var collisionWorld: CollisionWorld = new CollisionWorld();
+
     public function new() {
         resetScene();
         renderables = new h2d.Layers(scene);
@@ -22,7 +24,10 @@ class Project {
     public function addEntity(components: Array<base.comp.Component>) {
         var entity = new Entity(this);
         for(component in components) {
-            entity.addComponent(component);
+            entity.addComponent(component, false);
+        }
+        for(component in components) {
+            component.init();
         }
         entities.push(entity);
     }
@@ -39,9 +44,12 @@ class Project {
         if(scene != null) {
             scene.dispose();
         }
-
+        
         scene = new h2d.Scene();
-
         camera = scene.camera;
+
+        for(entity in entities) {
+            entity.destroy();
+        }
     }
 }

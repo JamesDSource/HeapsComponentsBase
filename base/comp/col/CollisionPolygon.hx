@@ -14,8 +14,8 @@ class CollisionPolygon extends CollisionShape {
     // ^ Transformation data
     private var polyRotation: Float = 0;
 
-    public function new() {
-        super();
+    public function new(name: String) {
+        super(name);
     }
 
     public function getVerticies(): Array<Vector2> {

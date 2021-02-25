@@ -10,8 +10,8 @@ class CollisionRay extends CollisionShape {
     private var rayScale: Vector2 = new Vector2(1, 1);
     public var infinite: Bool;
 
-    public function new(infinite: Bool) {
-        super();  
+    public function new(name: String, infinite: Bool) {
+        super(name);  
         this.infinite = infinite;
     }
 

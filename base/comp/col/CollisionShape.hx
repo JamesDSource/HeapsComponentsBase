@@ -1,12 +1,11 @@
 package base.comp.col;
 
-import base.comp.Component.ComponentType;
 import base.math.Vector2;
 
 class CollisionShape implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = false;
-    public function init() {}
+    public var name: String;
     public function update(delta: Float): Void {}
 
     public var active: Bool = true;
@@ -17,8 +16,19 @@ class CollisionShape implements Component {
 
     public var offset: Vector2 = new Vector2();
 
-    public function new() {
+    public var collisionWorld: CollisionWorld;
 
+    public function new(name: String) {
+        this.name = name;
+    }
+
+    public function init() {
+        collisionWorld = parentEntity.project.collisionWorld;
+        collisionWorld.shapes.push(this);
+    }
+
+    public function onDestroy() {
+        collisionWorld.shapes.remove(this);
     }
 
     public function getAbsPosition(): Vector2 {

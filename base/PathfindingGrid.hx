@@ -4,7 +4,10 @@ import base.math.Vector2;
 
 typedef GridNode = {
     movementCostMult: Float,
-    isObsticle: Bool 
+    isObsticle: Bool,
+    gCost: Int,
+    hCost: Int,
+    parent: Vector2
 }
 
 class PathfindingGrid {
@@ -29,10 +32,82 @@ class PathfindingGrid {
         for(i in 0...cast gridSize.x) {
             grid.push(new Array<GridNode>());
             for(j in 0...cast gridSize.y) {
-                grid[i].push({movementCostMult: 1.0, isObsticle: false});
+                grid[i].push({movementCostMult: 1.0, isObsticle: false, gCost: 0, hCost: 0, parent: null});
             }
         }
 
+    }
+
+    // & Gets a node from a vector
+    function get(index: Vector2): GridNode {
+        return grid[cast index.x][cast index.y];
+    }
+
+    // & Gets all the nodes connecting to the index. The diagCheck argument determins if the function
+    // & Will check if diagnal connections can be made
+    function getConnecting(index: Vector2, diagCheck: Bool = true): Array<Vector2> {
+        var possibleSpaces: Array<Vector2> = [];
+        if(diagCheck) {
+            possibleSpaces = [
+                new Vector2(index.x + 1, index.y),  // * Right
+                new Vector2(index.x, index.y + 1),  // * Down
+                new Vector2(index.x - 1, index.y),  // * Left
+                new Vector2(index.x, index.y - 1),  // * Up
+            ];
+
+            var rObs = get(possibleSpaces[0]).isObsticle,
+                dObs = get(possibleSpaces[1]).isObsticle,
+                lObs = get(possibleSpaces[2]).isObsticle,
+                uObs = get(possibleSpaces[3]).isObsticle;
+
+            if(!rObs && !dObs) {  // * Right Down
+                possibleSpaces.push(new Vector2(index.x + 1, index.y + 1));
+            }
+            if(!lObs && !dObs) {  // * Left Down
+                possibleSpaces.push(new Vector2(index.x - 1, index.y + 1));
+            }
+            if(!rObs && !uObs) {  // * Right up
+                possibleSpaces.push(new Vector2(index.x + 1, index.y - 1));
+            }
+            if(!lObs && !uObs) {  // * Left up
+                possibleSpaces.push(new Vector2(index.x - 1, index.y - 1));
+            }
+        }
+        else {
+            possibleSpaces = [
+                new Vector2(index.x + 1, index.y),      // * Right    
+                new Vector2(index.x, index.y + 1),      // * Down
+                new Vector2(index.x - 1, index.y),      // * Left
+                new Vector2(index.x, index.y - 1),      // * Up
+                new Vector2(index.x + 1, index.y + 1),  // * Right down
+                new Vector2(index.x - 1, index.y + 1),  // * Left down
+                new Vector2(index.x + 1, index.y - 1),  // * Right up
+                new Vector2(index.x - 1, index.y - 1)   // * Left up
+            ];
+        }
+
+        var returnArray: Array<Vector2> = [];
+        for(possibleSpace in possibleSpaces) {
+            if(possibleSpace.x > 0 && possibleSpace.x < gridSize.x && possibleSpace.y > 0 || possibleSpace.y < gridSize.y) {
+                returnArray.push(possibleSpace);
+            }
+        }
+
+        return returnArray;
+    }
+
+    // & Gets the distance between two node positions with an abstract unit (not in pixels) 
+    private function getDistance(positions1: Vector2, positions2: Vector2): Int {
+        var distX: Int = cast Math.abs(positions1.x - positions2.x),
+            distY: Int = cast Math.abs(positions1.y - positions2.y);
+        
+        
+        if(distX < distY) {
+            return cast 14*distX + 10*(distY - distX);
+        }
+        else {
+            return cast 14*distY + 10*(distX - distY);
+        }
     }
 
     // & Gets the coordinates on the grid from a certain position
@@ -63,22 +138,9 @@ class PathfindingGrid {
             while(opened.length > 0) {
                 var newOpened: Array<Vector2> = [];
                 for(open in opened) {
-                    var possibleSpaces: Array<Vector2> = [
-                        new Vector2(open.x + 1, open.y),
-                        new Vector2(open.x, open.y + 1),
-                        new Vector2(open.x - 1, open.y),
-                        new Vector2(open.x, open.y - 1),
-                        new Vector2(open.x + 1, open.y + 1),
-                        new Vector2(open.x - 1, open.y + 1),
-                        new Vector2(open.x + 1, open.y - 1),
-                        new Vector2(open.x - 1, open.y - 1)
-                    ];
-
+                    var possibleSpaces = getConnecting(open, false);
                     for(possibleSpace in possibleSpaces) {
-                        if(possibleSpace.x < 0 || possibleSpace.x >= gridSize.x || possibleSpace.y < 0 || possibleSpace.y >= gridSize.y) {
-                            continue;
-                        }
-                        else if(!newOpened.contains(possibleSpace) && !closed.contains(possibleSpace) && grid[cast possibleSpace.x][cast possibleSpace.y].isObsticle) {
+                        if(!newOpened.contains(possibleSpace) && !closed.contains(possibleSpace) && grid[cast possibleSpace.x][cast possibleSpace.y].isObsticle) {
                             newOpened.push(possibleSpace);
                         }
                         else if(!grid[cast possibleSpace.x][cast possibleSpace.y].isObsticle) {
@@ -135,11 +197,78 @@ class PathfindingGrid {
 
     // & Gets the path in grid coordinates
     public function getPathGrid(startCoord: Vector2, endCoord: Vector2): Array<Vector2> {
-        return null;
+        var openSet: Array<Vector2> = [startCoord];
+        var closedSet: Array<Vector2> = [];
+        
+        while(openSet.length > 0) {
+            // * Find the position with the lowest F-cost
+            var currentNodePos: Vector2 = openSet[0];
+            for(i in 1...openSet.length) {
+                var openNodePos: Vector2 = openSet[0],
+                    openNode: GridNode = get(openNodePos),
+                    currentNode: GridNode = get(currentNodePos);
+
+                if(
+                    openNode.gCost + openNode.hCost < currentNode.gCost + currentNode.hCost ||
+                    (
+                        openNode.gCost + openNode.hCost < currentNode.gCost + currentNode.hCost &&
+                        openNode.hCost < currentNode.hCost
+                    )
+                ) {
+                    currentNodePos = openNodePos;
+                }
+            }
+
+            // * Add lowest F-cost node to closed set, and remove
+            // * from open set
+            closedSet.push(currentNodePos);
+            openSet.remove(currentNodePos);
+
+            if(currentNodePos == endCoord) {
+                return retracePath(startCoord, endCoord);
+            }
+
+            for(nodePos in getConnecting(currentNodePos)) {
+                var node: GridNode = get(nodePos);
+                if(node.isObsticle || closedSet.contains(nodePos)) {
+                    continue;
+                }
+
+                var newMovementCost: Int = get(currentNodePos).gCost + getDistance(currentNodePos, nodePos);
+                if(newMovementCost < node.gCost || !openSet.contains(nodePos)) {
+                    node.gCost = newMovementCost;
+                    node.hCost = getDistance(nodePos, endCoord);
+                    node.parent = currentNodePos;
+
+                    if(!openSet.contains(nodePos)) {
+                        openSet.push(nodePos);
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 
     // & Gets the path in pixel coordinates
-    public function getPath(startPos: Vector2, endCoord: Vector2): Array<Vector2> {
-        return null;
+    public function getPath(startPos: Vector2, endPos: Vector2): Array<Vector2> {
+        var gridPath = getPathGrid(positionToCoord(startPos), positionToCoord(endPos));
+        for(coord in gridPath) {
+            coord = coordToPosition(coord);
+        }
+        return gridPath;
+    }
+
+    // & For the A* to trace back the nodes and create a path
+    private function retracePath(startNode: Vector2, endNode: Vector2): Array<Vector2> {
+        var path: Array<Vector2> = [];
+
+        var currentNode: Vector2 = endNode;
+        while(currentNode != startNode) {
+            path.push(currentNode);
+            currentNode = get(currentNode).parent;
+        }
+        path.reverse();
+        return path;
     }
 }

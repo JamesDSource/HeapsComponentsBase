@@ -1,3 +1,4 @@
+import base.comp.col.CollisionPolygon;
 import base.math.Vector2;
 import base.PathfindingGrid;
 import base.Project;
@@ -21,16 +22,24 @@ class Main extends hxd.App {
         grid = new PathfindingGrid(32, new base.math.Vector2(50, 50));
 
         // * Player
-        var ap: AnimationPlayer = new AnimationPlayer(1);
+        var ap: AnimationPlayer = new AnimationPlayer("Animations", 1);
         ap.addAnimation("Cube", Tile.fromColor(0xFF00000, 32, 32), 1);
 
-        var playerTransform = new Transform2D();
-        playerTransform.position.set(100, 100);
+        var playerCollisionShape: CollisionPolygon = new CollisionPolygon("Collision");
+        playerCollisionShape.setVerticies(
+            [
+                new Vector2(0, 0),
+                new Vector2(31, 0),
+                new Vector2(31, 31),
+                new Vector2(0, 31)
+            ]
+        );
 
         player = [
-            playerTransform,
-            new PlayerController(),
-            ap
+            new Transform2D("Position", new Vector2(100, 100)),
+            new PlayerController("Controller"),
+            ap,
+            playerCollisionShape
         ];
 
         proj.addEntity(player);
