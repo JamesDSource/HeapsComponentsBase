@@ -1,2 +1,8 @@
 # HeapsComponentsBase
-A basic game structor for heaps, with some additional libraries
+A basic game structure for heaps, with some additional libraries
+Uses a components system.
+
+Features
+  - Collisions
+  - Pathfinding
+  - Camera System
