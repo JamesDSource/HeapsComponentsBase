@@ -20,6 +20,7 @@ class Main extends hxd.App {
 
         // * Pathfinding grid
         grid = new PathfindingGrid(32, new base.math.Vector2(50, 50));
+        proj.navigationGrids["Player"] = grid;
 
         // * Player
         var ap: AnimationPlayer = new AnimationPlayer("Animations", 1);
@@ -39,7 +40,8 @@ class Main extends hxd.App {
             new Transform2D("Position", new Vector2(100, 100)),
             new PlayerController("Controller"),
             ap,
-            playerCollisionShape
+            playerCollisionShape,
+            new Navigation("Nav")
         ];
 
         proj.addEntity(player);

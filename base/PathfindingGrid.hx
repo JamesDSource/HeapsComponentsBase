@@ -43,6 +43,11 @@ class PathfindingGrid {
         return grid[cast index.x][cast index.y];
     }
 
+    // & Checks if an index is in range
+    function inRange(index: Vector2): Bool {
+        return index.x > 0 && index.x < grid.length && index.y > 0 && index.y < grid[0].length;
+    }
+
     // & Gets all the nodes connecting to the index. The diagCheck argument determins if the function
     // & Will check if diagnal connections can be made
     function getConnecting(index: Vector2, diagCheck: Bool = true): Array<Vector2> {
@@ -55,10 +60,10 @@ class PathfindingGrid {
                 new Vector2(index.x, index.y - 1),  // * Up
             ];
 
-            var rObs = get(possibleSpaces[0]).isObsticle,
-                dObs = get(possibleSpaces[1]).isObsticle,
-                lObs = get(possibleSpaces[2]).isObsticle,
-                uObs = get(possibleSpaces[3]).isObsticle;
+            var rObs = inRange(possibleSpaces[0]) ? get(possibleSpaces[0]).isObsticle : false,
+                dObs = inRange(possibleSpaces[1]) ? get(possibleSpaces[1]).isObsticle : false,
+                lObs = inRange(possibleSpaces[2]) ? get(possibleSpaces[2]).isObsticle : false,
+                uObs = inRange(possibleSpaces[3]) ? get(possibleSpaces[3]).isObsticle : false;
 
             if(!rObs && !dObs) {  // * Right Down
                 possibleSpaces.push(new Vector2(index.x + 1, index.y + 1));
@@ -88,7 +93,7 @@ class PathfindingGrid {
 
         var returnArray: Array<Vector2> = [];
         for(possibleSpace in possibleSpaces) {
-            if(possibleSpace.x > 0 && possibleSpace.x < gridSize.x && possibleSpace.y > 0 || possibleSpace.y < gridSize.y) {
+            if(inRange(possibleSpace)) {
                 returnArray.push(possibleSpace);
             }
         }
@@ -224,23 +229,24 @@ class PathfindingGrid {
             closedSet.push(currentNodePos);
             openSet.remove(currentNodePos);
 
-            if(currentNodePos == endCoord) {
+            if(currentNodePos.equals(endCoord)) {
                 return retracePath(startCoord, endCoord);
             }
 
             for(nodePos in getConnecting(currentNodePos)) {
                 var node: GridNode = get(nodePos);
-                if(node.isObsticle || closedSet.contains(nodePos)) {
+
+                if(node.isObsticle || nodePos.equivalentInArray(closedSet)) {
                     continue;
                 }
 
                 var newMovementCost: Int = get(currentNodePos).gCost + getDistance(currentNodePos, nodePos);
-                if(newMovementCost < node.gCost || !openSet.contains(nodePos)) {
+                if(newMovementCost < node.gCost || !nodePos.equivalentInArray(openSet)) {
                     node.gCost = newMovementCost;
                     node.hCost = getDistance(nodePos, endCoord);
                     node.parent = currentNodePos;
 
-                    if(!openSet.contains(nodePos)) {
+                    if(!nodePos.equivalentInArray(openSet)) {
                         openSet.push(nodePos);
                     }
                 }
@@ -254,7 +260,8 @@ class PathfindingGrid {
     public function getPath(startPos: Vector2, endPos: Vector2): Array<Vector2> {
         var gridPath = getPathGrid(positionToCoord(startPos), positionToCoord(endPos));
         for(coord in gridPath) {
-            coord = coordToPosition(coord);
+            var newCoord = coordToPosition(coord);
+            coord = newCoord;
         }
         return gridPath;
     }
@@ -266,7 +273,13 @@ class PathfindingGrid {
         var currentNode: Vector2 = endNode;
         while(currentNode != startNode) {
             path.push(currentNode);
-            currentNode = get(currentNode).parent;
+            var node = get(currentNode);
+            if(node.parent != null) {
+                currentNode = node.parent;
+            }
+            else {
+                break;
+            }
         }
         path.reverse();
         return path;

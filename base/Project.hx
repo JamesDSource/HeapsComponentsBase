@@ -12,6 +12,7 @@ class Project {
     public var camera: h2d.Camera;
 
     public var collisionWorld: CollisionWorld = new CollisionWorld();
+    public var navigationGrids: Map<String, PathfindingGrid> = [];
 
     public function new() {
         resetScene();

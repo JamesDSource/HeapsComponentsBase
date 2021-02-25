@@ -14,6 +14,19 @@ class Vector2 {
         this.y = y;
     }
 
+    public function equals(vector2: Vector2): Bool {
+        return vector2.x == x && vector2.y == y;
+    }
+
+    public function equivalentInArray(array: Array<Vector2>) {
+        for(item in array) {
+            if(equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function getLength(): Float {
         var squareX = Math.pow(Math.abs(x), 2.0);
         var squareY = Math.pow(Math.abs(y), 2.0);
