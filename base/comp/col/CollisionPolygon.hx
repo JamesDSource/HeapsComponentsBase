@@ -65,4 +65,29 @@ class CollisionPolygon extends CollisionShape {
 
         }
     }
+
+    public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
+        var pos = getAbsPosition(),
+            smX = Math.POSITIVE_INFINITY,
+            smY = Math.POSITIVE_INFINITY,
+            lgX = Math.NEGATIVE_INFINITY,
+            lgY = Math.NEGATIVE_INFINITY;
+
+        for(vertex in verticies) {
+            if(vertex.x < smX) {
+                smX = vertex.x;
+            }
+            if(vertex.x > lgX) {
+                lgX = vertex.x;
+            }
+            if(vertex.y < smY) {
+                smY = vertex.y;
+            }
+            if(vertex.y > lgY) {
+                lgY = vertex.y;
+            }
+        }
+
+        return {topLeft: new Vector2(pos.x + smX, pos.y + smY), bottomRight: new Vector2(pos.x + lgX, pos.y + lgY)};
+    }
 }

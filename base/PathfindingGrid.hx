@@ -1,5 +1,8 @@
 package base;
 
+import base.comp.col.Collisions;
+import base.comp.col.CollisionPolygon;
+import base.comp.Transform2D;
 import base.math.Vector2;
 
 typedef GridNode = {
@@ -16,6 +19,8 @@ class PathfindingGrid {
     private var originPoint: Vector2;
     
     public var grid: Array<Array<GridNode>> = [];
+
+    public var collisionShape: CollisionPolygon;
     
     public function new(cellSize: Float, gridSize: Vector2, ?originPoint: Vector2) {
         this.cellSize = cellSize;
@@ -36,6 +41,17 @@ class PathfindingGrid {
             }
         }
 
+
+        // * Collision box
+        collisionShape = new CollisionPolygon("Tester");
+        collisionShape.setVerticies(
+            [
+                new Vector2(0, 0),
+                new Vector2(0, cellSize - 1),
+                new Vector2(cellSize - 1, cellSize - 1),
+                new Vector2(cellSize - 1, 0)
+            ]
+        );
     }
 
     // & Gets a node from a vector
@@ -167,6 +183,33 @@ class PathfindingGrid {
         return coordToPosition(closestCoord);
     }
 
+    // & Sets the obsticle value of a single grid node 
+    public function setIsObsticle(coords: Vector2, isObsticle: Bool): Void {
+        grid[cast coords.x][cast coords.y].isObsticle = isObsticle;
+    }
+
+    // & Adds collision shapes with certain tags as obsticles
+    public function addCollisionShapesTag(collisionWorld: CollisionWorld, tag: String) {
+        for(shape in collisionWorld.shapes) {
+            if(shape.tags.contains(tag)) {
+                var bounds = shape.getBounds();
+                var tl = positionToCoord(bounds.topLeft),
+                    br = positionToCoord(bounds.bottomRight);
+                for(i in cast(tl.x, Int)...cast br.x + 1) {
+                    for(j in cast(tl.y, Int)...cast br.y + 1) {
+                        var node = get(new Vector2(i, j));
+                        if(!node.isObsticle) {
+                            collisionShape.offset.set(i*cellSize, j*cellSize);
+                            if(Collisions.test(collisionShape, shape)) {
+                                node.isObsticle = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // & Sets the movement cost of a single grid node 
     public function setMovementCostMult(coords: Vector2, newCost: Float): Void {
         grid[cast coords.x][cast coords.y].movementCostMult = newCost;
@@ -202,6 +245,10 @@ class PathfindingGrid {
 
     // & Gets the path in grid coordinates
     public function getPathGrid(startCoord: Vector2, endCoord: Vector2): Array<Vector2> {
+        if(get(endCoord).isObsticle) {
+            return [];
+        }
+
         var openSet: Array<Vector2> = [startCoord];
         var closedSet: Array<Vector2> = [];
         
@@ -259,11 +306,12 @@ class PathfindingGrid {
     // & Gets the path in pixel coordinates
     public function getPath(startPos: Vector2, endPos: Vector2): Array<Vector2> {
         var gridPath = getPathGrid(positionToCoord(startPos), positionToCoord(endPos));
+        var returnPath: Array<Vector2> = [];
         for(coord in gridPath) {
             var newCoord = coordToPosition(coord);
-            coord = newCoord;
+            returnPath.push(newCoord);
         }
-        return gridPath;
+        return returnPath;
     }
 
     // & For the A* to trace back the nodes and create a path

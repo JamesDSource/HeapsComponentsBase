@@ -1,5 +1,6 @@
 package base.comp.col;
 
+import hxsl.Types.Vec;
 import base.math.Vector2;
 
 class CollisionShape implements Component {
@@ -23,25 +24,29 @@ class CollisionShape implements Component {
     }
 
     public function init() {
-        collisionWorld = parentEntity.project.collisionWorld;
-        collisionWorld.shapes.push(this);
+        if(parentEntity.project != null) {
+            collisionWorld = parentEntity.project.collisionWorld;
+            collisionWorld.shapes.push(this);
+        }
     }
 
     public function onDestroy() {
-        collisionWorld.shapes.remove(this);
+        if(collisionWorld != null) {
+            collisionWorld.shapes.remove(this);
+        }
     }
 
     public function getAbsPosition(): Vector2 {
         if(parentEntity == null) {
-            return null;
+            return offset;
         }
         else {
-            var transforms: Array<Transform2D> = cast parentEntity.getComponentsOfType(Transform2D);
-            if(transforms.length > 0) {
-                return transforms[0].position.add(offset);
+            var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
+            if(transform != null) {
+                return transform.position.add(offset);
             }
             else {
-                return null;
+                return offset;
             }
         }
     }
@@ -72,5 +77,9 @@ class CollisionShape implements Component {
         }
 
         return true;
+    }
+
+    public function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
+        return {topLeft: new Vector2(), bottomRight: new Vector2()};
     }
 }

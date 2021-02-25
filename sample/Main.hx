@@ -45,6 +45,31 @@ class Main extends hxd.App {
         ];
 
         proj.addEntity(player);
+
+        // * Block
+        var bap: AnimationPlayer = new AnimationPlayer("Animations", 1);
+        bap.addAnimation("Cube", Tile.fromColor(0xFF00000, 32, 64), 1);
+
+        var blockCollisionShape: CollisionPolygon = new CollisionPolygon("Collision");
+        blockCollisionShape.tags.push("Static");
+        blockCollisionShape.setVerticies(
+            [
+                new Vector2(0, 0),
+                new Vector2(31, 0),
+                new Vector2(31, 63),
+                new Vector2(0, 63)
+            ]
+        );
+
+        var block = [
+            new Transform2D("Position", new Vector2(100, 200)),
+            bap,
+            blockCollisionShape
+        ];
+
+        proj.addEntity(block);
+
+        grid.addCollisionShapesTag(proj.collisionWorld, "Static");
     }
 
     override function update(delta: Float) {

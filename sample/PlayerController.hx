@@ -35,12 +35,12 @@ class PlayerController implements Component {
 
             var navi: Navigation = cast parentEntity.getComponent("Nav");
             path = navi.getPathTo(parentEntity.project.navigationGrids["Player"], new Vector2(mx, my));
+            pathIndex = 0;
             var renders = parentEntity.project.renderables;
             for(point in path) {
                 var bmp = new h2d.Bitmap(Tile.fromColor(0x00FF00, 2, 2));
                 bmp.x = point.x;
                 bmp.y = point.y;
-                trace(point.x, point.y);
                 renders.add(bmp, 3);
             }
         }

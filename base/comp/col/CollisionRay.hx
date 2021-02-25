@@ -43,4 +43,12 @@ class CollisionRay extends CollisionShape {
         rayScale = scaleFactor;
         calculateTransformations();
     }
+
+    public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
+        var pos = getAbsPosition();
+        return {
+            topLeft: new Vector2(Math.min(pos.x, pos.x + castPoint.x), Math.min(pos.y, pos.y + castPoint.y)),
+            bottomRight: new Vector2(Math.max(pos.x, pos.x + castPoint.x), Math.max(pos.y, pos.y + castPoint.y))
+        };
+    }
 }
