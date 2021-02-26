@@ -38,6 +38,14 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionPolygon)) {
             return polyWithRay(cast(shape2, CollisionPolygon), cast(shape1, CollisionRay)) != null;
         }
+        // * Poly with circle
+        else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionCircle)) {
+            return polyWithCircle(cast(shape1, CollisionPolygon), cast(shape2, CollisionCircle));
+        }
+        // * Circle with poly
+        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionPolygon)) {
+            return polyWithCircle(cast(shape2, CollisionPolygon), cast(shape1, CollisionCircle));
+        }
         else {
             trace("Unknown collision combination");
             return false;
@@ -61,6 +69,9 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         }
         else if(Std.isOfType(shape, CollisionRay)) {
             return rayWithRay(ray, cast(shape, CollisionRay));
+        }
+        else if(Std.isOfType(shape, CollisionCircle)) {
+            return circleWithRay(cast(shape, CollisionCircle), ray);
         }
         else {
             return null;
@@ -116,6 +127,75 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
             }
 
         }
+        return true;
+    }
+
+    public static function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
+        var polyV = poly.getGlobalTransformedVerticies();
+        var circleCenter = circle.getAbsPosition();
+        var circleRadius = circle.getRadius();
+        var closestVertex: Vector2 = null;
+
+        // * Checking if the center point in inside the polygon
+        if(pointInPolygon(polyV, circleCenter)) {
+            return true;
+        }
+
+        // * First iteration checks the polygon
+        for(i in 0...polyV.length) {
+            var vert = polyV[i];
+            var nextVert = polyV[(i + 1)%polyV.length];
+            var axisProj: Vector2 = new Vector2(-(vert.y - nextVert.y), vert.x - nextVert.x);
+            
+            // * Getting the vetex closest to the center of the circle
+            if(closestVertex == null || closestVertex.distanceTo(circleCenter) > vert.distanceTo(circleCenter)) {
+                closestVertex = vert;
+            }
+
+            // * Projecting each point from the polygon
+            var minR1 = Math.POSITIVE_INFINITY;
+            var maxR1 = Math.NEGATIVE_INFINITY;
+            for(vertex in polyV) {
+                var dot: Float = vertex.getDotProduct(axisProj);
+                minR1 = Math.min(minR1, dot);
+                maxR1 = Math.max(maxR1, dot);
+            } 
+            // * Projecting the center of the circle and adding/subtracting the radius
+            var projNormal = axisProj.normalized();
+            var minR2 = circleCenter.subtract(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+            var maxR2 = circleCenter.add(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+            
+            // * Checking if the shapes overlap
+            if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                return false;
+            }
+        }
+
+        if(closestVertex == null) {
+            return false;
+        }
+        else { // * Checking the axis between the closest vertex and the circle center
+            var axisProj: Vector2 = new Vector2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x);
+            
+            // * Projecting each point from the polygon
+            var minR1 = Math.POSITIVE_INFINITY;
+            var maxR1 = Math.NEGATIVE_INFINITY;
+            for(vertex in polyV) {
+                var dot: Float = vertex.getDotProduct(axisProj);
+                minR1 = Math.min(minR1, dot);
+                maxR1 = Math.max(maxR1, dot);
+            } 
+            // * Projecting the center of the circle and adding/subtracting the radius
+            var projNormal = axisProj.normalized();
+            var minR2 = circleCenter.subtract(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+            var maxR2 = circleCenter.add(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+            
+            // * Checking if the shapes overlap
+            if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                return false;
+            }
+        }
+
         return true;
     }
 

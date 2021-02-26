@@ -1,7 +1,7 @@
 import h2d.Bitmap;
 import ldtk.Layer_Tiles;
 import ldtk.Level;
-import hcb.comp.col.CollisionPolygon;
+import hcb.comp.col.*;
 import hcb.math.Vector2;
 import hcb.PathfindingGrid;
 import hcb.Project;
@@ -14,8 +14,6 @@ class Main extends hxd.App {
     private var player: Array<hcb.comp.Component> = [];
     private var grid: PathfindingGrid;
 
-    private var rotateRect: CollisionPolygon;
-    private var rotateRectPoints: Array<Bitmap> = [];
 
     override function init() {
         var levels = new Levels();

@@ -32,6 +32,11 @@ class CollisionRay extends CollisionShape {
         calculateTransformations();
     }
 
+    public function setCastPointGlobal(point: Vector2) {
+        castPoint = point.subtract(getAbsPosition());
+        calculateTransformations();
+    }
+
     // && Sets 'castPointTransformed' to 'castPoint' rotated and scaled
     private function calculateTransformations() {
         castPointTransformed = castPoint;

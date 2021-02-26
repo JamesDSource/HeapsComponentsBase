@@ -1,6 +1,6 @@
 package hcb;
 
-import hcb.comp.col.CollisionShape;
+import hcb.comp.col.*;
 import ldtk.Layer_Entities;
 import hcb.math.Vector2;
 import hcb.comp.*;
@@ -100,8 +100,9 @@ class Project {
                     var colTile = layer.getTileStackAt(i, j);
                     var org = new Vector2(i*tileSize, j*tileSize);
                     
+                    var newShape: CollisionShape;
                     if(customShapes != null && customShapes.exists(colTile[0].tileId)) {
-
+                        newShape = customShapes[colTile[0].tileId]();
                     }
                     else {
                         var verts: Array<Vector2> = [
@@ -110,22 +111,23 @@ class Project {
                             new Vector2(tileSize - 1, tileSize - 1),
                             new Vector2(0, tileSize - 1)
                         ];
-                        var staticColShape = new hcb.comp.col.CollisionPolygon("Static");
+                        var staticColShape = new CollisionPolygon("Static");
                         staticColShape.setVerticies(verts);
                         
                         staticColShape.offset = org;
-                        if(offset != null) {
-                            staticColShape.offset.addMutate(offset);
-                        }
-
-                        if(tags != null) {
-                            for(tag in tags) {
-                                staticColShape.tags.push(tag);
-                            }
-                        }
-
-                        collisionWorld.shapes.push(staticColShape);
+                        newShape = staticColShape;
+                        
                     }
+                    if(offset != null) {
+                        newShape.offset.addMutate(offset);
+                    }
+
+                    if(tags != null) {
+                        for(tag in tags) {
+                            newShape.tags.push(tag);
+                        }
+                    }
+                    collisionWorld.shapes.push(newShape);
                 }
             }
         }

@@ -18,6 +18,7 @@ class CollisionShape implements Component {
     public var ignoreTags: Array<String> = [];
 
     public var offset: Vector2 = new Vector2();
+    public var overridePosition: Vector2 = null;
 
     public var collisionWorld: CollisionWorld;
 
@@ -39,8 +40,12 @@ class CollisionShape implements Component {
     }
 
     public function getAbsPosition(): Vector2 {
+        if(overridePosition != null) {
+            return overridePosition.add(offset);
+        }
+        
         if(parentEntity == null) {
-            return offset;
+            return offset.clone();
         }
         else {
             var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
@@ -48,7 +53,7 @@ class CollisionShape implements Component {
                 return transform.position.add(offset);
             }
             else {
-                return offset;
+                return offset.clone();
             }
         }
     }
