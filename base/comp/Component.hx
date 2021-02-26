@@ -1,5 +1,6 @@
 package base.comp;
 
+import base.Project.PauseMode;
 import h2d.Object;
 
 interface Component {
@@ -7,6 +8,7 @@ interface Component {
     public var parentEntity: base.Entity;
     public var updateable: Bool;
     public var name: String;
+    public var pauseMode: PauseMode;
 
     // & called when the component is added to an entity
     public function init(): Void;

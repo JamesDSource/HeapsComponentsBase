@@ -5,6 +5,11 @@ import ldtk.Layer_Entities;
 import base.math.Vector2;
 import base.comp.*;
 
+enum PauseMode {
+    idle;
+    resume;
+}
+
 // ^ Project acts as the manager for everything
 class Project {
     public var paused: Bool = false;

@@ -21,6 +21,7 @@ class AnimationPlayer implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
     public var name: String;
+    public var pauseMode = base.Project.PauseMode.idle;
 
     public function init() {
         

@@ -4,6 +4,7 @@ class Camera implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
     public var name: String;
+    public var pauseMode = base.Project.PauseMode.idle;
 
     private var follow: h2d.Object = new h2d.Object();
 

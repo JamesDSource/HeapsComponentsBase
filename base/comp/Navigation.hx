@@ -6,6 +6,7 @@ class Navigation implements Component {
     public var parentEntity: Entity;
     public var updateable: Bool = false;
     public var name: String;
+    public var pauseMode = base.Project.PauseMode.idle;
 
     public function init() {}
     public function update(delta: Float) {}

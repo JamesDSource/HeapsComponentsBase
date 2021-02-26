@@ -1,5 +1,6 @@
 package base.comp.col;
 
+import base.Project.PauseMode;
 import hxsl.Types.Vec;
 import base.math.Vector2;
 
@@ -7,6 +8,7 @@ class CollisionShape implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = false;
     public var name: String;
+    public var pauseMode = PauseMode.idle;
     public function update(delta: Float): Void {}
 
     public var active: Bool = true;
