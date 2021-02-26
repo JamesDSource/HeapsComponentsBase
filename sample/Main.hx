@@ -14,6 +14,9 @@ class Main extends hxd.App {
     private var player: Array<base.comp.Component> = [];
     private var grid: PathfindingGrid;
 
+    private var rotateRect: CollisionPolygon;
+    private var rotateRectPoints: Array<Bitmap> = [];
+
     override function init() {
         var levels = new Levels();
 

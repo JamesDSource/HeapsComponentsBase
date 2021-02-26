@@ -52,8 +52,6 @@ class AnimationPlayer implements Component {
     }
 
     public var animations: Map<String, Anim> = [];
-    private var flipped: Bool = false;
-
     private var layer: Int;
 
     public function new(name: String, layer: Int) {
@@ -101,22 +99,5 @@ class AnimationPlayer implements Component {
         }
         var newAnim = new Anim(animFrames);
         animations[name] = newAnim;
-    }
-
-    public function isFlipped(): Bool {
-        return flipped;
-    }
-
-    public function setFlipped(flipped) {
-        if(this.flipped != flipped) {
-            for(animKey in animations.keys()) {
-                var anim: Anim = animations[animKey];
-                var frames: Array<Tile> = anim.frames;
-                for(frame in frames) {
-                    frame.flipX();
-                }
-            }
-            this.flipped = flipped;
-        }
     }
 }

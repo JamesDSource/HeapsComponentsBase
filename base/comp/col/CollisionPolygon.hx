@@ -12,7 +12,9 @@ class CollisionPolygon extends CollisionShape {
     private var transformedVerticies: Array<Vector2> = [];
 
     // ^ Transformation data
+    // ^ Rotation is in degrees
     private var polyRotation: Float = 0;
+    private var polyScale: Vector2 = new Vector2(1, 1);
 
     public function new(name: String) {
         super(name);
@@ -48,15 +50,34 @@ class CollisionPolygon extends CollisionShape {
     }
 
     public function setPolyRotation(degrees: Float): Void {
+        polyRotation = degrees;
+        updateTransformations();
+    }
 
+    public function getPolyRotation(): Float {
+        return polyRotation;
+    }
+
+    public function setScale(scale: Vector2): Void {
+        polyScale = scale;
+        updateTransformations();
+    }
+
+    public function updateTransformations(): Void {
+        transformedVerticies = [];
+        for(vertex in verticies) {
+            var tVertex = vertex.mult(polyScale);
+            tVertex.setAngle(hxd.Math.degToRad(polyRotation) + vertex.getAngle());
+            transformedVerticies.push(tVertex);
+        }
     }
 
     public function setVerticies(verticies: Array<Vector2>) {
         this.verticies = verticies;
-        transformedVerticies = verticies;
+        updateTransformations();
 
         radius = 0.0;
-        for(vertex in this.verticies) {
+        for(vertex in this.transformedVerticies) {
             var len: Float = vertex.getLength();
             
             if(len > radius) {
@@ -64,6 +85,7 @@ class CollisionPolygon extends CollisionShape {
             }
 
         }
+
     }
 
     public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {

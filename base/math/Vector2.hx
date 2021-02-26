@@ -14,6 +14,13 @@ class Vector2 {
         this.y = y;
     }
 
+    // & Angle is in radians
+    public function setAngle(angle: Float, ?len: Float) {
+        var length: Float = len != null ? len : getLength();
+        x = Math.cos(angle)*length;
+        y = Math.sin(angle)*length;
+    }
+
     public function equals(vector2: Vector2): Bool {
         return vector2.x == x && vector2.y == y;
     }
