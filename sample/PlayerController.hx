@@ -1,19 +1,19 @@
 import h2d.Tile;
 import h2d.Bitmap;
-import base.comp.Navigation;
+import hcb.comp.Navigation;
 import hxd.Key;
 import haxe.io.Input;
-import base.comp.Camera;
-import base.comp.Transform2D;
-import base.Entity;
-import base.comp.Component;
-import base.math.Vector2;
+import hcb.comp.Camera;
+import hcb.comp.Transform2D;
+import hcb.Entity;
+import hcb.comp.Component;
+import hcb.math.Vector2;
 
 class PlayerController implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
     public var name: String;
-    public var pauseMode = base.Project.PauseMode.idle;
+    public var pauseMode = hcb.Project.PauseMode.idle;
 
     public var speed: Float = 4;
     public var pathIndex: Int = 0;

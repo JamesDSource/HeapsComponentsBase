@@ -1,7 +1,7 @@
-package base.comp.col;
+package hcb.comp.col;
 
-import base.comp.col.CollisionShape;
-import base.math.Vector2;
+import hcb.comp.col.CollisionShape;
+import hcb.math.Vector2;
 
 // TODO: Make rotation work
 class CollisionPolygon extends CollisionShape {

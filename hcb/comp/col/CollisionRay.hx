@@ -1,6 +1,6 @@
-package base.comp.col;
+package hcb.comp.col;
 
-import base.math.Vector2;
+import hcb.math.Vector2;
 
 class CollisionRay extends CollisionShape {
     // ^ Cast points are set in local coordinates

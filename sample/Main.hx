@@ -1,17 +1,17 @@
 import h2d.Bitmap;
 import ldtk.Layer_Tiles;
 import ldtk.Level;
-import base.comp.col.CollisionPolygon;
-import base.math.Vector2;
-import base.PathfindingGrid;
-import base.Project;
+import hcb.comp.col.CollisionPolygon;
+import hcb.math.Vector2;
+import hcb.PathfindingGrid;
+import hcb.Project;
 import h2d.Tile;
-import base.comp.*;
+import hcb.comp.*;
 
 class Main extends hxd.App {
 
-    private var proj: base.Project;
-    private var player: Array<base.comp.Component> = [];
+    private var proj: hcb.Project;
+    private var player: Array<hcb.comp.Component> = [];
     private var grid: PathfindingGrid;
 
     private var rotateRect: CollisionPolygon;
@@ -25,7 +25,7 @@ class Main extends hxd.App {
         setScene(proj.scene);
 
         // * Pathfinding grid
-        grid = new PathfindingGrid(32, new base.math.Vector2(50, 50));
+        grid = new PathfindingGrid(32, new hcb.math.Vector2(50, 50));
         proj.navigationGrids["Player"] = grid;
 
         proj.ldtkEntityPrefabs["Player"] = Prefabs.player;

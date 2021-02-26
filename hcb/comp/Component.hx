@@ -1,11 +1,11 @@
-package base.comp;
+package hcb.comp;
 
-import base.Project.PauseMode;
+import hcb.Project.PauseMode;
 import h2d.Object;
 
 interface Component {
     // * Read only, do not change manually
-    public var parentEntity: base.Entity;
+    public var parentEntity: hcb.Entity;
     public var updateable: Bool;
     public var name: String;
     public var pauseMode: PauseMode;

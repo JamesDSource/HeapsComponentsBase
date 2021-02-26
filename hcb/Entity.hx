@@ -1,6 +1,6 @@
-package base;
+package hcb;
 
-import base.comp.Component;
+import hcb.comp.Component;
 
 class Entity {
     public var project: Project;

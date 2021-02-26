@@ -1,7 +1,7 @@
-import base.comp.*;
-import base.math.Vector2;
+import hcb.comp.*;
+import hcb.math.Vector2;
 import h2d.Tile;
-import base.comp.col.*;
+import hcb.comp.col.*;
 
 class Prefabs {
     public static function player(): Array<Component> {
@@ -23,7 +23,8 @@ class Prefabs {
             new PlayerController("Controller"),
             ap,
             playerCollisionShape,
-            new Navigation("Nav")
+            new Navigation("Nav"),
+            new Camera("Cam", true)
         ];
 
         return player;

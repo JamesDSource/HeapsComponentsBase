@@ -1,8 +1,8 @@
-package base.comp.col;
+package hcb.comp.col;
 
-import base.Project.PauseMode;
+import hcb.Project.PauseMode;
 import hxsl.Types.Vec;
-import base.math.Vector2;
+import hcb.math.Vector2;
 
 class CollisionShape implements Component {
     public var parentEntity: Entity = null;

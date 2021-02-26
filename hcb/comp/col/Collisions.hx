@@ -1,6 +1,6 @@
-package base.comp.col;
+package hcb.comp.col;
 
-import base.math.Vector2;
+import hcb.math.Vector2;
 
 class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circle collisions
     public static function test(shape1: CollisionShape, shape2: CollisionShape): Bool {

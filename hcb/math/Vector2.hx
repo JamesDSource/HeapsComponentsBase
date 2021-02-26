@@ -1,4 +1,4 @@
-package base.math;
+package hcb.math;
 
 class Vector2 {
     public var x: Float;

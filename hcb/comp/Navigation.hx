@@ -1,12 +1,12 @@
-package base.comp;
+package hcb.comp;
 
-import base.math.Vector2;
+import hcb.math.Vector2;
 
 class Navigation implements Component {
     public var parentEntity: Entity;
     public var updateable: Bool = false;
     public var name: String;
-    public var pauseMode = base.Project.PauseMode.idle;
+    public var pauseMode = hcb.Project.PauseMode.idle;
 
     public function init() {}
     public function update(delta: Float) {}

@@ -1,4 +1,4 @@
-package base.math;
+package hcb.math;
 
 class Interpolate {
 

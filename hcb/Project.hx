@@ -1,9 +1,9 @@
-package base;
+package hcb;
 
-import base.comp.col.CollisionShape;
+import hcb.comp.col.CollisionShape;
 import ldtk.Layer_Entities;
-import base.math.Vector2;
-import base.comp.*;
+import hcb.math.Vector2;
+import hcb.comp.*;
 
 enum PauseMode {
     idle;
@@ -20,6 +20,7 @@ class Project {
     public var renderables: h2d.Layers;
 
     public var camera: h2d.Camera;
+    public var cameraFollow: h2d.Object = null;
 
     public var collisionWorld: CollisionWorld = new CollisionWorld();
     public var navigationGrids: Map<String, PathfindingGrid> = [];
@@ -29,12 +30,9 @@ class Project {
     public function new() {
         resetScene();
         renderables = new h2d.Layers(scene);
-
-        camera.anchorX = 0.5;
-        camera.anchorY = 0.5;
     }
 
-    public function addEntity(components: Array<base.comp.Component>): Entity {
+    public function addEntity(components: Array<hcb.comp.Component>): Entity {
         var entity = new Entity(this);
         for(component in components) {
             entity.addComponent(component, false);
@@ -52,6 +50,11 @@ class Project {
         for(entity in entities) {
             entity.update(deltaMult);
         }
+
+        if(cameraFollow != null) {
+            camera.x = cameraFollow.x;
+            camera.y = cameraFollow.y;
+        }
     }
 
     public function resetScene() {
@@ -61,6 +64,8 @@ class Project {
         
         scene = new h2d.Scene();
         camera = scene.camera;
+        camera.anchorX = 0.5;
+        camera.anchorY = 0.5;
 
         for(entity in entities) {
             entity.destroy();
@@ -105,7 +110,7 @@ class Project {
                             new Vector2(tileSize - 1, tileSize - 1),
                             new Vector2(0, tileSize - 1)
                         ];
-                        var staticColShape = new base.comp.col.CollisionPolygon("Static");
+                        var staticColShape = new hcb.comp.col.CollisionPolygon("Static");
                         staticColShape.setVerticies(verts);
                         
                         staticColShape.offset = org;

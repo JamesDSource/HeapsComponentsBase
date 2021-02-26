@@ -1,4 +1,4 @@
-package base.comp;
+package hcb.comp;
 
 import h2d.Bitmap;
 import h2d.Object;
@@ -21,7 +21,7 @@ class AnimationPlayer implements Component {
     public var parentEntity: Entity = null;
     public var updateable: Bool = true;
     public var name: String;
-    public var pauseMode = base.Project.PauseMode.idle;
+    public var pauseMode = hcb.Project.PauseMode.idle;
 
     public function init() {
         

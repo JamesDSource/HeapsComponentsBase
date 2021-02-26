@@ -1,6 +1,6 @@
-package base.comp.col;
+package hcb.comp.col;
 
-import base.math.Vector2;
+import hcb.math.Vector2;
 
 class CollisionCircle extends CollisionShape {
     public function new(name: String) {

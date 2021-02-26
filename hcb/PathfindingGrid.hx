@@ -1,9 +1,9 @@
-package base;
+package hcb;
 
-import base.comp.col.Collisions;
-import base.comp.col.CollisionPolygon;
-import base.comp.Transform2D;
-import base.math.Vector2;
+import hcb.comp.col.Collisions;
+import hcb.comp.col.CollisionPolygon;
+import hcb.comp.Transform2D;
+import hcb.math.Vector2;
 
 typedef GridNode = {
     movementCostMult: Float,
