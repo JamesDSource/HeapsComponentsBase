@@ -1,5 +1,6 @@
 package hcb;
 
+import hxd.snd.Manager;
 import hcb.comp.col.*;
 import ldtk.Layer_Entities;
 import hcb.math.Vector2;
@@ -27,9 +28,13 @@ class Project {
 
     public var ldtkEntityPrefabs: Map<String, Void->Array<Component>> = [];
 
+    public var audioManager: Manager;
+    public var listenerFollow: h2d.Object;
+
     public function new() {
         resetScene();
         renderables = new h2d.Layers(scene);
+        audioManager = Manager.get();
     }
 
     public function addEntity(components: Array<hcb.comp.Component>): Entity {
@@ -50,10 +55,15 @@ class Project {
         for(entity in entities) {
             entity.update(deltaMult);
         }
-
+        
         if(cameraFollow != null) {
             camera.x = cameraFollow.x;
             camera.y = cameraFollow.y;
+        }
+        
+        if(listenerFollow != null) {
+            audioManager.listener.position.x = listenerFollow.x;
+            audioManager.listener.position.y = listenerFollow.y;
         }
     }
 

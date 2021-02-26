@@ -1,11 +1,6 @@
-import h2d.Bitmap;
-import ldtk.Layer_Tiles;
-import ldtk.Level;
-import hcb.comp.col.*;
 import hcb.math.Vector2;
 import hcb.PathfindingGrid;
 import hcb.Project;
-import h2d.Tile;
 import hcb.comp.*;
 
 class Main extends hxd.App {
@@ -31,7 +26,6 @@ class Main extends hxd.App {
 
         var rend = levels.all_levels.Test.l_Collisions.render();
         proj.renderables.add(rend, 0);
-
         proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"]);
         grid.addCollisionShapesTag(proj.collisionWorld, "Static");
     }

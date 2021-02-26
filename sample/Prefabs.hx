@@ -1,3 +1,4 @@
+import hcb.comp.snd.AudioListener;
 import hcb.comp.*;
 import hcb.math.Vector2;
 import h2d.Tile;
@@ -24,7 +25,8 @@ class Prefabs {
             ap,
             playerCollisionShape,
             new Navigation("Nav"),
-            new Camera("Cam", true)
+            new Camera("Cam", true),
+            new AudioListener("Listener", true)
         ];
 
         return player;
