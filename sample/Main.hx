@@ -1,3 +1,6 @@
+import h2d.Bitmap;
+import ldtk.Layer_Tiles;
+import ldtk.Level;
 import base.comp.col.CollisionPolygon;
 import base.math.Vector2;
 import base.PathfindingGrid;
@@ -8,12 +11,12 @@ import base.comp.*;
 class Main extends hxd.App {
 
     private var proj: base.Project;
-
     private var player: Array<base.comp.Component> = [];
-
     private var grid: PathfindingGrid;
 
     override function init() {
+        var levels = new Levels();
+
         // * Project init
         proj = new Project();
         setScene(proj.scene);
@@ -22,53 +25,13 @@ class Main extends hxd.App {
         grid = new PathfindingGrid(32, new base.math.Vector2(50, 50));
         proj.navigationGrids["Player"] = grid;
 
-        // * Player
-        var ap: AnimationPlayer = new AnimationPlayer("Animations", 1);
-        ap.addAnimation("Cube", Tile.fromColor(0xFF00000, 32, 32), 1);
+        proj.ldtkEntityPrefabs["Player"] = Prefabs.player;
+        proj.ldtkAddEntities(cast levels.all_levels.Test.l_Entities.getAllUntyped());
 
-        var playerCollisionShape: CollisionPolygon = new CollisionPolygon("Collision");
-        playerCollisionShape.setVerticies(
-            [
-                new Vector2(0, 0),
-                new Vector2(31, 0),
-                new Vector2(31, 31),
-                new Vector2(0, 31)
-            ]
-        );
+        var rend = levels.all_levels.Test.l_Collisions.render();
+        proj.renderables.add(rend, 0);
 
-        player = [
-            new Transform2D("Position", new Vector2(100, 100)),
-            new PlayerController("Controller"),
-            ap,
-            playerCollisionShape,
-            new Navigation("Nav")
-        ];
-
-        proj.addEntity(player);
-
-        // * Block
-        var bap: AnimationPlayer = new AnimationPlayer("Animations", 1);
-        bap.addAnimation("Cube", Tile.fromColor(0xFF00000, 32, 64), 1);
-
-        var blockCollisionShape: CollisionPolygon = new CollisionPolygon("Collision");
-        blockCollisionShape.tags.push("Static");
-        blockCollisionShape.setVerticies(
-            [
-                new Vector2(0, 0),
-                new Vector2(31, 0),
-                new Vector2(31, 63),
-                new Vector2(0, 63)
-            ]
-        );
-
-        var block = [
-            new Transform2D("Position", new Vector2(100, 200)),
-            bap,
-            blockCollisionShape
-        ];
-
-        proj.addEntity(block);
-
+        proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"]);
         grid.addCollisionShapesTag(proj.collisionWorld, "Static");
     }
 

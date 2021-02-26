@@ -18,7 +18,7 @@ class Navigation implements Component {
     public function getPathFrom(grid: PathfindingGrid, startPosition: Vector2, endPosition: Vector2): Array<Vector2> {
         var path: Array<Vector2> = grid.getPath(grid.getClosestPoint(startPosition), grid.getClosestPoint(endPosition));
         if(!path[path.length - 1].equals(endPosition)) {
-            //path.push(endPosition);
+            path[path.length - 1] = endPosition;
         }
         return path;
     }

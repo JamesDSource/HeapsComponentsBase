@@ -22,8 +22,7 @@ class PlayerController implements Component {
         this.name = name;
     }
 
-    public function init() {
-    }
+    public function init() {}
 
     public function update(delta: Float) {
         var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);

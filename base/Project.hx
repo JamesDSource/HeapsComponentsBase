@@ -1,5 +1,10 @@
 package base;
 
+import base.comp.col.CollisionShape;
+import ldtk.Layer_Entities;
+import base.math.Vector2;
+import base.comp.*;
+
 // ^ Project acts as the manager for everything
 class Project {
     public var paused: Bool = false;
@@ -14,6 +19,8 @@ class Project {
     public var collisionWorld: CollisionWorld = new CollisionWorld();
     public var navigationGrids: Map<String, PathfindingGrid> = [];
 
+    public var ldtkEntityPrefabs: Map<String, Void->Array<Component>> = [];
+
     public function new() {
         resetScene();
         renderables = new h2d.Layers(scene);
@@ -22,7 +29,7 @@ class Project {
         camera.anchorY = 0.5;
     }
 
-    public function addEntity(components: Array<base.comp.Component>) {
+    public function addEntity(components: Array<base.comp.Component>): Entity {
         var entity = new Entity(this);
         for(component in components) {
             entity.addComponent(component, false);
@@ -31,6 +38,7 @@ class Project {
             component.init();
         }
         entities.push(entity);
+        return entity;
     }
 
     public function update(delta: Float) {
@@ -51,6 +59,65 @@ class Project {
 
         for(entity in entities) {
             entity.destroy();
+        }
+    }
+    
+    public function ldtkAddEntities(entities: Array<ldtk.Entity>, ?offset: Vector2): Array<Entity> {
+        var entitiesAdded: Array<Entity> = [];
+        for(entity in entities) {
+            if(ldtkEntityPrefabs.exists(entity.identifier)) {
+                var ent = addEntity(ldtkEntityPrefabs[entity.identifier]());
+                var transform: Transform2D = cast ent.getSingleComponentOfType(Transform2D);
+                if(transform != null) {
+                    transform.position.set(entity.pixelX, entity.pixelY);
+                    if(offset != null) {
+                        transform.position.addMutate(offset);
+                    }
+                }
+                entitiesAdded.push(ent);
+            }
+        }
+
+        return entitiesAdded;
+    }
+
+    public function ldtkAddCollisionLayer(layer: ldtk.Layer_Tiles, ?tags: Array<String>, ?offset: Vector2, ?customShapes: Map<Int, Void->CollisionShape>) {
+        var tileSize = layer.gridSize;
+        for(i in 0...layer.cWid) {
+            for(j in 0...layer.cHei) {
+                var hasTile = layer.hasAnyTileAt(i, j);
+                if(hasTile) {
+                    var colTile = layer.getTileStackAt(i, j);
+                    var org = new Vector2(i*tileSize, j*tileSize);
+                    
+                    if(customShapes != null && customShapes.exists(colTile[0].tileId)) {
+
+                    }
+                    else {
+                        var verts: Array<Vector2> = [
+                            new Vector2(),
+                            new Vector2(tileSize - 1, 0),
+                            new Vector2(tileSize - 1, tileSize - 1),
+                            new Vector2(0, tileSize - 1)
+                        ];
+                        var staticColShape = new base.comp.col.CollisionPolygon("Static");
+                        staticColShape.setVerticies(verts);
+                        
+                        staticColShape.offset = org;
+                        if(offset != null) {
+                            staticColShape.offset.addMutate(offset);
+                        }
+
+                        if(tags != null) {
+                            for(tag in tags) {
+                                staticColShape.tags.push(tag);
+                            }
+                        }
+
+                        collisionWorld.shapes.push(staticColShape);
+                    }
+                }
+            }
         }
     }
 }
