@@ -5,16 +5,21 @@
 		"doc": "https://ldtk.io/json",
 		"schema": "https://ldtk.io/files/JSON_SCHEMA.json",
 		"appAuthor": "Sebastien 'deepnight' Benard",
-		"appVersion": "0.7.2",
+		"appVersion": "0.8.0",
 		"url": "https://ldtk.io"
 	},
-	"jsonVersion": "0.7.2",
+	"jsonVersion": "0.8.0",
+	"nextUid": 10,
+	"worldLayout": "Free",
+	"worldGridWidth": 256,
+	"worldGridHeight": 256,
 	"defaultPivotX": 0,
 	"defaultPivotY": 0,
 	"defaultGridSize": 32,
+	"defaultLevelWidth": 256,
+	"defaultLevelHeight": 256,
 	"bgColor": "#676877",
 	"defaultLevelBgColor": "#7F8093",
-	"nextUid": 10,
 	"minifyJson": false,
 	"externalLevels": false,
 	"exportTiled": false,
@@ -22,82 +27,86 @@
 	"pngFilePattern": null,
 	"backupOnSave": false,
 	"backupLimit": 10,
-	"worldLayout": "Free",
-	"worldGridWidth": 256,
-	"worldGridHeight": 256,
-	"defs": {
-		"layers": [
-			{
-				"__type": "Entities",
-				"identifier": "Entities",
-				"type": "Entities",
-				"uid": 3,
-				"gridSize": 32,
-				"displayOpacity": 1,
-				"pxOffsetX": 0,
-				"pxOffsetY": 0,
-				"intGridValues": [{ "identifier": null, "color": "#000000" }],
-				"autoTilesetDefUid": null,
-				"autoRuleGroups": [],
-				"autoSourceLayerDefUid": null,
-				"tilesetDefUid": null,
-				"tilePivotX": 0,
-				"tilePivotY": 0
-			},
-			{
-				"__type": "Tiles",
-				"identifier": "Collisions",
-				"type": "Tiles",
-				"uid": 1,
-				"gridSize": 32,
-				"displayOpacity": 1,
-				"pxOffsetX": 0,
-				"pxOffsetY": 0,
-				"intGridValues": [{ "identifier": null, "color": "#000000" }],
-				"autoTilesetDefUid": null,
-				"autoRuleGroups": [],
-				"autoSourceLayerDefUid": null,
-				"tilesetDefUid": 2,
-				"tilePivotX": 0,
-				"tilePivotY": 0
-			}
-		],
-		"entities": [
-			{
-				"identifier": "Player",
-				"uid": 4,
-				"width": 32,
-				"height": 32,
-				"color": "#94D9B3",
-				"renderMode": "Ellipse",
-				"showName": true,
-				"tilesetId": null,
-				"tileId": null,
-				"tileRenderMode": "Stretch",
-				"maxPerLevel": 0,
-				"limitBehavior": "DiscardOldOnes",
-				"pivotX": 0.5,
-				"pivotY": 1,
-				"fieldDefs": []
-			}
-		],
-		"tilesets": [
-			{
-				"identifier": "Collision",
-				"uid": 2,
-				"relPath": "CollisionTile.png",
-				"pxWid": 96,
-				"pxHei": 32,
-				"tileGridSize": 32,
-				"spacing": 0,
-				"padding": 0,
-				"savedSelections": [],
-				"cachedPixelData": { "opaqueTiles": "000", "averageColors": "693339333933" }
-			}
-		],
-		"enums": [],
-		"externalEnums": []
-	},
+	"flags": [],
+	"defs": { "layers": [
+		{
+			"__type": "Entities",
+			"identifier": "Entities",
+			"type": "Entities",
+			"uid": 3,
+			"gridSize": 32,
+			"displayOpacity": 1,
+			"pxOffsetX": 0,
+			"pxOffsetY": 0,
+			"requiredTags": [],
+			"excludedTags": [],
+			"intGridValues": [{ "value": 1, "identifier": null, "color": "#000000" }],
+			"autoTilesetDefUid": null,
+			"autoRuleGroups": [],
+			"autoSourceLayerDefUid": null,
+			"tilesetDefUid": null,
+			"tilePivotX": 0,
+			"tilePivotY": 0
+		},
+		{
+			"__type": "Tiles",
+			"identifier": "Collisions",
+			"type": "Tiles",
+			"uid": 1,
+			"gridSize": 32,
+			"displayOpacity": 1,
+			"pxOffsetX": 0,
+			"pxOffsetY": 0,
+			"requiredTags": [],
+			"excludedTags": [],
+			"intGridValues": [{ "value": 1, "identifier": null, "color": "#000000" }],
+			"autoTilesetDefUid": null,
+			"autoRuleGroups": [],
+			"autoSourceLayerDefUid": null,
+			"tilesetDefUid": 2,
+			"tilePivotX": 0,
+			"tilePivotY": 0
+		}
+	], "entities": [
+		{
+			"identifier": "Player",
+			"uid": 4,
+			"tags": [],
+			"width": 32,
+			"height": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"keepAspectRatio": false,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#94D9B3",
+			"renderMode": "Ellipse",
+			"showName": true,
+			"tilesetId": null,
+			"tileId": null,
+			"tileRenderMode": "Stretch",
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "DiscardOldOnes",
+			"pivotX": 0.5,
+			"pivotY": 1,
+			"fieldDefs": []
+		}
+	], "tilesets": [
+		{
+			"identifier": "Collision",
+			"uid": 2,
+			"relPath": "CollisionTile.png",
+			"pxWid": 96,
+			"pxHei": 32,
+			"tileGridSize": 32,
+			"spacing": 0,
+			"padding": 0,
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "000", "averageColors": "693339333933" }
+		}
+	], "enums": [], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
 			"identifier": "Test",
@@ -114,6 +123,7 @@
 			"bgPivotY": 0.5,
 			"__bgPos": null,
 			"externalRelPath": null,
+			"fieldInstances": [],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",
@@ -130,11 +140,26 @@
 					"layerDefUid": 3,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
+					"visible": true,
 					"intGrid": [],
+					"intGridCsv": [],
 					"autoLayerTiles": [],
 					"seed": 7254264,
+					"overrideTilesetUid": null,
 					"gridTiles": [],
-					"entityInstances": [{ "__identifier": "Player", "__grid": [5,6], "__pivot": [0.5,1], "__tile": null, "defUid": 4, "px": [176,224], "fieldInstances": [] }]
+					"entityInstances": [
+						{
+							"__identifier": "Player",
+							"__grid": [5,6],
+							"__pivot": [0.5,1],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 4,
+							"px": [176,224],
+							"fieldInstances": []
+						}
+					]
 				},
 				{
 					"__identifier": "Collisions",
@@ -151,9 +176,12 @@
 					"layerDefUid": 1,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
+					"visible": true,
 					"intGrid": [],
+					"intGridCsv": [],
 					"autoLayerTiles": [],
 					"seed": 5751287,
+					"overrideTilesetUid": null,
 					"gridTiles": [
 						{ "px": [0,32], "src": [0,0], "f": 0, "t": 0, "d": [24] },
 						{ "px": [32,32], "src": [0,0], "f": 0, "t": 0, "d": [25] },

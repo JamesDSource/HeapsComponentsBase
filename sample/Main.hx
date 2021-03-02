@@ -14,7 +14,7 @@ class Main extends hxd.App {
         var levels = new Levels();
 
         // * Project init
-        proj = new Project();
+        proj = new Project(this);
         setScene(proj.scene);
 
         // * Pathfinding grid

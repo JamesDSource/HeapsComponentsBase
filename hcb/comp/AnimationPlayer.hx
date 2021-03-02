@@ -17,21 +17,8 @@ enum Origin {
     bottomRight;
 }
 
-class AnimationPlayer implements Component {
-    public var parentEntity: Entity = null;
-    public var updateable: Bool = true;
-    public var name: String;
-    public var pauseMode = hcb.Project.PauseMode.idle;
-
-    public function init() {
-        
-    }
-
-    public function onDestroy() {
-        
-    }
-
-    public function update(delta: Float) { 
+class AnimationPlayer extends Component {
+    public override function update(delta: Float) { 
         var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
         
         if(transform != null) {
@@ -55,7 +42,7 @@ class AnimationPlayer implements Component {
     private var layer: Int;
 
     public function new(name: String, layer: Int) {
-        this.name = name;
+        super(name);
         this.layer = layer;
     }
 

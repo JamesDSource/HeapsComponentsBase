@@ -5,4 +5,3 @@ Uses a components system.
 Features
   - Collisions
   - Pathfinding
-  - Camera System

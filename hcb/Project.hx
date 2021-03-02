@@ -31,10 +31,12 @@ class Project {
     public var audioManager: Manager;
     public var listenerFollow: h2d.Object;
 
-    public function new() {
+    public var calledFrom: Dynamic;
+
+    public function new(calledFrom: Dynamic) {
         resetScene();
-        renderables = new h2d.Layers(scene);
         audioManager = Manager.get();
+        this.calledFrom = calledFrom;
     }
 
     public function addEntity(components: Array<hcb.comp.Component>): Entity {
@@ -76,10 +78,16 @@ class Project {
         camera = scene.camera;
         camera.anchorX = 0.5;
         camera.anchorY = 0.5;
+        cameraFollow = null;
 
         for(entity in entities) {
             entity.destroy();
         }
+
+        navigationGrids = [];
+        renderables = new h2d.Layers(scene);
+        ldtkEntityPrefabs = [];
+        listenerFollow = null;
     }
     
     public function ldtkAddEntities(entities: Array<ldtk.Entity>, ?offset: Vector2): Array<Entity> {

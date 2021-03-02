@@ -318,7 +318,10 @@ class PathfindingGrid {
     private function retracePath(startNode: Vector2, endNode: Vector2): Array<Vector2> {
         var path: Array<Vector2> = [];
 
+        var dist = Math.ceil(startNode.distanceTo(endNode));
+
         var currentNode: Vector2 = endNode;
+        var iteration: Int = 0;
         while(currentNode != startNode) {
             path.push(currentNode);
             var node = get(currentNode);
@@ -327,6 +330,13 @@ class PathfindingGrid {
             }
             else {
                 break;
+            }
+
+            if(iteration > dist*2) {
+                break;
+            }
+            else {
+                iteration++;
             }
         }
         path.reverse();

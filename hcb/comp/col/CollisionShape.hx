@@ -4,13 +4,7 @@ import hcb.Project.PauseMode;
 import hxsl.Types.Vec;
 import hcb.math.Vector2;
 
-class CollisionShape implements Component {
-    public var parentEntity: Entity = null;
-    public var updateable: Bool = false;
-    public var name: String;
-    public var pauseMode = PauseMode.idle;
-    public function update(delta: Float): Void {}
-
+class CollisionShape extends Component {
     public var active: Bool = true;
     private var radius: Float = 0;
 
@@ -23,17 +17,18 @@ class CollisionShape implements Component {
     public var collisionWorld: CollisionWorld;
 
     public function new(name: String) {
-        this.name = name;
+        super(name);
+        updateable = true;
     }
 
-    public function init() {
+    public override function init() {
         if(parentEntity.project != null) {
             collisionWorld = parentEntity.project.collisionWorld;
             collisionWorld.shapes.push(this);
         }
     }
 
-    public function onDestroy() {
+    public override function onDestroy() {
         if(collisionWorld != null) {
             collisionWorld.shapes.remove(this);
         }

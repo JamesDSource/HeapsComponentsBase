@@ -9,23 +9,17 @@ import hcb.Entity;
 import hcb.comp.Component;
 import hcb.math.Vector2;
 
-class PlayerController implements Component {
-    public var parentEntity: Entity = null;
-    public var updateable: Bool = true;
-    public var name: String;
-    public var pauseMode = hcb.Project.PauseMode.idle;
+class PlayerController extends Component {
 
     public var speed: Float = 4;
     public var pathIndex: Int = 0;
     public var path: Array<Vector2> = [];
 
     public function new(name: String) {
-        this.name = name;
+        super(name);
     }
 
-    public function init() {}
-
-    public function update(delta: Float) {
+    public override function update(delta: Float) {
         var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
         var movementVector: Vector2 = new Vector2();
         
@@ -57,9 +51,5 @@ class PlayerController implements Component {
         }
 
         transform.position.addMutate(movementVector);
-    }
-
-    public function onDestroy() {
-
     }
 }
