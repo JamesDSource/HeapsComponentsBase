@@ -17,6 +17,7 @@ class Entity {
             updatableComponents.push(component);
         }
         component.parentEntity = this;
+        component.project = project;
         
         if(callInit) {
             component.init();

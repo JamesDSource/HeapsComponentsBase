@@ -5,6 +5,8 @@ import hcb.math.Vector2;
 class CollisionWorld {
     public var shapes: Array<CollisionShape> = [];
 
+    public function new() {}
+
     public function isCollisionAt(colShape: CollisionShape, position: Vector2) {
         var returnResult: Bool = false;
         
@@ -117,6 +119,4 @@ class CollisionWorld {
 
         return pushValue;
     }
-
-    public function new() {}
 }

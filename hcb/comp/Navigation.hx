@@ -8,7 +8,7 @@ class Navigation extends Component {
         updateable = false;
     }
 
-    public function getPathFrom(grid: PathfindingGrid, startPosition: Vector2, endPosition: Vector2, addEnd: Bool = true): Array<Vector2> {
+    public function getPathFrom(grid: hcb.pathfinding.PathfindingGrid, startPosition: Vector2, endPosition: Vector2, addEnd: Bool = true): Array<Vector2> {
         var path: Array<Vector2> = grid.getPath(grid.getClosestPoint(startPosition), grid.getClosestPoint(endPosition));
         if(path.length > 0 && !path[path.length - 1].equals(endPosition) && addEnd) {
             path[path.length - 1] = endPosition;
@@ -16,7 +16,7 @@ class Navigation extends Component {
         return path;
     }
 
-    public function getPathTo(grid: PathfindingGrid, targetPosition: Vector2): Array<Vector2> {
+    public function getPathTo(grid: hcb.pathfinding.PathfindingGrid, targetPosition: Vector2): Array<Vector2> {
         if(parentEntity != null) {
             var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
             if(transform != null) {

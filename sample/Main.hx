@@ -1,5 +1,5 @@
 import hcb.math.Vector2;
-import hcb.PathfindingGrid;
+import hcb.pathfinding.PathfindingGrid;
 import hcb.Project;
 import hcb.comp.*;
 

@@ -24,7 +24,7 @@ class Project {
     public var cameraFollow: h2d.Object = null;
 
     public var collisionWorld: CollisionWorld = new CollisionWorld();
-    public var navigationGrids: Map<String, PathfindingGrid> = [];
+    public var navigationGrids: Map<String, hcb.pathfinding.PathfindingGrid> = [];
 
     public var ldtkEntityPrefabs: Map<String, Void->Array<Component>> = [];
 

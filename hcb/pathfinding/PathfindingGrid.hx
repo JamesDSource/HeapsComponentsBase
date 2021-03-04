@@ -1,4 +1,4 @@
-package hcb;
+package hcb.pathfinding;
 
 import hcb.comp.col.Collisions;
 import hcb.comp.col.CollisionPolygon;
@@ -10,7 +10,10 @@ typedef GridNode = {
     isObsticle: Bool,
     gCost: Int,
     hCost: Int,
-    parent: Vector2
+    parent: GridNode,
+    heapIndex: Int,
+    xPos: Int,
+    yPos: Int
 }
 
 class PathfindingGrid {
@@ -37,7 +40,7 @@ class PathfindingGrid {
         for(i in 0...cast gridSize.x) {
             grid.push(new Array<GridNode>());
             for(j in 0...cast gridSize.y) {
-                grid[i].push({movementCostMult: 1.0, isObsticle: false, gCost: 0, hCost: 0, parent: null});
+                grid[i].push({movementCostMult: 1.0, isObsticle: false, gCost: 0, hCost: 0, parent: null, heapIndex: -1, xPos: i, yPos: j});
             }
         }
 
@@ -66,14 +69,15 @@ class PathfindingGrid {
 
     // & Gets all the nodes connecting to the index. The diagCheck argument determins if the function
     // & Will check if diagnal connections can be made
-    function getConnecting(index: Vector2, diagCheck: Bool = true): Array<Vector2> {
+    function getConnecting(index: GridNode, diagCheck: Bool = true): Array<GridNode> {
         var possibleSpaces: Array<Vector2> = [];
+        var pos = new Vector2(index.xPos, index.yPos);
         if(diagCheck) {
             possibleSpaces = [
-                new Vector2(index.x + 1, index.y),  // * Right
-                new Vector2(index.x, index.y + 1),  // * Down
-                new Vector2(index.x - 1, index.y),  // * Left
-                new Vector2(index.x, index.y - 1),  // * Up
+                new Vector2(pos.x + 1, pos.y),  // * Right
+                new Vector2(pos.x, pos.y + 1),  // * Down
+                new Vector2(pos.x - 1, pos.y),  // * Left
+                new Vector2(pos.x, pos.y - 1),  // * Up
             ];
 
             var rObs = inRange(possibleSpaces[0]) ? get(possibleSpaces[0]).isObsticle : false,
@@ -82,35 +86,35 @@ class PathfindingGrid {
                 uObs = inRange(possibleSpaces[3]) ? get(possibleSpaces[3]).isObsticle : false;
 
             if(!rObs && !dObs) {  // * Right Down
-                possibleSpaces.push(new Vector2(index.x + 1, index.y + 1));
+                possibleSpaces.push(new Vector2(pos.x + 1, pos.y + 1));
             }
             if(!lObs && !dObs) {  // * Left Down
-                possibleSpaces.push(new Vector2(index.x - 1, index.y + 1));
+                possibleSpaces.push(new Vector2(pos.x - 1, pos.y + 1));
             }
             if(!rObs && !uObs) {  // * Right up
-                possibleSpaces.push(new Vector2(index.x + 1, index.y - 1));
+                possibleSpaces.push(new Vector2(pos.x + 1, pos.y - 1));
             }
             if(!lObs && !uObs) {  // * Left up
-                possibleSpaces.push(new Vector2(index.x - 1, index.y - 1));
+                possibleSpaces.push(new Vector2(pos.x - 1, pos.y - 1));
             }
         }
         else {
             possibleSpaces = [
-                new Vector2(index.x + 1, index.y),      // * Right    
-                new Vector2(index.x, index.y + 1),      // * Down
-                new Vector2(index.x - 1, index.y),      // * Left
-                new Vector2(index.x, index.y - 1),      // * Up
-                new Vector2(index.x + 1, index.y + 1),  // * Right down
-                new Vector2(index.x - 1, index.y + 1),  // * Left down
-                new Vector2(index.x + 1, index.y - 1),  // * Right up
-                new Vector2(index.x - 1, index.y - 1)   // * Left up
+                new Vector2(pos.x + 1,  pos.y),      // * Right    
+                new Vector2(pos.x,      pos.y + 1),      // * Down
+                new Vector2(pos.x - 1,  pos.y),      // * Left
+                new Vector2(pos.x,      pos.y - 1),      // * Up
+                new Vector2(pos.x + 1,  pos.y + 1),  // * Right down
+                new Vector2(pos.x - 1,  pos.y + 1),  // * Left down
+                new Vector2(pos.x + 1,  pos.y - 1),  // * Right up
+                new Vector2(pos.x - 1,  pos.y - 1)   // * Left up
             ];
         }
 
-        var returnArray: Array<Vector2> = [];
+        var returnArray: Array<GridNode> = [];
         for(possibleSpace in possibleSpaces) {
             if(inRange(possibleSpace)) {
-                returnArray.push(possibleSpace);
+                returnArray.push(get(possibleSpace));
             }
         }
 
@@ -118,10 +122,9 @@ class PathfindingGrid {
     }
 
     // & Gets the distance between two node positions with an abstract unit (not in pixels) 
-    private function getDistance(positions1: Vector2, positions2: Vector2): Int {
-        var distX: Int = cast Math.abs(positions1.x - positions2.x),
-            distY: Int = cast Math.abs(positions1.y - positions2.y);
-        
+    private function getDistance(node1: GridNode, node2: GridNode): Int {
+        var distX: Int = cast Math.abs(node1.xPos - node2.xPos),
+            distY: Int = cast Math.abs(node1.yPos - node2.yPos);
         
         if(distX < distY) {
             return cast 14*distX + 10*(distY - distX);
@@ -153,19 +156,19 @@ class PathfindingGrid {
             return coords;
         }
         else {
-            var opened: Array<Vector2> = [coords];
-            var closed: Array<Vector2> = [];
+            var opened: Array<GridNode> = [get(coords)];
+            var closed: Array<GridNode> = [];
 
             while(opened.length > 0) {
-                var newOpened: Array<Vector2> = [];
+                var newOpened: Array<GridNode> = [];
                 for(open in opened) {
                     var possibleSpaces = getConnecting(open, false);
                     for(possibleSpace in possibleSpaces) {
-                        if(!newOpened.contains(possibleSpace) && !closed.contains(possibleSpace) && grid[cast possibleSpace.x][cast possibleSpace.y].isObsticle) {
+                        if(!newOpened.contains(possibleSpace) && !closed.contains(possibleSpace) && possibleSpace.isObsticle) {
                             newOpened.push(possibleSpace);
                         }
-                        else if(!grid[cast possibleSpace.x][cast possibleSpace.y].isObsticle) {
-                            return possibleSpace;
+                        else if(!possibleSpace.isObsticle) {
+                            return new Vector2(possibleSpace.xPos, possibleSpace.yPos);
                         }
                     }
 
@@ -249,52 +252,34 @@ class PathfindingGrid {
             return [];
         }
 
-        var openSet: Array<Vector2> = [startCoord];
-        var closedSet: Array<Vector2> = [];
+        var openSet: hcb.pathfinding.NodeHeap = new hcb.pathfinding.NodeHeap();
+        var closedSet: Array<GridNode> = [];
+        openSet.add(get(startCoord));
         
         while(openSet.length > 0) {
             // * Find the position with the lowest F-cost
-            var currentNodePos: Vector2 = openSet[0];
-            for(i in 1...openSet.length) {
-                var openNodePos: Vector2 = openSet[0],
-                    openNode: GridNode = get(openNodePos),
-                    currentNode: GridNode = get(currentNodePos);
-
-                if(
-                    openNode.gCost + openNode.hCost < currentNode.gCost + currentNode.hCost ||
-                    (
-                        openNode.gCost + openNode.hCost < currentNode.gCost + currentNode.hCost &&
-                        openNode.hCost < currentNode.hCost
-                    )
-                ) {
-                    currentNodePos = openNodePos;
-                }
-            }
-
             // * Add lowest F-cost node to closed set, and remove
             // * from open set
-            closedSet.push(currentNodePos);
-            openSet.remove(currentNodePos);
+            var currentNode: GridNode = openSet.removeFirst();
+            closedSet.push(currentNode);
 
-            if(currentNodePos.equals(endCoord)) {
+            if(currentNode == get(endCoord)) {
                 return retracePath(startCoord, endCoord);
             }
 
-            for(nodePos in getConnecting(currentNodePos)) {
-                var node: GridNode = get(nodePos);
-
-                if(node.isObsticle || nodePos.equivalentInArray(closedSet)) {
+            for(node in getConnecting(currentNode)) {
+                if(node.isObsticle || closedSet.contains(node)) {
                     continue;
                 }
 
-                var newMovementCost: Int = get(currentNodePos).gCost + getDistance(currentNodePos, nodePos);
-                if(newMovementCost < node.gCost || !nodePos.equivalentInArray(openSet)) {
+                var newMovementCost: Int = currentNode.gCost + getDistance(currentNode, node);
+                if(newMovementCost < node.gCost || !openSet.contains(node)) {
                     node.gCost = newMovementCost;
-                    node.hCost = getDistance(nodePos, endCoord);
-                    node.parent = currentNodePos;
+                    node.hCost = getDistance(node, get(endCoord));
+                    node.parent = currentNode;
 
-                    if(!nodePos.equivalentInArray(openSet)) {
-                        openSet.push(nodePos);
+                    if(!openSet.contains(node)) {
+                        openSet.add(node);
                     }
                 }
             }
@@ -315,18 +300,20 @@ class PathfindingGrid {
     }
 
     // & For the A* to trace back the nodes and create a path
-    private function retracePath(startNode: Vector2, endNode: Vector2): Array<Vector2> {
+    private function retracePath(startNodePos: Vector2, endNodePos: Vector2): Array<Vector2> {
         var path: Array<Vector2> = [];
 
-        var dist = Math.ceil(startNode.distanceTo(endNode));
+        var startNode = get(startNodePos),
+            endNode = get(endNodePos);
 
-        var currentNode: Vector2 = endNode;
+        var dist = Math.ceil(startNodePos.distanceTo(endNodePos));
+
+        var currentNode: GridNode = endNode;
         var iteration: Int = 0;
         while(currentNode != startNode) {
-            path.push(currentNode);
-            var node = get(currentNode);
-            if(node.parent != null) {
-                currentNode = node.parent;
+            path.push(new Vector2(currentNode.xPos, currentNode.yPos));
+            if(currentNode.parent != null) {
+                currentNode = currentNode.parent;
             }
             else {
                 break;

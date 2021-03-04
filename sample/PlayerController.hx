@@ -45,8 +45,15 @@ class PlayerController extends Component {
                 pathIndex++;
             }
             else {
-                movementVector = targetPoint.subtract(transform.position).normalized();
-                movementVector.multFMutate(speed*delta);  
+                movementVector = targetPoint.subtract(transform.position);
+                var len = movementVector.getLength();
+                movementVector = movementVector.normalized();
+                if(len < speed*delta) {
+                    movementVector.multFMutate(len);
+                }
+                else {
+                    movementVector.multFMutate(speed*delta);
+                }
             } 
         }
 

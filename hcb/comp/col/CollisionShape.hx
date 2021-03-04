@@ -22,8 +22,8 @@ class CollisionShape extends Component {
     }
 
     public override function init() {
-        if(parentEntity.project != null) {
-            collisionWorld = parentEntity.project.collisionWorld;
+        if(project != null) {
+            collisionWorld = project.collisionWorld;
             collisionWorld.shapes.push(this);
         }
     }
