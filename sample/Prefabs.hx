@@ -25,7 +25,6 @@ class Prefabs {
             ap,
             playerCollisionShape,
             new Navigation("Nav"),
-            new Camera("Cam", true),
             new AudioListener("Listener", true)
         ];
 

@@ -77,7 +77,7 @@ class PathfindingGrid {
                 new Vector2(pos.x + 1, pos.y),  // * Right
                 new Vector2(pos.x, pos.y + 1),  // * Down
                 new Vector2(pos.x - 1, pos.y),  // * Left
-                new Vector2(pos.x, pos.y - 1),  // * Up
+                new Vector2(pos.x, pos.y - 1)  // * Up
             ];
 
             var rObs = inRange(possibleSpaces[0]) ? get(possibleSpaces[0]).isObsticle : false,

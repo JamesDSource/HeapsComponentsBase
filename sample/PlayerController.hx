@@ -3,7 +3,6 @@ import h2d.Bitmap;
 import hcb.comp.Navigation;
 import hxd.Key;
 import haxe.io.Input;
-import hcb.comp.Camera;
 import hcb.comp.Transform2D;
 import hcb.Entity;
 import hcb.comp.Component;
@@ -31,12 +30,6 @@ class PlayerController extends Component {
             path = navi.getPathTo(parentEntity.project.navigationGrids["Player"], new Vector2(mx, my));
             pathIndex = 0;
             var renders = parentEntity.project.renderables;
-            for(point in path) {
-                var bmp = new h2d.Bitmap(Tile.fromColor(0x00FF00, 2, 2));
-                bmp.x = point.x;
-                bmp.y = point.y;
-                renders.add(bmp, 3);
-            }
         }
 
         if(path.length > 0 && pathIndex < path.length) {

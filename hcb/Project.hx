@@ -20,9 +20,6 @@ class Project {
     public var scene: h2d.Scene = null;
     public var renderables: h2d.Layers;
 
-    public var camera: h2d.Camera;
-    public var cameraFollow: h2d.Object = null;
-
     public var collisionWorld: CollisionWorld = new CollisionWorld();
     public var navigationGrids: Map<String, hcb.pathfinding.PathfindingGrid> = [];
 
@@ -58,11 +55,6 @@ class Project {
             entity.update(deltaMult);
         }
         
-        if(cameraFollow != null) {
-            camera.x = cameraFollow.x;
-            camera.y = cameraFollow.y;
-        }
-        
         if(listenerFollow != null) {
             audioManager.listener.position.x = listenerFollow.x;
             audioManager.listener.position.y = listenerFollow.y;
@@ -75,10 +67,6 @@ class Project {
         }
         
         scene = new h2d.Scene();
-        camera = scene.camera;
-        camera.anchorX = 0.5;
-        camera.anchorY = 0.5;
-        cameraFollow = null;
 
         for(entity in entities) {
             entity.destroy();
