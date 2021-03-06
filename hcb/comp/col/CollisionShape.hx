@@ -6,7 +6,7 @@ import hcb.math.Vector2;
 
 class CollisionShape extends Component {
     public var active: Bool = true;
-    private var radius: Float = 0;
+    public var radius(default, null): Float = 0;
 
     public var tags: Array<String> = [];
     public var ignoreTags: Array<String> = [];
@@ -53,10 +53,6 @@ class CollisionShape extends Component {
         }
     }
 
-    public function getRadius(): Float {
-        return radius;
-    }
-
     public function canInteractWith(shape: CollisionShape): Bool {
         // * Checking for tags
         for(tag in shape.tags) {
@@ -74,7 +70,7 @@ class CollisionShape extends Component {
         }
 
         // * Checking if there is a radius intersection
-        if(!Collisions.radiusIntersection(absPos1, absPos2, getRadius(), shape.getRadius())) {
+        if(!Collisions.radiusIntersection(absPos1, absPos2, radius, shape.radius)) {
             return false;
         }
 

@@ -2,7 +2,6 @@ package hcb;
 
 import hxd.snd.Manager;
 import hcb.comp.col.*;
-import ldtk.Layer_Entities;
 import hcb.math.Vector2;
 import hcb.comp.*;
 
@@ -23,10 +22,9 @@ class Project {
     public var collisionWorld: CollisionWorld = new CollisionWorld();
     public var navigationGrids: Map<String, hcb.pathfinding.PathfindingGrid> = [];
 
-    public var ldtkEntityPrefabs: Map<String, Void->Array<Component>> = [];
+    public var ldtkEntityPrefabs: Map<String, ldtk.Entity->Array<Component>> = [];
 
     public var audioManager: Manager;
-    public var listenerFollow: h2d.Object;
 
     public var calledFrom: Dynamic;
 
@@ -54,11 +52,6 @@ class Project {
         for(entity in entities) {
             entity.update(deltaMult);
         }
-        
-        if(listenerFollow != null) {
-            audioManager.listener.position.x = listenerFollow.x;
-            audioManager.listener.position.y = listenerFollow.y;
-        }
     }
 
     public function resetScene() {
@@ -75,14 +68,13 @@ class Project {
         navigationGrids = [];
         renderables = new h2d.Layers(scene);
         ldtkEntityPrefabs = [];
-        listenerFollow = null;
     }
     
     public function ldtkAddEntities(entities: Array<ldtk.Entity>, ?offset: Vector2): Array<Entity> {
         var entitiesAdded: Array<Entity> = [];
         for(entity in entities) {
             if(ldtkEntityPrefabs.exists(entity.identifier)) {
-                var ent = addEntity(ldtkEntityPrefabs[entity.identifier]());
+                var ent = addEntity(ldtkEntityPrefabs[entity.identifier](entity));
                 var transform: Transform2D = cast ent.getSingleComponentOfType(Transform2D);
                 if(transform != null) {
                     transform.position.set(entity.pixelX, entity.pixelY);

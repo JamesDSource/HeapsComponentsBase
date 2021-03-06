@@ -22,6 +22,10 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
             // ^ circleWithCircle is already true
             return true;
         }
+        // * AABB with AABB
+        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionAABB)) {
+            return aabbWithAabb(cast(shape1, CollisionAABB), cast(shape2, CollisionAABB));
+        }
         // * Circle with ray
         else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionRay)) {
             return circleWithRay(cast(shape1, CollisionCircle), cast(shape2, CollisionRay)) != null;
@@ -60,7 +64,7 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
 
         var absPos1 = ray.getAbsPosition();
         var absPos2 = shape.getAbsPosition();
-        if(!radiusIntersection(absPos1, absPos2, ray.getRadius(), shape.getRadius())) {
+        if(!radiusIntersection(absPos1, absPos2, ray.radius, shape.radius)) {
             return null;
         }
 
@@ -130,10 +134,11 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         return true;
     }
 
+    // & Checks for a collision between a polygon and a circle
     public static function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
         var polyV = poly.getGlobalTransformedVerticies();
         var circleCenter = circle.getAbsPosition();
-        var circleRadius = circle.getRadius();
+        var circleRadius = circle.radius;
         var closestVertex: Vector2 = null;
 
         // * Checking if the center point in inside the polygon
@@ -199,6 +204,7 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         return true;
     }
 
+    // & Finds the intersection point between two rays
     public static function rayWithRay(ray1: CollisionRay, ray2: CollisionRay): Vector2 {
         return lineIntersection(
             ray1.getAbsPosition(), 
@@ -209,7 +215,8 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
             ray2.infinite
         );
     }
-
+    
+    // & Finds the intersection point between a polygon and a ray
     public static function polyWithRay(poly: CollisionPolygon, ray: CollisionRay): Vector2 {    
         var verticies: Array<Vector2> = poly.getGlobalTransformedVerticies();
         var closestIntersection: Vector2 = null;
@@ -232,10 +239,11 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         return closestIntersection;
     }
 
+    // & Finds the intersection point between a circle and a ray
     public static function circleWithRay(circle: CollisionCircle, ray: CollisionRay): Vector2 {
         // * Feilds
         var circlePos = circle.getAbsPosition(),
-            radius = circle.getRadius(),
+            radius = circle.radius,
             rayPos = ray.getAbsPosition(),
             castPoint = ray.getGlobalTransformedCastPoint(),
             
@@ -286,6 +294,17 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
 
     }
 
+    public static function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): Bool {
+        var bounds1 = aabb1.getBounds();
+        var bounds2 = aabb2.getBounds();
+
+        return  bounds2.bottomRight.x > bounds1.topLeft.x &&
+                bounds2.bottomRight.y > bounds1.topLeft.y &&
+                bounds1.bottomRight.x > bounds2.topLeft.x &&
+                bounds1.bottomRight.y > bounds2.topLeft.y;
+    }
+
+    // & Checks to two radiuses intersect
     public static function radiusIntersection(pos1: Vector2, pos2: Vector2, radius1: Float, radius2: Float): Bool {
         var distance = pos1.subtract(pos2).getLength();
         return distance < radius1 + radius2;
@@ -322,6 +341,7 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
         }
     }
 
+    // & Checks if a coordinite is inside a triangle
     public static function pointInTriangle(a: Vector2, b: Vector2, c: Vector2, point: Vector2): Bool {
         var w1: Float = a.x*(c.y - a.y) + (point.y - a.y)*(c.x - a.x) - point.x*(c.y - a.y);
         w1 /= (b.y - a.y)*(c.x - a.x) - (b.x - a.x)*(c.y - a.y);
@@ -334,6 +354,7 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
                 (w1 + w2) <= 1;
     }
 
+    // & Checks if a coordinite is inside a polygon
     public static function pointInPolygon(verticies: Array<Vector2>, point: Vector2): Bool {
         if(verticies.length >= 3) {
             var p1: Vector2 = verticies[0];
