@@ -28,7 +28,7 @@ class CollisionRay extends CollisionShape {
     }
 
     public function setCastPoint(point: Vector2) {
-        castPoint = point;
+        castPoint = point.clone();
         calculateTransformations();
     }
 

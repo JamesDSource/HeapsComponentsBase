@@ -2,7 +2,7 @@ package hcb.comp.col;
 
 import hcb.math.Vector2;
 
-class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
+class Collisions { // TODO: AABB/poly
     public static function test(shape1: CollisionShape, shape2: CollisionShape): Bool {
         if(!shape1.canInteractWith(shape2)) {
             return false;
@@ -357,6 +357,20 @@ class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
                  bounds2.bottomRight.x > bounds1.topLeft.x &&
                  bounds1.topLeft.y < bounds2.bottomRight.y &&
                  bounds1.bottomRight.y > bounds2.topLeft.y );
+    }
+
+    // & Checks for a collision between an AABB and a circle
+    public static function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): Bool {
+        var bounds = aabb.getBounds();
+        var aabbMidPoint = bounds.topLeft.add(new Vector2((aabb.transformedWidth - 1)/2, (aabb.transformedHeight - 1)/2));
+
+        var circlePos = circle.getAbsPosition();
+
+        var differenceVector = circlePos.subtract(aabbMidPoint);
+        differenceVector.x = hxd.Math.clamp(differenceVector.x, bounds.topLeft.x, bounds.bottomRight.x);
+        differenceVector.y = hxd.Math.clamp(differenceVector.y, bounds.topLeft.y, bounds.bottomRight.y);
+
+        return differenceVector.distanceTo(circlePos) < circle.radius;
     }
 
     // & Checks if two radiuses intersect
