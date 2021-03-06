@@ -1,15 +1,19 @@
+import h2d.Graphics;
+import h2d.Tile;
+import h2d.Bitmap;
+import hcb.Origin.OriginPoint;
 import hcb.math.Vector2;
 import hcb.pathfinding.PathfindingGrid;
 import hcb.Project;
 import hcb.comp.*;
+import hcb.comp.col.*;
 
 class Main extends hxd.App {
 
     private var proj: hcb.Project;
     private var player: Array<hcb.comp.Component> = [];
     private var grid: PathfindingGrid;
-
-
+    
     override function init() {
         var levels = new Levels();
 
@@ -28,7 +32,7 @@ class Main extends hxd.App {
         proj.renderables.add(rend, 0);
         proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"]);
         grid.addCollisionShapesTag(proj.collisionWorld, "Static");
-    }
+    }  
 
     override function update(delta: Float) {
         proj.update(delta);

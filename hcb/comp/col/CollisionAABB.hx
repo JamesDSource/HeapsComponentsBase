@@ -16,26 +16,33 @@ class CollisionAABB extends CollisionShape {
 
         this.width = width;
         this.height = height;
-        transformedWidth = width;
-        transformedHeight = height;
-
         this.origin = origin;
+
+        scale = new Vector2(1, 1);
+
+        updateTransformations();
     }
 
     public function setSize(width: Float, height: Float) {
         this.width = width;
         this.height = height;
+        updateTransformations();
     }
 
     public function setScale(xScale: Float, yScale: Float) {
         scale.x = xScale;
         scale.y = yScale;
-        transformedWidth = width * xScale;
-        transformedHeight = height * yScale;
+        updateTransformations();
+    }
+
+    public function updateTransformations() {
+        transformedWidth = width * scale.x;
+        transformedHeight = height * scale.y;
+        radius = Math.max(transformedWidth, transformedHeight);
     }
 
     public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
         var tl = getAbsPosition().add(Origin.getOriginOffset(origin, new Vector2(transformedWidth, transformedHeight)));
-        return {topLeft: tl, bottomRight: tl.add(new Vector2(transformedWidth, transformedHeight))};
+        return {topLeft: tl, bottomRight: tl.add(new Vector2(transformedWidth - 1, transformedHeight - 1))};
     }
 }

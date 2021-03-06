@@ -1,7 +1,7 @@
 package hcb.pathfinding;
 
+import hcb.comp.col.CollisionAABB;
 import hcb.comp.col.Collisions;
-import hcb.comp.col.CollisionPolygon;
 import hcb.comp.Transform2D;
 import hcb.math.Vector2;
 
@@ -23,7 +23,7 @@ class PathfindingGrid {
     
     public var grid: Array<Array<GridNode>> = [];
 
-    public var collisionShape: CollisionPolygon;
+    public var collisionShape: CollisionAABB;
     
     public function new(cellSize: Float, gridSize: Vector2, ?originPoint: Vector2) {
         this.cellSize = cellSize;
@@ -46,15 +46,7 @@ class PathfindingGrid {
 
 
         // * Collision box
-        collisionShape = new CollisionPolygon("Tester");
-        collisionShape.setVerticies(
-            [
-                new Vector2(0, 0),
-                new Vector2(0, cellSize - 1),
-                new Vector2(cellSize - 1, cellSize - 1),
-                new Vector2(cellSize - 1, 0)
-            ]
-        );
+        collisionShape = new CollisionAABB("Checker", cellSize, cellSize);
     }
 
     // & Gets a node from a vector
@@ -74,10 +66,10 @@ class PathfindingGrid {
         var pos = new Vector2(index.xPos, index.yPos);
         if(diagCheck) {
             possibleSpaces = [
-                new Vector2(pos.x + 1, pos.y),  // * Right
-                new Vector2(pos.x, pos.y + 1),  // * Down
-                new Vector2(pos.x - 1, pos.y),  // * Left
-                new Vector2(pos.x, pos.y - 1)  // * Up
+                new Vector2(pos.x + 1,  pos.y),     // * Right
+                new Vector2(pos.x,      pos.y + 1), // * Down
+                new Vector2(pos.x - 1,  pos.y),     // * Left
+                new Vector2(pos.x,      pos.y - 1)  // * Up
             ];
 
             var rObs = inRange(possibleSpaces[0]) ? get(possibleSpaces[0]).isObsticle : false,
@@ -101,9 +93,9 @@ class PathfindingGrid {
         else {
             possibleSpaces = [
                 new Vector2(pos.x + 1,  pos.y),      // * Right    
-                new Vector2(pos.x,      pos.y + 1),      // * Down
+                new Vector2(pos.x,      pos.y + 1),  // * Down
                 new Vector2(pos.x - 1,  pos.y),      // * Left
-                new Vector2(pos.x,      pos.y - 1),      // * Up
+                new Vector2(pos.x,      pos.y - 1),  // * Up
                 new Vector2(pos.x + 1,  pos.y + 1),  // * Right down
                 new Vector2(pos.x - 1,  pos.y + 1),  // * Left down
                 new Vector2(pos.x + 1,  pos.y - 1),  // * Right up
@@ -194,15 +186,19 @@ class PathfindingGrid {
     // & Adds collision shapes with certain tags as obsticles
     public function addCollisionShapesTag(collisionWorld: CollisionWorld, tag: String) {
         for(shape in collisionWorld.shapes) {
+
             if(shape.tags.contains(tag)) {
                 var bounds = shape.getBounds();
                 var tl = positionToCoord(bounds.topLeft),
                     br = positionToCoord(bounds.bottomRight);
+
                 for(i in cast(tl.x, Int)...cast br.x + 1) {
                     for(j in cast(tl.y, Int)...cast br.y + 1) {
                         var node = get(new Vector2(i, j));
+
                         if(!node.isObsticle) {
                             collisionShape.offset.set(i*cellSize, j*cellSize);
+
                             if(Collisions.test(collisionShape, shape)) {
                                 node.isObsticle = true;
                             }

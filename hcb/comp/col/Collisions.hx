@@ -2,7 +2,7 @@ package hcb.comp.col;
 
 import hcb.math.Vector2;
 
-class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circle collisions
+class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
     public static function test(shape1: CollisionShape, shape2: CollisionShape): Bool {
         if(!shape1.canInteractWith(shape2)) {
             return false;
@@ -294,17 +294,18 @@ class Collisions { // TODO: Add cirle/poly, circle/circle, ray/ray, and ray/circ
 
     }
 
+    // & Checks for a collision between to AABBs
     public static function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): Bool {
         var bounds1 = aabb1.getBounds();
         var bounds2 = aabb2.getBounds();
 
-        return  bounds2.bottomRight.x > bounds1.topLeft.x &&
-                bounds2.bottomRight.y > bounds1.topLeft.y &&
-                bounds1.bottomRight.x > bounds2.topLeft.x &&
-                bounds1.bottomRight.y > bounds2.topLeft.y;
+        return  (bounds1.topLeft.x < bounds2.bottomRight.x &&
+                 bounds2.bottomRight.x > bounds1.topLeft.x &&
+                 bounds1.topLeft.y < bounds2.bottomRight.y &&
+                 bounds1.bottomRight.y > bounds2.topLeft.y );
     }
 
-    // & Checks to two radiuses intersect
+    // & Checks if two radiuses intersect
     public static function radiusIntersection(pos1: Vector2, pos2: Vector2, radius1: Float, radius2: Float): Bool {
         var distance = pos1.subtract(pos2).getLength();
         return distance < radius1 + radius2;

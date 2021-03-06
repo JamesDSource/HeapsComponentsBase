@@ -1,5 +1,6 @@
 package hcb;
 
+import h2d.Graphics;
 import hxd.snd.Manager;
 import hcb.comp.col.*;
 import hcb.math.Vector2;
@@ -103,18 +104,9 @@ class Project {
                         newShape = customShapes[colTile[0].tileId]();
                     }
                     else {
-                        var verts: Array<Vector2> = [
-                            new Vector2(),
-                            new Vector2(tileSize - 1, 0),
-                            new Vector2(tileSize - 1, tileSize - 1),
-                            new Vector2(0, tileSize - 1)
-                        ];
-                        var staticColShape = new CollisionPolygon("Static");
-                        staticColShape.setVerticies(verts);
-                        
+                        var staticColShape = new CollisionAABB("Static", tileSize, tileSize);
                         staticColShape.offset = org;
                         newShape = staticColShape;
-                        
                     }
                     if(offset != null) {
                         newShape.offset.addMutate(offset);
