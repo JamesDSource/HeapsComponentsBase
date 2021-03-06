@@ -42,6 +42,14 @@ class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
         else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionPolygon)) {
             return polyWithRay(cast(shape2, CollisionPolygon), cast(shape1, CollisionRay)) != null;
         }
+        // * AABB with ray
+        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionRay)) {
+            return aabbwithRay(cast(shape1, CollisionAABB), cast(shape2, CollisionRay)) != null;
+        }
+        // * Ray with AABB
+        else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionAABB)) {
+            return aabbwithRay(cast(shape2, CollisionAABB), cast(shape1, CollisionRay)) != null;
+        }
         // * Poly with circle
         else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionCircle)) {
             return polyWithCircle(cast(shape1, CollisionPolygon), cast(shape2, CollisionCircle));
@@ -76,6 +84,9 @@ class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
         }
         else if(Std.isOfType(shape, CollisionCircle)) {
             return circleWithRay(cast(shape, CollisionCircle), ray);
+        }
+        else if(Std.isOfType(shape, CollisionAABB)) {
+            return aabbwithRay(cast(shape, CollisionAABB), ray);
         }
         else {
             return null;
@@ -294,6 +305,49 @@ class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
 
     }
 
+    // & Checks for a collision between an AABB and a ray
+    public static function aabbwithRay(aabb: CollisionAABB, ray: CollisionRay): Vector2 {
+        var rayPos = ray.getAbsPosition();
+        var boxBounds = aabb.getBounds();
+
+        // * Checking if the ray origin is inside the AABB
+        if(pointInAABB(rayPos, boxBounds.topLeft, boxBounds.bottomRight)) {
+            return rayPos;
+        }
+        
+        var intersections: Array<Vector2> = [];
+        var castPoint = ray.getGlobalTransformedCastPoint();
+
+        // * Get every vertex of the AABB to make lines with them
+        var verticies: Array<Vector2> = [
+            boxBounds.topLeft,
+            new Vector2(boxBounds.bottomRight.x, boxBounds.topLeft.y),
+            boxBounds.bottomRight,
+            new Vector2(boxBounds.topLeft.x, boxBounds.bottomRight.y)
+        ];
+        
+        // * Find all line intersection with the edges of the AABB
+        for(i in 0...verticies.length) {
+            var vertex = verticies[i];
+            var nextVertex = verticies[(i + 1)%verticies.length];
+
+            var intersection = lineIntersection(vertex, nextVertex, false, rayPos, castPoint, ray.infinite);
+            if(intersection != null) {
+                intersections.push(intersection);
+            }
+        }
+
+        // * Find the intersection with the closest distance to the ray origin
+        var closestIntersection: Vector2 = null;
+        for(intersection in intersections) {
+            if(closestIntersection == null || closestIntersection.distanceTo(rayPos) > intersection.distanceTo(rayPos)) {
+                closestIntersection = intersection;
+            }
+        }
+
+        return closestIntersection;
+    }
+
     // & Checks for a collision between to AABBs
     public static function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): Bool {
         var bounds1 = aabb1.getBounds();
@@ -340,6 +394,14 @@ class Collisions { // TODO: Add AABB/ray, AABB/poly, AABB/circle collisions
         else {
             return null;
         }
+    }
+
+    // & Checks if a coordinite is inside an AABB
+    public static function pointInAABB(point: Vector2, topLeft: Vector2, bottomRight: Vector2): Bool {
+        return  point.x <= bottomRight.x    &&
+                point.x >= topLeft.x        &&
+                point.y <= bottomRight.y    &&
+                point.y >= topLeft.y;
     }
 
     // & Checks if a coordinite is inside a triangle
