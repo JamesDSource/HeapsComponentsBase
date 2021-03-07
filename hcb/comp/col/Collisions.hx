@@ -50,6 +50,14 @@ class Collisions { // TODO: AABB/poly
         else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionAABB)) {
             return aabbwithRay(cast(shape2, CollisionAABB), cast(shape1, CollisionRay)) != null;
         }
+        // * AABB with poly
+        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionPolygon)) {
+            return aabbWithPoly(cast(shape1, CollisionAABB), cast(shape2, CollisionPolygon));
+        }
+        // * Poly with AABB
+        else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionAABB)) {
+            return aabbWithPoly(cast(shape2, CollisionAABB), cast(shape1, CollisionPolygon));
+        }
         // * Poly with circle
         else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionCircle)) {
             return polyWithCircle(cast(shape1, CollisionPolygon), cast(shape2, CollisionCircle));
