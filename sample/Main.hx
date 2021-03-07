@@ -13,6 +13,12 @@ class Main extends hxd.App {
     private var proj: hcb.Project;
     private var player: Array<hcb.comp.Component> = [];
     private var grid: PathfindingGrid;
+
+    var bbox: CollisionAABB;
+    var bboxG: Graphics;
+
+    public var poly: CollisionPolygon;
+    public var polyG: Graphics;
     
     override function init() {
         var levels = new Levels();

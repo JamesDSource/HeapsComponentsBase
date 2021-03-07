@@ -1,0 +1,7 @@
+[0m2021.03.06 21:43:04 INFO  Started: Metals version 0.10.0 in workspace 'L:\HaxeProjects\HeapsComponentsBase' for client vscode 1.54.1.[0m
+[0m2021.03.06 21:43:05 INFO  time: initialize in 0.44s[0m
+[0m2021.03.06 21:43:05 WARN  Build server is not auto-connectable.[0m
+[0m2021.03.06 21:43:05 WARN  no build tool detected in workspace 'L:\HaxeProjects\HeapsComponentsBase'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
+Mar 07, 2021 12:57:40 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTraceNotification
+[0m2021.03.07 00:57:52 INFO  shutting down Metals[0m

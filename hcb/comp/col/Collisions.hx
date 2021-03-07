@@ -301,8 +301,6 @@ class Collisions { // TODO: AABB/poly
         else {
             return null;
         }
-        
-
     }
 
     // & Checks for a collision between an AABB and a ray
@@ -357,6 +355,66 @@ class Collisions { // TODO: AABB/poly
                  bounds2.bottomRight.x > bounds1.topLeft.x &&
                  bounds1.topLeft.y < bounds2.bottomRight.y &&
                  bounds1.bottomRight.y > bounds2.topLeft.y );
+    }
+
+    // & Checks for a collision between an AABB and a polygon
+    public static function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): Bool {
+        // * Runs the code twice, switching between checking the poly to the AABB
+        var boxBounds = aabb.getBounds();
+        for(i in 0...2) {
+            var poly1V: Array<Vector2> = [];
+            var poly2V: Array<Vector2> = [];
+            if(i == 0) {
+                poly1V = poly.getGlobalTransformedVerticies();
+                poly2V = [
+                    boxBounds.topLeft,
+                    new Vector2(boxBounds.bottomRight.x, boxBounds.topLeft.y),
+                    boxBounds.bottomRight,
+                    new Vector2(boxBounds.topLeft.x, boxBounds.bottomRight.y)
+                ];
+            }
+            else {
+                poly2V = [
+                    boxBounds.topLeft,
+                    new Vector2(boxBounds.bottomRight.x, boxBounds.topLeft.y),
+                    boxBounds.bottomRight,
+                    new Vector2(boxBounds.topLeft.x, boxBounds.bottomRight.y)
+                ];
+                poly2V = poly.getGlobalTransformedVerticies();
+            }
+
+            
+            for(j in 0...poly1V.length) {
+                var vert: Vector2 = poly1V[j];
+                var nextVert: Vector2 = poly1V[(j + 1)%poly1V.length];
+                var axisProj: Vector2 = new Vector2(-(vert.y - nextVert.y), vert.x - nextVert.x);
+
+                // * Projecting each point from both polygons onto
+                // * the axis, and seeing if they match up
+                var minR1 = Math.POSITIVE_INFINITY;
+                var maxR1 = Math.NEGATIVE_INFINITY;
+                for(vertex in poly1V) {
+                    var dot: Float = vertex.getDotProduct(axisProj);
+                    minR1 = Math.min(minR1, dot);
+                    maxR1 = Math.max(maxR1, dot);
+                } 
+
+                var minR2 = Math.POSITIVE_INFINITY;
+                var maxR2 = Math.POSITIVE_INFINITY;
+                for(vertex in poly2V) {
+                    var dot: Float = vertex.getDotProduct(axisProj);
+                    minR2 = Math.min(minR2, dot);
+                    maxR2 = Math.max(maxR2, dot);
+                }
+                
+                // * Checking if the shapes overlap
+                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                    return false;
+                }
+            }
+
+        }
+        return true;
     }
 
     // & Checks for a collision between an AABB and a circle
