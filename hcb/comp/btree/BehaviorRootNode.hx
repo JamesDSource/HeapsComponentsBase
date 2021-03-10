@@ -1,9 +1,9 @@
 package hcb.comp.btree;
 
-import hcb.comp.btree.BehaviorTreeNode.BehaviorTreeNodeResult;
+import hcb.comp.btree.BehaviorNode.BehaviorNodeResult;
 
-class BehaviorTreeRootNode extends BehaviorTreeNode {
-    public override function update(): BehaviorTreeNodeResult {
+class BehaviorRootNode extends BehaviorNode {
+    public override function update(): BehaviorNodeResult {
         // * Just returns the result of the first child. All others are ignored
         if(children.length > 0) {
             if(children.length > 1) {
@@ -11,6 +11,6 @@ class BehaviorTreeRootNode extends BehaviorTreeNode {
             }
             return children[0].update();
         }
-        return BehaviorTreeNodeResult.Success;
+        return BehaviorNodeResult.Success;
     }
 }
