@@ -11,10 +11,14 @@ class Component {
     public var updateable(default, set): Bool = true;
     public function set_updateable(updateable: Bool): Bool {
         if(parentEntity != null && this.updateable != updateable) {
+            var hasAsUpdateable: Bool = parentEntity.updatableComponents.contains(this);
+
             if(updateable) {
-                parentEntity.updatableComponents.push(this);
+                if(!hasAsUpdateable) {
+                    parentEntity.updatableComponents.push(this);
+                }
             }
-            else {
+            else if(hasAsUpdateable) {
                 parentEntity.updatableComponents.remove(this);
             }
         }
