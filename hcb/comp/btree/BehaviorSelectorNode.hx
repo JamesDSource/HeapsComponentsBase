@@ -5,12 +5,12 @@ import hcb.comp.btree.BehaviorNode.BehaviorNodeResult;
 class BehaviorTreeSelectorNode  extends BehaviorNode {
     private var childIndex: Int = 0;
     
-    public override function update(): BehaviorNodeResult {
+    public override function update(delta: Float): BehaviorNodeResult {
         // * Goes through each child in order, stops and returns a success if one succeeds.
         // * Otherwise returns a falure after the last child returns a falure.
         if(children.length > 0) {
             var currentChild = children[childIndex];
-            var result = currentChild.update();
+            var result = currentChild.update(delta);
             switch(result) {
                 case BehaviorNodeResult.Continue:
                     return BehaviorNodeResult.Continue;

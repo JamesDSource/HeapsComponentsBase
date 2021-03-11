@@ -5,7 +5,7 @@ import hcb.comp.Component;
 class Entity {
     public var project: Project;
     private var components: Array<Component> = [];
-    private var updatableComponents: Array<Component> = [];
+    public var updatableComponents: Array<Component> = [];
 
     public function new(project: Project) {
         this.project = project;
@@ -35,7 +35,7 @@ class Entity {
             component.parentEntity = null;
         }
         else {
-            trace("Trying to remove component that does not exist");
+            trace("Trying to remove component that does not exist.");
         }
     }
 

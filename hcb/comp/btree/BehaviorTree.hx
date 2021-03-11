@@ -2,7 +2,7 @@ package hcb.comp.btree;
 
 class BehaviorTree extends Component {
     public var root: BehaviorRootNode;
-
+    
     public function new(name: String) {
         super(name);
         root = new BehaviorRootNode();
@@ -10,6 +10,6 @@ class BehaviorTree extends Component {
     }
 
     public override function update(delta:Float) {
-        
+        root.update(delta);
     }
 }

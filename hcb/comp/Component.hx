@@ -8,7 +8,19 @@ class Component {
     public var parentEntity: hcb.Entity;
     public var project: Project;
 
-    public var updateable: Bool = true;
+    public var updateable(default, set): Bool = true;
+    public function set_updateable(updateable: Bool): Bool {
+        if(parentEntity != null && this.updateable != updateable) {
+            if(updateable) {
+                parentEntity.updatableComponents.push(this);
+            }
+            else {
+                parentEntity.updatableComponents.remove(this);
+            }
+        }
+        return updateable;
+    }
+
     public var name: String;
     public var pauseMode: PauseMode = PauseMode.idle;
 
