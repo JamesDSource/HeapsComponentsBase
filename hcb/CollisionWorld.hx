@@ -9,9 +9,9 @@ class CollisionWorld {
 
     public function new() {}
 
-    public function isCollisionAt(colShape: CollisionShape, position: Vector2) {
+    public function isCollisionAt(colShape: CollisionShape, position: Vector2): Bool {
         var returnResult: Bool = false;
-        
+
         var prevOverride: Vector2 = colShape.overridePosition;
         colShape.overridePosition = position;
         for(shape in shapes) {
@@ -21,12 +21,11 @@ class CollisionWorld {
             }
         }
         colShape.overridePosition = prevOverride;
-
         return returnResult;
             
     }
 
-    public function isAnyCollisionAt(colShapes: Array<CollisionShape>, position: Vector2) {
+    public function isAnyCollisionAt(colShapes: Array<CollisionShape>, position: Vector2): Bool {
         var returnResult: Bool = false;
         
         for(colShape in colShapes) {

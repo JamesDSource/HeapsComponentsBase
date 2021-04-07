@@ -38,7 +38,7 @@ class CollisionPolygon extends CollisionShape {
         return scaleY;
     }
 
-    public override function get_bounds(): Bounds {
+    private override function get_bounds(): Bounds {
         var pos = getAbsPosition(),
             smX = Math.POSITIVE_INFINITY,
             smY = Math.POSITIVE_INFINITY,

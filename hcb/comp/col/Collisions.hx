@@ -470,7 +470,7 @@ class Collisions { // TODO: AABB/poly
 
     public static function boundsIntersection(bounds1: Bounds, bounds2: Bounds): Bool {
         return  (bounds1.min.x < bounds2.max.x &&
-                 bounds2.max.x > bounds1.min.x &&
+                 bounds1.max.x > bounds2.min.x &&
                  bounds1.min.y < bounds2.max.y &&
                  bounds1.max.y > bounds2.min.y );
     }

@@ -98,7 +98,7 @@ class Project {
                 if(hasTile) {
                     var colTile = layer.getTileStackAt(i, j);
                     var org = new Vector2(i*tileSize, j*tileSize);
-                    
+
                     var newShape: CollisionShape;
                     if(customShapes != null && customShapes.exists(colTile[0].tileId)) {
                         newShape = customShapes[colTile[0].tileId](org, tileSize);

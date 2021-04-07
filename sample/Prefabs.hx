@@ -16,7 +16,6 @@ class Prefabs {
             new PlayerController("Controller"),
             new CollisionAABB("AABB", 32, 32, OriginPoint.center),
             ap,
-            new Navigation("Nav")
         ];
         
         return player;

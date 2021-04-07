@@ -53,8 +53,8 @@ class Main extends hxd.App {
             shape.setVerticies(
                 [
                     new Vector2(0, 0),
-                    new Vector2(0, tileSize - 1),
-                    new Vector2(tileSize - 1, tileSize - 1)
+                    new Vector2(tileSize - 1, tileSize - 1),
+                    new Vector2(0, tileSize - 1)
                 ]
             );
             return shape;

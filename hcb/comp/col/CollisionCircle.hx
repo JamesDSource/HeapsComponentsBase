@@ -11,7 +11,7 @@ class CollisionCircle extends CollisionShape {
         return radius;
     }
 
-    public override function get_bounds(): Bounds {
+    private override function get_bounds(): Bounds {
         var pos = getAbsPosition();
         return {
             min: new Vector2(pos.x - radius/2, pos.y - radius/2),

@@ -40,7 +40,7 @@ class CollisionAABB extends CollisionShape {
         return scaleY;
     }
 
-    public override function get_bounds(): Bounds {
+    private override function get_bounds(): Bounds {
         var tl = getAbsPosition().add(Origin.getOriginOffset(origin, new Vector2(transformedWidth, transformedHeight)));
         return {
             min: new Vector2(tl.x, tl.y),

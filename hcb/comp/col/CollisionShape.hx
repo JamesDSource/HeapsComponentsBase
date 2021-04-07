@@ -27,7 +27,7 @@ class CollisionShape extends Component {
         updateable = true;
     }
 
-    public dynamic function get_bounds(): Bounds {
+    private dynamic function get_bounds(): Bounds {
         return {min: new Vector2(), max: new Vector2()};
     }
 

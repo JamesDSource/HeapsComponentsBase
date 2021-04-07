@@ -13,7 +13,7 @@ class CollisionRay extends CollisionShape {
     private var scale: Vector2 = new Vector2(1, 1);
     public var infinite: Bool;
 
-    public override function get_bounds(): Bounds {
+    private override function get_bounds(): Bounds {
         var pos = getAbsPosition();
 
         return {
