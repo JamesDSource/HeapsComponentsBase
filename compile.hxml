@@ -3,7 +3,7 @@
 -lib hldx
 -lib ldtk-haxe-api
 -lib domkit
--hl compiled/Game.hl
+-hl sample/Game.hl
 -main Main
 -D windowTitle=Test
 -D windowSize=1920x1080

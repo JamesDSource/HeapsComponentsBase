@@ -5,3 +5,4 @@ Uses a components system.
 Features
   - Collisions
   - Pathfinding
+  - Behavior trees

@@ -9,6 +9,7 @@ import hcb.comp.*;
 import hcb.comp.col.*;
 
 class Main extends hxd.App {
+    var t: Float = 0;
 
     private var proj: hcb.Project;
     private var player: Array<hcb.comp.Component> = [];

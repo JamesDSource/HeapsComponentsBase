@@ -4,14 +4,20 @@ import hcb.Project.PauseMode;
 import hxsl.Types.Vec;
 import hcb.math.Vector2;
 
+typedef Bounds = {
+    min: Vector2,
+    max: Vector2
+}
+
 class CollisionShape extends Component {
     public var active: Bool = true;
-    public var radius(default, null): Float = 0;
+    public var bounds(get, null): Bounds = {min: new Vector2(), max: new Vector2()};
 
     public var tags: Array<String> = [];
     public var ignoreTags: Array<String> = [];
 
     public var offset: Vector2 = new Vector2();
+
     public var overridePosition: Vector2 = null;
 
     public var collisionWorld: CollisionWorld;
@@ -19,6 +25,10 @@ class CollisionShape extends Component {
     public function new(name: String) {
         super(name);
         updateable = true;
+    }
+
+    public dynamic function get_bounds(): Bounds {
+        return {min: new Vector2(), max: new Vector2()};
     }
 
     public override function init() {
@@ -43,7 +53,7 @@ class CollisionShape extends Component {
             return offset.clone();
         }
         else {
-            var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
+            var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
             if(transform != null) {
                 return transform.position.add(offset);
             }
@@ -69,15 +79,11 @@ class CollisionShape extends Component {
             return false;
         }
 
-        // * Checking if there is a radius intersection
-        if(!Collisions.radiusIntersection(absPos1, absPos2, radius, shape.radius)) {
+        // * Checking if the bounds intersect
+        if(!Collisions.boundsIntersection(bounds, shape.bounds)) {
             return false;
         }
 
         return true;
-    }
-
-    public function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
-        return {topLeft: new Vector2(), bottomRight: new Vector2()};
     }
 }

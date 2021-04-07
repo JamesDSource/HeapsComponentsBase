@@ -1,48 +1,66 @@
 package hcb.comp.col;
+import hcb.comp.col.CollisionShape.Bounds;
 import hcb.Origin;
 import hcb.math.Vector2;
 class CollisionAABB extends CollisionShape {
 
-    public var width(default, null): Float;
-    public var height(default, null): Float;
+    public var origin: OriginPoint = OriginPoint.topLeft;
+
+    public var width(default, set): Float;
+    public var height(default, set): Float;
     public var transformedWidth(default, null): Float;
     public var transformedHeight(default, null): Float;
-    public var scale(default, null): Vector2;
+    public var scaleX(default, set): Float = 1;
+    public var scaleY(default, set): Float = 1;
+    private var scale: Vector2 = new Vector2(1, 1);
 
-    public var origin: OriginPoint;
+    private function set_width(width: Float): Float {
+        this.width = width;
+        updateTransformations();
+        return width;
+    }
 
-    public function new(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.topLeft) {
+    private function set_height(height: Float): Float {
+        this.height = height;
+        updateTransformations();
+        return height;
+    }
+
+    private function set_scaleX(scaleX: Float): Float {
+        this.scaleX = scaleX;
+        scale.x = scaleX;
+        updateTransformations();
+        return scaleX;
+    }
+
+    private function set_scaleY(scaleY: Float): Float {
+        this.scaleY = scaleY;
+        scale.y = scaleY;
+        updateTransformations();
+        return scaleY;
+    }
+
+    public override function get_bounds(): Bounds {
+        var tl = getAbsPosition().add(Origin.getOriginOffset(origin, new Vector2(transformedWidth, transformedHeight)));
+        return {
+            min: new Vector2(tl.x, tl.y),
+            max: new Vector2(tl.x + transformedWidth - 1, tl.y + transformedHeight - 1)
+        }
+    }
+
+    public function new(name: String, width: Float, height: Float, ?origin: OriginPoint) {
         super(name);
 
         this.width = width;
         this.height = height;
-        this.origin = origin;
-
-        scale = new Vector2(1, 1);
-
-        updateTransformations();
-    }
-
-    public function setSize(width: Float, height: Float) {
-        this.width = width;
-        this.height = height;
-        updateTransformations();
-    }
-
-    public function setScale(xScale: Float, yScale: Float) {
-        scale.x = xScale;
-        scale.y = yScale;
-        updateTransformations();
+        if(origin != null) {
+            this.origin = origin;
+            updateTransformations();
+        }
     }
 
     public function updateTransformations() {
         transformedWidth = width * scale.x;
         transformedHeight = height * scale.y;
-        radius = Math.max(transformedWidth, transformedHeight);
-    }
-
-    public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
-        var tl = getAbsPosition().add(Origin.getOriginOffset(origin, new Vector2(transformedWidth, transformedHeight)));
-        return {topLeft: tl, bottomRight: tl.add(new Vector2(transformedWidth - 1, transformedHeight - 1))};
     }
 }

@@ -1,9 +1,11 @@
 package hcb;
+import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.*;
 import hcb.math.Vector2;
 
 class CollisionWorld {
     public var shapes: Array<CollisionShape> = [];
+    private var renderAssets = new h2d.Object();
 
     public function new() {}
 
@@ -118,5 +120,20 @@ class CollisionWorld {
         }
 
         return pushValue;
+    }
+
+    public function representBoundingBoxes(layers: h2d.Layers, layer: Int): Void {
+        renderAssets.removeChildren();
+
+        for(shape in shapes) {
+            var bounds: Bounds = shape.bounds;
+
+            var customGraphics: h2d.Graphics = new h2d.Graphics();
+            customGraphics.lineStyle(3, 0xFFFFFF);
+            customGraphics.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+            renderAssets.addChild(customGraphics);
+        }
+        
+        layers.add(renderAssets, layer);
     }
 }

@@ -13,8 +13,55 @@ class CollisionPolygon extends CollisionShape {
 
     // ^ Transformation data
     // ^ Rotation is in degrees
-    private var polyRotation: Float = 0;
+    public var rotation(default, set): Float;
+    public var scaleX(default, set): Float = 1;
+    public var scaleY(default, set): Float = 1;
     private var polyScale: Vector2 = new Vector2(1, 1);
+
+    private function set_rotation(polyRotation: Float): Float {
+        this.rotation = polyRotation;
+        updateTransformations();
+        return polyRotation;
+    }
+
+    private function set_scaleX(scaleX: Float): Float {
+        this.scaleX = scaleX;
+        polyScale.x = scaleX;
+        updateTransformations();
+        return scaleX;
+    }
+
+    private function set_scaleY(scaleY: Float): Float {
+        this.scaleY = scaleY;
+        polyScale.y = scaleY;
+        updateTransformations();
+        return scaleY;
+    }
+
+    public override function get_bounds(): Bounds {
+        var pos = getAbsPosition(),
+            smX = Math.POSITIVE_INFINITY,
+            smY = Math.POSITIVE_INFINITY,
+            lgX = Math.NEGATIVE_INFINITY,
+            lgY = Math.NEGATIVE_INFINITY;
+
+        for(vertex in transformedVerticies) {
+            if(vertex.x < smX) {
+                smX = vertex.x;
+            }
+            if(vertex.x > lgX) {
+                lgX = vertex.x;
+            }
+            if(vertex.y < smY) {
+                smY = vertex.y;
+            }
+            if(vertex.y > lgY) {
+                lgY = vertex.y;
+            }
+        }
+
+        return {min : new Vector2(pos.x + smX, pos.y + smY), max: new Vector2(pos.x + lgX, pos.y + lgY)};
+    }
 
     public function new(name: String) {
         super(name);
@@ -49,25 +96,11 @@ class CollisionPolygon extends CollisionShape {
         return returnVerticies;
     }
 
-    public function setPolyRotation(degrees: Float): Void {
-        polyRotation = degrees;
-        updateTransformations();
-    }
-
-    public function getPolyRotation(): Float {
-        return polyRotation;
-    }
-
-    public function setScale(scale: Vector2): Void {
-        polyScale = scale;
-        updateTransformations();
-    }
-
-    public function updateTransformations(): Void {
+    private function updateTransformations(): Void {
         transformedVerticies = [];
         for(vertex in verticies) {
             var tVertex = vertex.mult(polyScale);
-            tVertex.setAngle(hxd.Math.degToRad(polyRotation) + vertex.getAngle());
+            tVertex.setAngle(hxd.Math.degToRad(rotation) + vertex.getAngle());
             transformedVerticies.push(tVertex);
         }
     }
@@ -75,41 +108,5 @@ class CollisionPolygon extends CollisionShape {
     public function setVerticies(verticies: Array<Vector2>) {
         this.verticies = verticies;
         updateTransformations();
-
-        radius = 0.0;
-        for(vertex in this.transformedVerticies) {
-            var len: Float = vertex.getLength();
-            
-            if(len > radius) {
-                radius = Math.ceil(len);
-            }
-
-        }
-
-    }
-
-    public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
-        var pos = getAbsPosition(),
-            smX = Math.POSITIVE_INFINITY,
-            smY = Math.POSITIVE_INFINITY,
-            lgX = Math.NEGATIVE_INFINITY,
-            lgY = Math.NEGATIVE_INFINITY;
-
-        for(vertex in verticies) {
-            if(vertex.x < smX) {
-                smX = vertex.x;
-            }
-            if(vertex.x > lgX) {
-                lgX = vertex.x;
-            }
-            if(vertex.y < smY) {
-                smY = vertex.y;
-            }
-            if(vertex.y > lgY) {
-                lgY = vertex.y;
-            }
-        }
-
-        return {topLeft: new Vector2(pos.x + smX, pos.y + smY), bottomRight: new Vector2(pos.x + lgX, pos.y + lgY)};
     }
 }

@@ -1,5 +1,6 @@
 package hcb.comp.col;
 
+import hcb.comp.col.CollisionShape.Bounds;
 import hcb.math.Vector2;
 
 class CollisionRay extends CollisionShape {
@@ -7,8 +8,19 @@ class CollisionRay extends CollisionShape {
     private var castPoint: Vector2 = new Vector2();
     private var castPointTransformed: Vector2 = new Vector2();
 
-    private var rayScale: Vector2 = new Vector2(1, 1);
+    public var scaleX: Float = 1;
+    public var scaleY: Float = 1;
+    private var scale: Vector2 = new Vector2(1, 1);
     public var infinite: Bool;
+
+    public override function get_bounds(): Bounds {
+        var pos = getAbsPosition();
+
+        return {
+            min: new Vector2(Math.min(pos.x, pos.x + castPointTransformed.x), Math.min(pos.y, pos.y + castPointTransformed.y)),
+            max: new Vector2(Math.max(pos.x, pos.x + castPointTransformed.x), Math.max(pos.y, pos.y + castPointTransformed.y))
+        }
+    }
 
     public function new(name: String, infinite: Bool) {
         super(name);  
@@ -29,31 +41,17 @@ class CollisionRay extends CollisionShape {
 
     public function setCastPoint(point: Vector2) {
         castPoint = point.clone();
-        calculateTransformations();
+        updateTransformations();
     }
 
     public function setCastPointGlobal(point: Vector2) {
         castPoint = point.subtract(getAbsPosition());
-        calculateTransformations();
+        updateTransformations();
     }
 
     // && Sets 'castPointTransformed' to 'castPoint' rotated and scaled
-    private function calculateTransformations() {
+    private function updateTransformations() {
         castPointTransformed = castPoint;
-        castPointTransformed = castPointTransformed.mult(rayScale);
-        radius = castPoint.getLength();
-    }
-
-    public function setRayScale(scaleFactor: Vector2) {
-        rayScale = scaleFactor;
-        calculateTransformations();
-    }
-
-    public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
-        var pos = getAbsPosition();
-        return {
-            topLeft: new Vector2(Math.min(pos.x, pos.x + castPoint.x), Math.min(pos.y, pos.y + castPoint.y)),
-            bottomRight: new Vector2(Math.max(pos.x, pos.x + castPoint.x), Math.max(pos.y, pos.y + castPoint.y))
-        };
+        castPointTransformed = castPointTransformed.mult(scale);
     }
 }

@@ -1,3 +1,5 @@
+import hcb.comp.col.CollisionAABB;
+import hcb.CollisionWorld;
 import h2d.Tile;
 import h2d.Bitmap;
 import hcb.comp.Navigation;
@@ -19,7 +21,7 @@ class PlayerController extends Component {
     }
 
     public override function update(delta: Float) {
-        var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
+        var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
         var movementVector: Vector2 = new Vector2();
         
         if(Key.isPressed(Key.MOUSE_LEFT)) {

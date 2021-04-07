@@ -1,5 +1,6 @@
 package hcb.pathfinding;
 
+import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.CollisionAABB;
 import hcb.comp.col.Collisions;
 import hcb.comp.Transform2D;
@@ -186,19 +187,18 @@ class PathfindingGrid {
     // & Adds collision shapes with certain tags as obsticles
     public function addCollisionShapesTag(collisionWorld: CollisionWorld, tag: String) {
         for(shape in collisionWorld.shapes) {
-
             if(shape.tags.contains(tag)) {
-                var bounds = shape.getBounds();
-                var tl = positionToCoord(bounds.topLeft),
-                    br = positionToCoord(bounds.bottomRight);
+                var bounds: Bounds = shape.bounds,
+                    tl = positionToCoord(bounds.min),
+                    br = positionToCoord(bounds.max);
 
                 for(i in cast(tl.x, Int)...cast br.x + 1) {
                     for(j in cast(tl.y, Int)...cast br.y + 1) {
                         var node = get(new Vector2(i, j));
 
                         if(!node.isObsticle) {
-                            collisionShape.offset.set(i*cellSize, j*cellSize);
-
+                            collisionShape.offset.set(i*cellSize, j*cellSize); 
+                            
                             if(Collisions.test(collisionShape, shape)) {
                                 node.isObsticle = true;
                             }

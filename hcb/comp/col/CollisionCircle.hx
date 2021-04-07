@@ -1,21 +1,26 @@
 package hcb.comp.col;
 
+import hcb.comp.col.CollisionShape.Bounds;
 import hcb.math.Vector2;
 
 class CollisionCircle extends CollisionShape {
-    public function new(name: String) {
-        super(name);
-    }
-    
-    public function setRadius(radius: Float) {
+    public var radius(default, set): Float = 0;
+
+    public function set_radius(radius: Float): Float {
         this.radius = radius;
+        return radius;
     }
 
-    public override function getBounds(): {topLeft: Vector2, bottomRight: Vector2} {
-        var pos = getAbsPosition(),
-            tl = new Vector2(pos.x - radius/2, pos.y - radius/2),
-            br = new Vector2(pos.x + radius/2, pos.y + radius/2);
-        
-        return {topLeft: tl, bottomRight: br};
+    public override function get_bounds(): Bounds {
+        var pos = getAbsPosition();
+        return {
+            min: new Vector2(pos.x - radius/2, pos.y - radius/2),
+            max: new Vector2(pos.x + radius/2, pos.y + radius/2)
+        }
+    }
+
+    public function new(name: String, radius: Float = 10) {
+        super(name);
+        this.radius = radius;
     }
 }

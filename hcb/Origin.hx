@@ -17,7 +17,6 @@ enum OriginPoint {
 class Origin {
 	public static function getOriginOffset(origin: OriginPoint, size:Vector2): Vector2 {
 		var offset: Vector2 = new Vector2(0, 0);
-		
 		switch(origin) {
 			case OriginPoint.topLeft:
 			case OriginPoint.topCenter:

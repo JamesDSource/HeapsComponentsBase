@@ -69,7 +69,7 @@ class Entity {
     }
 
     // & Gets all components of the type you pass though, but you must cast it manually to an array of the type you want
-    public function getComponentsOfType(t: Dynamic): Array<Component> {
+    public function getAllComponentsOfType(t: Dynamic): Array<Component> {
         var returnList: Array<Component> = [];
         
         for(component in components) {
@@ -81,7 +81,7 @@ class Entity {
     }
 
     // & Gets the first component of a particular type
-    public function getSingleComponentOfType(t: Dynamic): Component {
+    public function getComponentOfType(t: Dynamic): Component {
         for(component in components) {
             if(Std.isOfType(component, t)) {
                 return component;

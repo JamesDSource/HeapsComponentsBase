@@ -76,7 +76,7 @@ class Project {
         for(entity in entities) {
             if(ldtkEntityPrefabs.exists(entity.identifier)) {
                 var ent = addEntity(ldtkEntityPrefabs[entity.identifier](entity));
-                var transform: Transform2D = cast ent.getSingleComponentOfType(Transform2D);
+                var transform: Transform2D = cast ent.getComponentOfType(Transform2D);
                 if(transform != null) {
                     transform.position.set(entity.pixelX, entity.pixelY);
                     if(offset != null) {

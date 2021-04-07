@@ -18,7 +18,7 @@ class Navigation extends Component {
 
     public function getPathTo(grid: hcb.pathfinding.PathfindingGrid, targetPosition: Vector2): Array<Vector2> {
         if(parentEntity != null) {
-            var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
+            var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
             if(transform != null) {
                 return getPathFrom(grid, transform.position, targetPosition);
             }

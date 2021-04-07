@@ -1,5 +1,6 @@
 package hcb.comp.col;
 
+import hcb.comp.col.CollisionShape.Bounds;
 import hcb.math.Vector2;
 
 class Collisions { // TODO: AABB/poly
@@ -18,13 +19,13 @@ class Collisions { // TODO: AABB/poly
         }
         // * Circle with circle
         else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionCircle)) {
-            // ^ We already tested for a radius intersection, so if the code made it this far,
-            // ^ circleWithCircle is already true
-            return true;
+            return circleWithCircle(cast(shape1, CollisionCircle), cast(shape2, CollisionCircle));
         }
         // * AABB with AABB
         else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionAABB)) {
-            return aabbWithAabb(cast(shape1, CollisionAABB), cast(shape2, CollisionAABB));
+            // ^ We already tested for a bounds intersection, so if the code made it this far,
+            // ^ aabbWithAabb is already true
+            return true;
         }
         // * Circle with ray
         else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionRay)) {
@@ -75,12 +76,6 @@ class Collisions { // TODO: AABB/poly
     // & Tests for an intersection with a ray, and returns the point of collision
     public static function rayTestIntersection(ray: CollisionRay, shape: CollisionShape): Vector2 {
         if(!ray.canInteractWith(shape)) {
-            return null;
-        }
-
-        var absPos1 = ray.getAbsPosition();
-        var absPos2 = shape.getAbsPosition();
-        if(!radiusIntersection(absPos1, absPos2, ray.radius, shape.radius)) {
             return null;
         }
 
@@ -151,6 +146,14 @@ class Collisions { // TODO: AABB/poly
 
         }
         return true;
+    }
+
+    // & Checks for a collision between two circles
+    public static function circleWithCircle(circle1: CollisionCircle, circle2: CollisionCircle) {
+        var absPos1 = circle1.getAbsPosition(),
+            absPos2 = circle2.getAbsPosition();
+
+        return radiusIntersection(absPos1, absPos2, circle1.radius, circle2.radius);
     }
 
     // & Checks for a collision between a polygon and a circle
@@ -314,10 +317,10 @@ class Collisions { // TODO: AABB/poly
     // & Checks for a collision between an AABB and a ray
     public static function aabbwithRay(aabb: CollisionAABB, ray: CollisionRay): Vector2 {
         var rayPos = ray.getAbsPosition();
-        var boxBounds = aabb.getBounds();
+        var boxBounds = aabb.bounds;
 
         // * Checking if the ray origin is inside the AABB
-        if(pointInAABB(rayPos, boxBounds.topLeft, boxBounds.bottomRight)) {
+        if(pointInAABB(rayPos, boxBounds.min, boxBounds.max)) {
             return rayPos;
         }
         
@@ -326,10 +329,10 @@ class Collisions { // TODO: AABB/poly
 
         // * Get every vertex of the AABB to make lines with them
         var verticies: Array<Vector2> = [
-            boxBounds.topLeft,
-            new Vector2(boxBounds.bottomRight.x, boxBounds.topLeft.y),
-            boxBounds.bottomRight,
-            new Vector2(boxBounds.topLeft.x, boxBounds.bottomRight.y)
+            boxBounds.min,
+            new Vector2(boxBounds.max.x, boxBounds.min.y),
+            boxBounds.max,
+            new Vector2(boxBounds.min.x, boxBounds.max.y)
         ];
         
         // * Find all line intersection with the edges of the AABB
@@ -354,39 +357,28 @@ class Collisions { // TODO: AABB/poly
         return closestIntersection;
     }
 
-    // & Checks for a collision between to AABBs
-    public static function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): Bool {
-        var bounds1 = aabb1.getBounds();
-        var bounds2 = aabb2.getBounds();
-
-        return  (bounds1.topLeft.x < bounds2.bottomRight.x &&
-                 bounds2.bottomRight.x > bounds1.topLeft.x &&
-                 bounds1.topLeft.y < bounds2.bottomRight.y &&
-                 bounds1.bottomRight.y > bounds2.topLeft.y );
-    }
-
     // & Checks for a collision between an AABB and a polygon
     public static function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): Bool {
         // * Runs the code twice, switching between checking the poly to the AABB
-        var boxBounds = aabb.getBounds();
+        var boxBounds = aabb.bounds;
         for(i in 0...2) {
             var poly1V: Array<Vector2> = [];
             var poly2V: Array<Vector2> = [];
             if(i == 0) {
                 poly1V = poly.getGlobalTransformedVerticies();
                 poly2V = [
-                    boxBounds.topLeft,
-                    new Vector2(boxBounds.bottomRight.x, boxBounds.topLeft.y),
-                    boxBounds.bottomRight,
-                    new Vector2(boxBounds.topLeft.x, boxBounds.bottomRight.y)
+                    boxBounds.min,
+                    new Vector2(boxBounds.max.x, boxBounds.min.y),
+                    boxBounds.max,
+                    new Vector2(boxBounds.min.x, boxBounds.max.y)
                 ];
             }
             else {
                 poly2V = [
-                    boxBounds.topLeft,
-                    new Vector2(boxBounds.bottomRight.x, boxBounds.topLeft.y),
-                    boxBounds.bottomRight,
-                    new Vector2(boxBounds.topLeft.x, boxBounds.bottomRight.y)
+                    boxBounds.min,
+                    new Vector2(boxBounds.max.x, boxBounds.min.y),
+                    boxBounds.max,
+                    new Vector2(boxBounds.min.x, boxBounds.max.y)
                 ];
                 poly2V = poly.getGlobalTransformedVerticies();
             }
@@ -427,14 +419,14 @@ class Collisions { // TODO: AABB/poly
 
     // & Checks for a collision between an AABB and a circle
     public static function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): Bool {
-        var bounds = aabb.getBounds();
-        var aabbMidPoint = bounds.topLeft.add(new Vector2((aabb.transformedWidth - 1)/2, (aabb.transformedHeight - 1)/2));
+        var bounds = aabb.bounds;
+        var aabbMidPoint = bounds.min.add(new Vector2((aabb.transformedWidth - 1)/2, (aabb.transformedHeight - 1)/2));
 
         var circlePos = circle.getAbsPosition();
 
         var differenceVector = circlePos.subtract(aabbMidPoint);
-        differenceVector.x = hxd.Math.clamp(differenceVector.x, bounds.topLeft.x, bounds.bottomRight.x);
-        differenceVector.y = hxd.Math.clamp(differenceVector.y, bounds.topLeft.y, bounds.bottomRight.y);
+        differenceVector.x = hxd.Math.clamp(differenceVector.x, bounds.min.x, bounds.max.x);
+        differenceVector.y = hxd.Math.clamp(differenceVector.y, bounds.min.y, bounds.max.y);
 
         return differenceVector.distanceTo(circlePos) < circle.radius;
     }
@@ -474,6 +466,13 @@ class Collisions { // TODO: AABB/poly
         else {
             return null;
         }
+    }
+
+    public static function boundsIntersection(bounds1: Bounds, bounds2: Bounds): Bool {
+        return  (bounds1.min.x < bounds2.max.x &&
+                 bounds2.max.x > bounds1.min.x &&
+                 bounds1.min.y < bounds2.max.y &&
+                 bounds1.max.y > bounds2.min.y );
     }
 
     // & Checks if a coordinite is inside an AABB

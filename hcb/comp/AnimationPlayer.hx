@@ -9,7 +9,7 @@ import hcb.math.Vector2;
 
 class AnimationPlayer extends Component {
     public override function update(delta: Float) { 
-        var transform: Transform2D = cast parentEntity.getSingleComponentOfType(Transform2D);
+        var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
         
         if(transform != null) {
             for(animation in animations) {
