@@ -15,11 +15,7 @@ class Main extends hxd.App {
     private var player: Array<hcb.comp.Component> = [];
     private var grid: PathfindingGrid;
 
-    var bbox: CollisionAABB;
-    var bboxG: Graphics;
-
-    public var poly: CollisionPolygon;
-    public var polyG: Graphics;
+    private var collisionGridMap: Map<Int, Vector2 -> Int -> CollisionShape> = new Map<Int, Vector2 -> Int -> CollisionShape>();
     
     override function init() {
         var levels = new Levels();
@@ -37,7 +33,33 @@ class Main extends hxd.App {
 
         var rend = levels.all_levels.Test.l_Collisions.render();
         proj.renderables.add(rend, 0);
-        proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"]);
+
+        collisionGridMap[1] = function(origin: Vector2, tileSize: Int): CollisionShape {
+            var shape: CollisionPolygon = new CollisionPolygon("poly");
+            shape.offset = origin;
+            shape.setVerticies(
+                [
+                    new Vector2(tileSize - 1, 0),
+                    new Vector2(tileSize - 1, tileSize - 1),
+                    new Vector2(0, tileSize - 1)
+                ]
+            );
+            return shape;
+        }
+
+        collisionGridMap[2] = function(origin: Vector2, tileSize: Int): CollisionShape {
+            var shape: CollisionPolygon = new CollisionPolygon("poly");
+            shape.offset = origin;
+            shape.setVerticies(
+                [
+                    new Vector2(0, 0),
+                    new Vector2(0, tileSize - 1),
+                    new Vector2(tileSize - 1, tileSize - 1)
+                ]
+            );
+            return shape;
+        }
+        proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"], null, collisionGridMap);
         grid.addCollisionShapesTag(proj.collisionWorld, "Static");
     }  
 

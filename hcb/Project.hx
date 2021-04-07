@@ -90,7 +90,7 @@ class Project {
         return entitiesAdded;
     }
 
-    public function ldtkAddCollisionLayer(layer: ldtk.Layer_Tiles, ?tags: Array<String>, ?offset: Vector2, ?customShapes: Map<Int, Void->CollisionShape>) {
+    public function ldtkAddCollisionLayer(layer: ldtk.Layer_Tiles, ?tags: Array<String>, ?offset: Vector2, ?customShapes: Map<Int, Vector2->Int->CollisionShape>) {
         var tileSize = layer.gridSize;
         for(i in 0...layer.cWid) {
             for(j in 0...layer.cHei) {
@@ -101,7 +101,7 @@ class Project {
                     
                     var newShape: CollisionShape;
                     if(customShapes != null && customShapes.exists(colTile[0].tileId)) {
-                        newShape = customShapes[colTile[0].tileId]();
+                        newShape = customShapes[colTile[0].tileId](org, tileSize);
                     }
                     else {
                         var staticColShape = new CollisionAABB("Static", tileSize, tileSize);
