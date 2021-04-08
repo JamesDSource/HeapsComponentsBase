@@ -7,7 +7,9 @@ class CollisionWorld {
     public var shapes: Array<CollisionShape> = [];
     private var renderAssets = new h2d.Object();
 
-    public function new() {}
+    public function new() {
+
+    }
 
     public function isCollisionAt(colShape: CollisionShape, position: Vector2): Bool {
         var returnResult: Bool = false;

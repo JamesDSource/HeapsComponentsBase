@@ -9,11 +9,8 @@ import hcb.comp.*;
 import hcb.comp.col.*;
 
 class Main extends hxd.App {
-    var t: Float = 0;
-
     private var proj: hcb.Project;
     private var player: Array<hcb.comp.Component> = [];
-    private var grid: PathfindingGrid;
 
     private var collisionGridMap: Map<Int, Vector2 -> Int -> CollisionShape> = new Map<Int, Vector2 -> Int -> CollisionShape>();
     
@@ -24,9 +21,6 @@ class Main extends hxd.App {
         proj = new Project(this);
         setScene(proj.scene);
 
-        // * Pathfinding grid
-        grid = new PathfindingGrid(32, new hcb.math.Vector2(50, 50));
-        proj.navigationGrids["Player"] = grid;
 
         proj.ldtkEntityPrefabs["Player"] = Prefabs.player;
         proj.ldtkAddEntities(cast levels.all_levels.Test.l_Entities.getAllUntyped());
@@ -60,7 +54,6 @@ class Main extends hxd.App {
             return shape;
         }
         proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"], null, collisionGridMap);
-        grid.addCollisionShapesTag(proj.collisionWorld, "Static");
     }  
 
     override function update(delta: Float) {

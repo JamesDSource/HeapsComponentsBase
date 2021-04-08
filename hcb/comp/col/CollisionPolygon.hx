@@ -18,6 +18,11 @@ class CollisionPolygon extends CollisionShape {
     public var scaleY(default, set): Float = 1;
     private var polyScale: Vector2 = new Vector2(1, 1);
 
+    // ^ Varuiables for saving the bounding data if the shape hasn't moved
+    private var lastPos: Vector2 = null;
+    private var lastBounds: Bounds = null;
+    private var shapeChanged: Bool = false;
+
     private function set_rotation(polyRotation: Float): Float {
         this.rotation = polyRotation;
         updateTransformations();
@@ -39,28 +44,37 @@ class CollisionPolygon extends CollisionShape {
     }
 
     private override function get_bounds(): Bounds {
-        var pos = getAbsPosition(),
-            smX = Math.POSITIVE_INFINITY,
-            smY = Math.POSITIVE_INFINITY,
-            lgX = Math.NEGATIVE_INFINITY,
-            lgY = Math.NEGATIVE_INFINITY;
+        var pos = getAbsPosition();
+        
+        // * If the polygon has not changed position or shape from the last time get_bounds was called,
+        // * it just returns the result from the last time
+        if(shapeChanged || lastPos == null || lastBounds == null || !pos.equals(lastPos)) {
+            var smX = Math.POSITIVE_INFINITY,
+                smY = Math.POSITIVE_INFINITY,
+                lgX = Math.NEGATIVE_INFINITY,
+                lgY = Math.NEGATIVE_INFINITY;
 
-        for(vertex in transformedVerticies) {
-            if(vertex.x < smX) {
-                smX = vertex.x;
+            for(vertex in transformedVerticies) {
+                if(vertex.x < smX) {
+                    smX = vertex.x;
+                }
+                if(vertex.x > lgX) {
+                    lgX = vertex.x;
+                }
+                if(vertex.y < smY) {
+                    smY = vertex.y;
+                }
+                if(vertex.y > lgY) {
+                    lgY = vertex.y;
+                }
             }
-            if(vertex.x > lgX) {
-                lgX = vertex.x;
-            }
-            if(vertex.y < smY) {
-                smY = vertex.y;
-            }
-            if(vertex.y > lgY) {
-                lgY = vertex.y;
-            }
+
+            lastBounds = {min : new Vector2(pos.x + smX, pos.y + smY), max: new Vector2(pos.x + lgX, pos.y + lgY)};
+            shapeChanged = false;
         }
+        lastPos = pos.clone();
 
-        return {min : new Vector2(pos.x + smX, pos.y + smY), max: new Vector2(pos.x + lgX, pos.y + lgY)};
+        return lastBounds;
     }
 
     public function new(name: String) {
@@ -103,6 +117,7 @@ class CollisionPolygon extends CollisionShape {
             tVertex.setAngle(hxd.Math.degToRad(rotation) + vertex.getAngle());
             transformedVerticies.push(tVertex);
         }
+        shapeChanged = true;
     }
 
     public function setVerticies(verticies: Array<Vector2>) {
