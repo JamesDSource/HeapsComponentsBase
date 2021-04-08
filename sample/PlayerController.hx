@@ -1,3 +1,5 @@
+import h2d.Scene.ScaleModeAlign;
+import h2d.Camera;
 import hcb.Origin.OriginPoint;
 import hcb.comp.anim.*;
 import ldtk.Project;
@@ -18,7 +20,9 @@ class PlayerController extends Component {
     private var runFront: Animation;
     private var runBack: Animation;
 
-    private var speed: Float = 4;
+    private var speed: Float = 2;
+
+    private var camera: Camera;
 
     public function new(name: String) {
         super(name);
@@ -29,12 +33,18 @@ class PlayerController extends Component {
         collisionBox = cast parentEntity.getComponentOfType(CollisionAABB);
         animationPlayer = cast parentEntity.getComponentOfType(AnimationPlayer);
 
-        runSide = new Animation(Res.WitchRunSide.toTile(), 6, OriginPoint.bottomCenter);
-        runFront = new Animation(Res.WitchRunFront.toTile(), 6, OriginPoint.bottomLeft, -9);
-        runBack = new Animation(Res.WitchRunBack.toTile(), 6, OriginPoint.bottomLeft, -6);
+        runSide = new Animation(Res.WitchRunSide.toTile(), 6, 10, OriginPoint.bottomCenter);
+        runFront = new Animation(Res.WitchRunFront.toTile(), 6, 10, OriginPoint.bottomCenter);
+        runBack = new Animation(Res.WitchRunBack.toTile(), 6, 10, OriginPoint.bottomCenter);
 
         animationPlayer.addAnimationSlot("Default", 0);
         animationPlayer.setAnimationSlot("Default", runFront);
+
+        camera = project.scene.camera;
+        camera.anchorX = 0.5;
+        camera.anchorY = 0.5;
+
+        project.scene.scaleMode = ScaleMode.Stretch(480, 270);
     }
 
     public override function update(delta: Float) {
@@ -78,5 +88,8 @@ class PlayerController extends Component {
         }
 
         transform.position.addMutate(velocity);
+
+        camera.x = transform.position.x;
+        camera.y = transform.position.y;
     }
 }

@@ -5,14 +5,13 @@ import h2d.Tile;
 import hcb.Origin;
 import hcb.math.Vector2;
 
-class Animation {
-    public var anim(default, null): Anim;
+class Animation extends Anim {
     public var flipX(default, set): Bool = false;
     public var flipY(default, set): Bool = false;
 
     private function set_flipX(flipX: Bool): Bool {
         if(this.flipX != flipX) {
-            for(frame in anim.frames) {
+            for(frame in frames) {
                 frame.flipX();
             }
             this.flipX = flipX;
@@ -22,7 +21,7 @@ class Animation {
 
     private function set_flipY(flipY: Bool): Bool {
         if(this.flipY != flipY) {
-            for(frame in anim.frames) {
+            for(frame in frames) {
                 frame.flipY();
             }
             this.flipY = flipY;
@@ -30,7 +29,7 @@ class Animation {
         return flipY;
     }
 
-    public function new(strip: Tile, frames: Int, originPoint: OriginPoint = OriginPoint.topLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+    public function new(strip: Tile, frames: Int, speed: Float = 15, originPoint: OriginPoint = OriginPoint.topLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
         var animFrames: Array<Tile> = strip.split(frames);
         
         for(animFrame in animFrames) {
@@ -42,6 +41,6 @@ class Animation {
             animFrame.dx = offset.x;
             animFrame.dy = offset.y;
         }
-        anim = new Anim(animFrames);
+        super(animFrames, speed);
     }
 }

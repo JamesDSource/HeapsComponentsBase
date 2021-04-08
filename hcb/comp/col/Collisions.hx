@@ -3,7 +3,7 @@ package hcb.comp.col;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.math.Vector2;
 
-class Collisions { // TODO: AABB/poly
+class Collisions {
     public static function test(shape1: CollisionShape, shape2: CollisionShape): Bool {
         if(!shape1.canInteractWith(shape2)) {
             return false;
@@ -98,9 +98,11 @@ class Collisions { // TODO: AABB/poly
 
 
     // & Checks for a collision between two polygons
-    public static function polyWithPoly(polygon1: CollisionPolygon, polygon2: CollisionPolygon): Bool {
+    public static inline function polyWithPoly(polygon1: CollisionPolygon, polygon2: CollisionPolygon): Bool {
         var poly1: CollisionPolygon;
         var poly2: CollisionPolygon;
+
+        var isCollision: Bool = true;
 
         // * Runs the code twice, switching which role each polygon plays both times
         for(i in 0...2) {
@@ -140,16 +142,17 @@ class Collisions { // TODO: AABB/poly
                 
                 // * Checking if the shapes overlap
                 if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
-                    return false;
+                    isCollision = false;
+                    break;
                 }
             }
 
         }
-        return true;
+        return isCollision;
     }
 
     // & Checks for a collision between two circles
-    public static function circleWithCircle(circle1: CollisionCircle, circle2: CollisionCircle) {
+    public static inline function circleWithCircle(circle1: CollisionCircle, circle2: CollisionCircle) {
         var absPos1 = circle1.getAbsPosition(),
             absPos2 = circle2.getAbsPosition();
 
@@ -157,77 +160,77 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Checks for a collision between a polygon and a circle
-    public static function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
+    public static inline function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
         var polyV = poly.getGlobalTransformedVerticies();
         var circleCenter = circle.getAbsPosition();
         var circleRadius = circle.radius;
         var closestVertex: Vector2 = null;
+        var isCollision: Bool = true;
 
         // * Checking if the center point in inside the polygon
-        if(pointInPolygon(polyV, circleCenter)) {
-            return true;
-        }
+        if(!pointInPolygon(polyV, circleCenter)){
+            // * First iteration checks the polygon
+            for(i in 0...polyV.length) {
+                var vert = polyV[i];
+                var nextVert = polyV[(i + 1)%polyV.length];
+                var axisProj: Vector2 = new Vector2(-(vert.y - nextVert.y), vert.x - nextVert.x);
+                
+                // * Getting the vetex closest to the center of the circle
+                if(closestVertex == null || closestVertex.distanceTo(circleCenter) > vert.distanceTo(circleCenter)) {
+                    closestVertex = vert;
+                }
 
-        // * First iteration checks the polygon
-        for(i in 0...polyV.length) {
-            var vert = polyV[i];
-            var nextVert = polyV[(i + 1)%polyV.length];
-            var axisProj: Vector2 = new Vector2(-(vert.y - nextVert.y), vert.x - nextVert.x);
-            
-            // * Getting the vetex closest to the center of the circle
-            if(closestVertex == null || closestVertex.distanceTo(circleCenter) > vert.distanceTo(circleCenter)) {
-                closestVertex = vert;
+                // * Projecting each point from the polygon
+                var minR1 = Math.POSITIVE_INFINITY;
+                var maxR1 = Math.NEGATIVE_INFINITY;
+                for(vertex in polyV) {
+                    var dot: Float = vertex.getDotProduct(axisProj);
+                    minR1 = Math.min(minR1, dot);
+                    maxR1 = Math.max(maxR1, dot);
+                } 
+                // * Projecting the center of the circle and adding/subtracting the radius
+                var projNormal = axisProj.normalized();
+                var minR2 = circleCenter.subtract(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+                var maxR2 = circleCenter.add(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+                
+                // * Checking if the shapes overlap
+                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                    isCollision = false;
+                    break;
+                }
             }
 
-            // * Projecting each point from the polygon
-            var minR1 = Math.POSITIVE_INFINITY;
-            var maxR1 = Math.NEGATIVE_INFINITY;
-            for(vertex in polyV) {
-                var dot: Float = vertex.getDotProduct(axisProj);
-                minR1 = Math.min(minR1, dot);
-                maxR1 = Math.max(maxR1, dot);
-            } 
-            // * Projecting the center of the circle and adding/subtracting the radius
-            var projNormal = axisProj.normalized();
-            var minR2 = circleCenter.subtract(projNormal.multF(circleRadius)).getDotProduct(axisProj);
-            var maxR2 = circleCenter.add(projNormal.multF(circleRadius)).getDotProduct(axisProj);
-            
-            // * Checking if the shapes overlap
-            if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
-                return false;
+            // * Checking the axis between the closest vertex and the circle center
+            if(closestVertex == null) {
+                isCollision = false;
+            }
+            else if(isCollision) { 
+                var axisProj: Vector2 = new Vector2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x);
+                
+                // * Projecting each point from the polygon
+                var minR1 = Math.POSITIVE_INFINITY;
+                var maxR1 = Math.NEGATIVE_INFINITY;
+                for(vertex in polyV) {
+                    var dot: Float = vertex.getDotProduct(axisProj);
+                    minR1 = Math.min(minR1, dot);
+                    maxR1 = Math.max(maxR1, dot);
+                } 
+                // * Projecting the center of the circle and adding/subtracting the radius
+                var projNormal = axisProj.normalized();
+                var minR2 = circleCenter.subtract(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+                var maxR2 = circleCenter.add(projNormal.multF(circleRadius)).getDotProduct(axisProj);
+                
+                // * Checking if the shapes overlap
+                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                    isCollision = false;
+                }
             }
         }
-
-        if(closestVertex == null) {
-            return false;
-        }
-        else { // * Checking the axis between the closest vertex and the circle center
-            var axisProj: Vector2 = new Vector2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x);
-            
-            // * Projecting each point from the polygon
-            var minR1 = Math.POSITIVE_INFINITY;
-            var maxR1 = Math.NEGATIVE_INFINITY;
-            for(vertex in polyV) {
-                var dot: Float = vertex.getDotProduct(axisProj);
-                minR1 = Math.min(minR1, dot);
-                maxR1 = Math.max(maxR1, dot);
-            } 
-            // * Projecting the center of the circle and adding/subtracting the radius
-            var projNormal = axisProj.normalized();
-            var minR2 = circleCenter.subtract(projNormal.multF(circleRadius)).getDotProduct(axisProj);
-            var maxR2 = circleCenter.add(projNormal.multF(circleRadius)).getDotProduct(axisProj);
-            
-            // * Checking if the shapes overlap
-            if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
-                return false;
-            }
-        }
-
-        return true;
+        return isCollision;
     }
 
     // & Finds the intersection point between two rays
-    public static function rayWithRay(ray1: CollisionRay, ray2: CollisionRay): Vector2 {
+    public static inline function rayWithRay(ray1: CollisionRay, ray2: CollisionRay): Vector2 {
         return lineIntersection(
             ray1.getAbsPosition(), 
             ray1.getGlobalTransformedCastPoint(), 
@@ -239,7 +242,7 @@ class Collisions { // TODO: AABB/poly
     }
     
     // & Finds the intersection point between a polygon and a ray
-    public static function polyWithRay(poly: CollisionPolygon, ray: CollisionRay): Vector2 {    
+    public static inline function polyWithRay(poly: CollisionPolygon, ray: CollisionRay): Vector2 {    
         var verticies: Array<Vector2> = poly.getGlobalTransformedVerticies();
         var closestIntersection: Vector2 = null;
         var rayPos = ray.getAbsPosition();
@@ -262,7 +265,7 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Finds the intersection point between a circle and a ray
-    public static function circleWithRay(circle: CollisionCircle, ray: CollisionRay): Vector2 {
+    public static inline function circleWithRay(circle: CollisionCircle, ray: CollisionRay): Vector2 {
         // * Feilds
         var circlePos = circle.getAbsPosition(),
             radius = circle.radius,
@@ -279,10 +282,11 @@ class Collisions { // TODO: AABB/poly
             det = b*b -4*a*c;
         
         var intersectionPoint: Vector2;
+        var realSolution: Bool = true;
         
         if(a <= 0.0000001 || det < 0) {
             // * There are no real solutions
-            return null;
+            realSolution = false;
         }
         else if(det == 0) {
             // * There is one solution
@@ -301,13 +305,17 @@ class Collisions { // TODO: AABB/poly
                                 ? intersection1 : intersection2;
         }
 
+        if(realSolution) {
+            // * Checking if the intersection point is within the line
+            var rx = (intersectionPoint.x - rayPos.x) / (castPoint.x - rayPos.x),
+                ry = (intersectionPoint.y - rayPos.y) / (castPoint.y - rayPos.y);
 
-        // * Checking if the intersection point is within the line
-        var rx = (intersectionPoint.x - rayPos.x) / (castPoint.x - rayPos.x),
-            ry = (intersectionPoint.y - rayPos.y) / (castPoint.y - rayPos.y);
-
-        if((rx >= 0 && rx <= 1) || (ry >= 0 && ry <=1) || ray.infinite) {
-            return intersectionPoint;
+            if((rx >= 0 && rx <= 1) || (ry >= 0 && ry <=1) || ray.infinite) {
+                return intersectionPoint;
+            }
+            else {
+                return null;
+            }
         }
         else {
             return null;
@@ -315,50 +323,56 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Checks for a collision between an AABB and a ray
-    public static function aabbwithRay(aabb: CollisionAABB, ray: CollisionRay): Vector2 {
+    public static inline function aabbwithRay(aabb: CollisionAABB, ray: CollisionRay): Vector2 {
         var rayPos = ray.getAbsPosition();
         var boxBounds = aabb.bounds;
 
+        var intersectionPoint: Vector2 = null;
+
         // * Checking if the ray origin is inside the AABB
         if(pointInAABB(rayPos, boxBounds.min, boxBounds.max)) {
-            return rayPos;
+            intersectionPoint = rayPos;
         }
-        
-        var intersections: Array<Vector2> = [];
-        var castPoint = ray.getGlobalTransformedCastPoint();
+        else {
+            var intersections: Array<Vector2> = [];
+            var castPoint = ray.getGlobalTransformedCastPoint();
 
-        // * Get every vertex of the AABB to make lines with them
-        var verticies: Array<Vector2> = [
-            boxBounds.min,
-            new Vector2(boxBounds.max.x, boxBounds.min.y),
-            boxBounds.max,
-            new Vector2(boxBounds.min.x, boxBounds.max.y)
-        ];
-        
-        // * Find all line intersection with the edges of the AABB
-        for(i in 0...verticies.length) {
-            var vertex = verticies[i];
-            var nextVertex = verticies[(i + 1)%verticies.length];
+            // * Get every vertex of the AABB to make lines with them
+            var verticies: Array<Vector2> = [
+                boxBounds.min,
+                new Vector2(boxBounds.max.x, boxBounds.min.y),
+                boxBounds.max,
+                new Vector2(boxBounds.min.x, boxBounds.max.y)
+            ];
+            
+            // * Find all line intersection with the edges of the AABB
+            for(i in 0...verticies.length) {
+                var vertex = verticies[i];
+                var nextVertex = verticies[(i + 1)%verticies.length];
 
-            var intersection = lineIntersection(vertex, nextVertex, false, rayPos, castPoint, ray.infinite);
-            if(intersection != null) {
-                intersections.push(intersection);
+                var intersection = lineIntersection(vertex, nextVertex, false, rayPos, castPoint, ray.infinite);
+                if(intersection != null) {
+                    intersections.push(intersection);
+                }
             }
-        }
 
-        // * Find the intersection with the closest distance to the ray origin
-        var closestIntersection: Vector2 = null;
-        for(intersection in intersections) {
-            if(closestIntersection == null || closestIntersection.distanceTo(rayPos) > intersection.distanceTo(rayPos)) {
-                closestIntersection = intersection;
+            // * Find the intersection with the closest distance to the ray origin
+            var closestIntersection: Vector2 = null;
+            for(intersection in intersections) {
+                if(closestIntersection == null || closestIntersection.distanceTo(rayPos) > intersection.distanceTo(rayPos)) {
+                    closestIntersection = intersection;
+                }
             }
-        }
 
-        return closestIntersection;
+            intersectionPoint = closestIntersection;
+        }
+        return intersectionPoint;
     }
 
     // & Checks for a collision between an AABB and a polygon
-    public static function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): Bool {
+    public static inline function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): Bool {
+        var isCollision: Bool = true;
+
         // * Runs the code twice, switching between checking the poly to the AABB
         var boxBounds = aabb.bounds;
         for(i in 0...2) {
@@ -409,16 +423,20 @@ class Collisions { // TODO: AABB/poly
                 
                 // * Checking if the shapes overlap
                 if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
-                    return false;
+                    isCollision = false;
+                    break;
                 }
             }
 
+            if(!isCollision) {
+                break;
+            }
         }
-        return true;
+        return isCollision;
     }
 
     // & Checks for a collision between an AABB and a circle
-    public static function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): Bool {
+    public static inline function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): Bool {
         var bounds = aabb.bounds;
         var aabbMidPoint = bounds.min.add(new Vector2((aabb.transformedWidth - 1)/2, (aabb.transformedHeight - 1)/2));
 
@@ -432,12 +450,12 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Checks if two radiuses intersect
-    public static function radiusIntersection(pos1: Vector2, pos2: Vector2, radius1: Float, radius2: Float): Bool {
+    public static inline function radiusIntersection(pos1: Vector2, pos2: Vector2, radius1: Float, radius2: Float): Bool {
         var distance = pos1.subtract(pos2).getLength();
         return distance < radius1 + radius2;
     }
 
-    public static function lineIntersection(l1P1: Vector2, l1P2: Vector2, l1Infinite: Bool, l2P1: Vector2, l2P2: Vector2, l2Infinite: Bool): Vector2 {
+    public static inline function lineIntersection(l1P1: Vector2, l1P2: Vector2, l1Infinite: Bool, l2P1: Vector2, l2P2: Vector2, l2Infinite: Bool): Vector2 {
         // * Calculating standard form of the lines
         var a1 = l1P2.y - l1P1.y,
             b1 = l1P1.x - l1P2.x,
@@ -460,15 +478,11 @@ class Collisions { // TODO: AABB/poly
             rx1 = (x - l2P1.x) / (l2P2.x - l2P1.x),
             ry1 = (y - l2P1.y) / (l2P2.y - l2P1.y);
         
-        if(((rx0 >= 0 && rx0 <= 1) || (ry0 >= 0 && ry0 <=1) || l1Infinite) && ((rx1 >= 0 && rx1 <= 1) || (ry1 >= 0 && ry1 <=1)) || l2Infinite) {
-            return new Vector2(x, y);
-        }
-        else {
-            return null;
-        }
+        var valid: Bool = ((rx0 >= 0 && rx0 <= 1) || (ry0 >= 0 && ry0 <=1) || l1Infinite) && ((rx1 >= 0 && rx1 <= 1) || (ry1 >= 0 && ry1 <=1)) || l2Infinite;
+        return valid ? new Vector2(x, y) : null;
     }
 
-    public static function boundsIntersection(bounds1: Bounds, bounds2: Bounds): Bool {
+    public static inline function boundsIntersection(bounds1: Bounds, bounds2: Bounds): Bool {
         return  (bounds1.min.x < bounds2.max.x &&
                  bounds1.max.x > bounds2.min.x &&
                  bounds1.min.y < bounds2.max.y &&
@@ -476,7 +490,7 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Checks if a coordinite is inside an AABB
-    public static function pointInAABB(point: Vector2, topLeft: Vector2, bottomRight: Vector2): Bool {
+    public static inline function pointInAABB(point: Vector2, topLeft: Vector2, bottomRight: Vector2): Bool {
         return  point.x <= bottomRight.x    &&
                 point.x >= topLeft.x        &&
                 point.y <= bottomRight.y    &&
@@ -484,7 +498,7 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Checks if a coordinite is inside a triangle
-    public static function pointInTriangle(a: Vector2, b: Vector2, c: Vector2, point: Vector2): Bool {
+    public static inline function pointInTriangle(a: Vector2, b: Vector2, c: Vector2, point: Vector2): Bool {
         var w1: Float = a.x*(c.y - a.y) + (point.y - a.y)*(c.x - a.x) - point.x*(c.y - a.y);
         w1 /= (b.y - a.y)*(c.x - a.x) - (b.x - a.x)*(c.y - a.y);
 
@@ -497,7 +511,9 @@ class Collisions { // TODO: AABB/poly
     }
 
     // & Checks if a coordinite is inside a polygon
-    public static function pointInPolygon(verticies: Array<Vector2>, point: Vector2): Bool {
+    public static inline function pointInPolygon(verticies: Array<Vector2>, point: Vector2): Bool {
+        var isPoint: Bool = false;
+
         if(verticies.length >= 3) {
             var p1: Vector2 = verticies[0];
 
@@ -506,10 +522,11 @@ class Collisions { // TODO: AABB/poly
                     p3: Vector2 = verticies[i];
                 
                 if(pointInTriangle(p1, p2, p3, point)) {
-                    return true;
+                    isPoint = true;
+                    break;
                 }
             }
         }
-        return false;
+        return isPoint;
     }
 }

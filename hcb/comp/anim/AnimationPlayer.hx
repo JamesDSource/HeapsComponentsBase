@@ -28,8 +28,8 @@ class AnimationPlayer extends Component {
             for(animationSlot in animationSlots) {
                 if(animationSlot.animation != null) {
                     // * Updating the position
-                    animationSlot.animation.anim.x = transform.position.x;
-                    animationSlot.animation.anim.y = transform.position.y;
+                    animationSlot.animation.x = transform.position.x;
+                    animationSlot.animation.y = transform.position.y;
                 }
             }
         }
@@ -45,7 +45,7 @@ class AnimationPlayer extends Component {
 
     public function removeAnimationSlot(name: String) {
         if(animationSlots.exists(name) && animationSlots[name].animation != null) {
-            animationLayers.removeChild(animationSlots[name].animation.anim);
+            animationLayers.removeChild(animationSlots[name].animation);
         }
 
         animationSlots.remove(name);
@@ -54,11 +54,11 @@ class AnimationPlayer extends Component {
     public function setAnimationSlot(name: String, animation: Animation) {
         if(animationSlots.exists(name)) {
             if(animationSlots[name].animation != null) {
-                animationLayers.removeChild(animationSlots[name].animation.anim);
+                animationLayers.removeChild(animationSlots[name].animation);
             }
 
             animationSlots[name].animation = animation;
-            animationLayers.add(animation.anim, animationSlots[name].layer);
+            animationLayers.add(animation, animationSlots[name].layer);
         }
     }
 

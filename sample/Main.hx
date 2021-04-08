@@ -1,3 +1,4 @@
+import hxd.Window;
 import h2d.Graphics;
 import h2d.Tile;
 import h2d.Bitmap;
@@ -15,6 +16,8 @@ class Main extends hxd.App {
     private var collisionGridMap: Map<Int, Vector2 -> Int -> CollisionShape> = new Map<Int, Vector2 -> Int -> CollisionShape>();
     
     override function init() {
+        Window.getInstance().vsync = false;
+
         var levels = new Levels();
 
         // * Project init

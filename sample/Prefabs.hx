@@ -12,7 +12,7 @@ class Prefabs {
         var player: Array<Component> = [
             new Transform2D("Position"),
             new PlayerController("Controller"),
-            new CollisionAABB("AABB", 16, 20, OriginPoint.bottomCenter),
+            new CollisionAABB("AABB", 10, 20, OriginPoint.bottomCenter),
             new AnimationPlayer("Animations", 1)
         ];
         
