@@ -6,3 +6,4 @@ Features
   - Collisions
   - Pathfinding
   - Behavior trees
+  - Animation Player
