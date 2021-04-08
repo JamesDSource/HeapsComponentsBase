@@ -1,3 +1,4 @@
+import hcb.comp.anim.AnimationPlayer;
 import hcb.Origin.OriginPoint;
 import hcb.comp.*;
 import hcb.math.Vector2;
@@ -8,14 +9,11 @@ class Prefabs {
     public static function player(entity: ldtk.Entity): Array<Component> {
         var playerEnt: Levels.Entity_Player = cast entity;
 
-        var ap: AnimationPlayer = new AnimationPlayer("Animations", 1);
-        ap.addAnimation("Cube", Tile.fromColor(0xFF00000, 32, 32), 1, OriginPoint.center);
-
         var player: Array<Component> = [
             new Transform2D("Position"),
             new PlayerController("Controller"),
-            new CollisionAABB("AABB", 32, 32, OriginPoint.center),
-            ap,
+            new CollisionAABB("AABB", 16, 20, OriginPoint.bottomCenter),
+            new AnimationPlayer("Animations", 1)
         ];
         
         return player;

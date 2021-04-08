@@ -1,15 +1,23 @@
+import hcb.Origin.OriginPoint;
+import hcb.comp.anim.*;
 import ldtk.Project;
 import hxd.Key;
 import hcb.comp.Component;
 import hcb.comp.*;
 import hcb.comp.col.*;
 import hcb.math.Vector2;
+import hxd.Res;
 
 class PlayerController extends Component {
 
     private var transform: Transform2D;
     private var collisionBox: CollisionAABB;
+    private var animationPlayer: AnimationPlayer;
     
+    private var runSide: Animation;
+    private var runFront: Animation;
+    private var runBack: Animation;
+
     private var speed: Float = 4;
 
     public function new(name: String) {
@@ -19,6 +27,14 @@ class PlayerController extends Component {
     public override function init() {
         transform = cast parentEntity.getComponentOfType(Transform2D);
         collisionBox = cast parentEntity.getComponentOfType(CollisionAABB);
+        animationPlayer = cast parentEntity.getComponentOfType(AnimationPlayer);
+
+        runSide = new Animation(Res.WitchRunSide.toTile(), 6, OriginPoint.bottomCenter);
+        runFront = new Animation(Res.WitchRunFront.toTile(), 6, OriginPoint.bottomLeft, -9);
+        runBack = new Animation(Res.WitchRunBack.toTile(), 6, OriginPoint.bottomLeft, -6);
+
+        animationPlayer.addAnimationSlot("Default", 0);
+        animationPlayer.setAnimationSlot("Default", runFront);
     }
 
     public override function update(delta: Float) {
@@ -26,15 +42,21 @@ class PlayerController extends Component {
 
         if(Key.isDown(Key.UP)) {
             moveVector.y -= 1;
+            animationPlayer.setAnimationSlot("Default", runBack);
         }
         if(Key.isDown(Key.DOWN)) {
             moveVector.y += 1;
+            animationPlayer.setAnimationSlot("Default", runFront);
         }
         if(Key.isDown(Key.LEFT)) {
             moveVector.x -= 1;
+            animationPlayer.setAnimationSlot("Default", runSide);
+            runSide.flipX = true;
         }
         if(Key.isDown(Key.RIGHT)) {
             moveVector.x += 1;
+            animationPlayer.setAnimationSlot("Default", runSide);
+            runSide.flipX = false;
         }
         moveVector = moveVector.normalized();
         moveVector.multFMutate(speed);
