@@ -281,7 +281,7 @@ class Collisions {
 
             det = b*b -4*a*c;
         
-        var intersectionPoint: Vector2;
+        var intersectionPoint: Vector2 = null;
         var realSolution: Bool = true;
         
         if(a <= 0.0000001 || det < 0) {

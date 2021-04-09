@@ -73,17 +73,21 @@ class PlayerController extends Component {
 
         var velocity: Vector2 = moveVector.multF(delta);
 
-        while(project.collisionWorld.isCollisionAt(collisionBox, transform.position.add(new Vector2(moveVector.x, 0)))) {
-            velocity.x = Math.max(velocity.x - 1, 0);
-            if(velocity.x == 0) {
-                break;
+        if(velocity.x != 0) {
+            while(project.collisionWorld.isCollisionAt(collisionBox, transform.position.add(new Vector2(moveVector.x, 0)))) {
+                velocity.x = Math.max(velocity.x - 1, 0);
+                if(velocity.x == 0) {
+                    break;
+                }
             }
         }
 
-        while(project.collisionWorld.isCollisionAt(collisionBox, transform.position.add(new Vector2(0, moveVector.y)))) {
-            velocity.y = Math.max(velocity.y - 1, 0);
-            if(velocity.y == 0) {
-                break;
+        if(velocity.y != 0) {
+            while(project.collisionWorld.isCollisionAt(collisionBox, transform.position.add(new Vector2(0, moveVector.y)))) {
+                velocity.y = Math.max(velocity.y - 1, 0);
+                if(velocity.y == 0) {
+                    break;
+                }
             }
         }
 
