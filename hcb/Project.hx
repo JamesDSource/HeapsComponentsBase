@@ -78,9 +78,9 @@ class Project {
                 var ent = addEntity(ldtkEntityPrefabs[entity.identifier](entity));
                 var transform: Transform2D = cast ent.getComponentOfType(Transform2D);
                 if(transform != null) {
-                    transform.position.set(entity.pixelX, entity.pixelY);
+                    transform.moveTo(new Vector2(entity.pixelX, entity.pixelY));
                     if(offset != null) {
-                        transform.position.addMutate(offset);
+                        transform.move(offset);
                     }
                 }
                 entitiesAdded.push(ent);

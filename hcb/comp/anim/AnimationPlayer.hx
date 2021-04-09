@@ -1,6 +1,7 @@
 package hcb.comp.anim;
 
 import hcb.comp.anim.Animation;
+import hcb.math.Vector2;
 
 private typedef AnimationSlot = {
     animation: Animation,
@@ -25,11 +26,12 @@ class AnimationPlayer extends Component {
         var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
         
         if(transform != null) {
+            var position: Vector2 = transform.getPosition();
             for(animationSlot in animationSlots) {
                 if(animationSlot.animation != null) {
                     // * Updating the position
-                    animationSlot.animation.x = transform.position.x;
-                    animationSlot.animation.y = transform.position.y;
+                    animationSlot.animation.x = position.x;
+                    animationSlot.animation.y = position.y;
                 }
             }
         }
@@ -53,6 +55,10 @@ class AnimationPlayer extends Component {
 
     public function setAnimationSlot(name: String, animation: Animation) {
         if(animationSlots.exists(name)) {
+            if(animationSlots[name].animation == animation) {
+                return;
+            }
+
             if(animationSlots[name].animation != null) {
                 animationLayers.removeChild(animationSlots[name].animation);
             }

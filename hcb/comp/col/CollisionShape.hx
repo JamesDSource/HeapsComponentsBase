@@ -55,7 +55,7 @@ class CollisionShape extends Component {
         else {
             var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
             if(transform != null) {
-                return transform.position.add(offset);
+                return transform.getPosition().add(offset);
             }
             else {
                 return offset.clone();
