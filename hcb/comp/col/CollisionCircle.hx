@@ -8,6 +8,7 @@ class CollisionCircle extends CollisionShape {
 
     public function set_radius(radius: Float): Float {
         this.radius = radius;
+        updateCollisionCells();
         return radius;
     }
 

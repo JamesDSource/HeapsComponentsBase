@@ -105,11 +105,13 @@ class Project {
                     }
                     else {
                         var staticColShape = new CollisionAABB("Static", tileSize, tileSize);
-                        staticColShape.offset = org;
+                        staticColShape.offsetX = org.x;
+                        staticColShape.offsetY = org.y;
                         newShape = staticColShape;
                     }
                     if(offset != null) {
-                        newShape.offset.addMutate(offset);
+                        newShape.offsetX += offset.x;
+                        newShape.offsetY += offset.y;
                     }
 
                     if(tags != null) {
@@ -117,7 +119,7 @@ class Project {
                             newShape.tags.push(tag);
                         }
                     }
-                    collisionWorld.shapes.push(newShape);
+                    collisionWorld.addShape(newShape);
                 }
             }
         }

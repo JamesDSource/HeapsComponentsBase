@@ -19,18 +19,18 @@ class Transform2D extends Component {
     }
 
     public function move(moveVector: Vector2) {
-        var ev = moveEvent.bind(_, position.clone());
+        var ev = moveEventCall.bind(_, position.clone());
         position.addMutate(moveVector);
         ev(position.clone());
     }
 
     public function moveTo(position: Vector2) {
-        var ev = moveEvent.bind(_, position.clone());
+        var ev = moveEventCall.bind(_, position.clone());
         this.position = position.clone();
         ev(position.clone());
     }
 
-    public function moveEventAdd(callBack: (Vector2, Vector2) -> Void) {
+    public function moveEventSubscribe(callBack: (Vector2, Vector2) -> Void) {
         eventListeners.push(callBack);
     }
 
@@ -38,7 +38,7 @@ class Transform2D extends Component {
         eventListeners.remove(callBack);
     }
 
-    private function moveEvent(to: Vector2, from: Vector2) {
+    private function moveEventCall(to: Vector2, from: Vector2) {
         for(listener in eventListeners) {
             listener(to, from);
         }

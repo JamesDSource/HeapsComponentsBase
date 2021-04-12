@@ -33,7 +33,8 @@ class Main extends hxd.App {
 
         collisionGridMap[1] = function(origin: Vector2, tileSize: Int): CollisionShape {
             var shape: CollisionPolygon = new CollisionPolygon("poly");
-            shape.offset = origin;
+            shape.offsetX = origin.x;
+            shape.offsetY = origin.y;
             shape.setVerticies(
                 [
                     new Vector2(tileSize - 1, 0),
@@ -46,7 +47,8 @@ class Main extends hxd.App {
 
         collisionGridMap[2] = function(origin: Vector2, tileSize: Int): CollisionShape {
             var shape: CollisionPolygon = new CollisionPolygon("poly");
-            shape.offset = origin;
+            shape.offsetX= origin.x;
+            shape.offsetY= origin.y;
             shape.setVerticies(
                 [
                     new Vector2(0, 0),

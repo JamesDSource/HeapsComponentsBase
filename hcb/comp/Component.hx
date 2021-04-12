@@ -5,7 +5,7 @@ import h2d.Object;
 
 class Component {
     // * Read only, do not change manually
-    public var parentEntity: hcb.Entity;
+    public var parentEntity: hcb.Entity = null;
     public var project: Project;
 
     public var updateable(default, set): Bool = true;

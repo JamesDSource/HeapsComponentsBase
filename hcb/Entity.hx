@@ -7,11 +7,19 @@ class Entity {
     private var components: Array<Component> = [];
     public var updatableComponents: Array<Component> = [];
 
+    private var componentAddedEventListeners = new Array<Component -> Void>();
+    private var componentRemovedEventListeners = new Array<Component -> Void>();
+
     public function new(project: Project) {
         this.project = project;
     }
 
     public function addComponent(component: Component, callInit: Bool = true): Void {
+        
+        if(component.parentEntity != null) {
+            component.parentEntity.removeComponent(component);
+        }
+
         components.push(component);
         if(component.updateable) {
             updatableComponents.push(component);
@@ -22,6 +30,7 @@ class Entity {
         if(callInit) {
             component.init();
         }
+        componentAddedEventCall(component);
     }
 
     public function removeComponent(component: Component): Void {
@@ -33,6 +42,7 @@ class Entity {
             }
 
             component.parentEntity = null;
+            componentRemovedEventCall(component);
         }
         else {
             trace("Trying to remove component that does not exist.");
@@ -88,5 +98,35 @@ class Entity {
             }
         }
         return null;
+    }
+
+    // & Component added event
+    public function componentAddedEventSubscribe(callBack: Component -> Void) {
+        componentAddedEventListeners.push(callBack);
+    }
+
+    public function componentAddedEventRemove(callBack: Component -> Void) {
+        componentAddedEventListeners.remove(callBack);
+    }
+
+    private function componentAddedEventCall(component: Component) {
+        for(listener in componentAddedEventListeners) {
+            listener(component);
+        }
+    }
+
+    // & Component removed event
+    public function componentRemovedEventSubscribe(callBack: Component -> Void) {
+        componentRemovedEventListeners.push(callBack);
+    }
+
+    public function componentRemovedEventRemove(callBack: Component -> Void) {
+        componentRemovedEventListeners.remove(callBack);
+    }
+
+    private function componentRemovedEventCall(component: Component) {
+        for(listener in componentRemovedEventListeners) {
+            listener(component);
+        }
     }
 }

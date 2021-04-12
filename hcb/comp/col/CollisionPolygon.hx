@@ -118,6 +118,7 @@ class CollisionPolygon extends CollisionShape {
             transformedVerticies.push(tVertex);
         }
         shapeChanged = true;
+        updateCollisionCells();
     }
 
     public function setVerticies(verticies: Array<Vector2>) {

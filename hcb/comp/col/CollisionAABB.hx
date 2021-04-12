@@ -62,5 +62,6 @@ class CollisionAABB extends CollisionShape {
     public function updateTransformations() {
         transformedWidth = width * scale.x;
         transformedHeight = height * scale.y;
+        updateCollisionCells();
     }
 }

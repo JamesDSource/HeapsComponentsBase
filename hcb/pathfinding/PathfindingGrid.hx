@@ -186,7 +186,7 @@ class PathfindingGrid {
 
     // & Adds collision shapes with certain tags as obsticles
     public function addCollisionShapesTag(collisionWorld: CollisionWorld, tag: String) {
-        for(shape in collisionWorld.shapes) {
+        for(shape in collisionWorld.getShapes()) {
             if(shape.tags.contains(tag)) {
                 var bounds: Bounds = shape.bounds,
                     tl = positionToCoord(bounds.min),
@@ -197,7 +197,8 @@ class PathfindingGrid {
                         var node = get(new Vector2(i, j));
 
                         if(!node.isObsticle) {
-                            collisionShape.offset.set(i*cellSize, j*cellSize); 
+                            collisionShape.offsetX  = i*cellSize;
+                            collisionShape.offsetY  = j*cellSize;  
                             
                             if(Collisions.test(collisionShape, shape)) {
                                 node.isObsticle = true;

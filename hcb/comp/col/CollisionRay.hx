@@ -53,5 +53,6 @@ class CollisionRay extends CollisionShape {
     private function updateTransformations() {
         castPointTransformed = castPoint;
         castPointTransformed = castPointTransformed.mult(scale);
+        updateCollisionCells();
     }
 }
