@@ -7,3 +7,5 @@ Features
   - Pathfinding
   - Behavior trees
   - Animation Player
+
+This game base relies on heaps and the ldtk-haxe-api

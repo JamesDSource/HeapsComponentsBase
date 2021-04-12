@@ -1,0 +1,15 @@
+{
+    "name": "HeapsComponentsBase",
+    "url" : "https://github.com/JamesDSource/HeapsComponentsBase/",
+    "license": "Public",
+    "tags": ["Heaps", "Collisions", "Behavior_Tree", "Structure", "Pathfinding"],
+    "description": "This is a base game structure for heaps that uses entites and component systems (not ecs), with some built in functionality like collisions, pathfinding, and behavior trees.",
+    "version": "0.0.1",
+    "classPath": "hcb/",
+    "releasenote": "Everything should be working well.",
+    "contributors": ["JamesD"],
+    "dependencies": {
+      "heaps": "",
+      "ldtk-haxe-api": ""
+    }
+  }
