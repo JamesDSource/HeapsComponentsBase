@@ -115,8 +115,8 @@ class Collisions {
                 poly2 = polygon1;
             }
 
-            var poly1V = poly1.getGlobalTransformedVerticies();
-            var poly2V = poly2.getGlobalTransformedVerticies();
+            var poly1V = poly1.getGlobalTransformedVertices();
+            var poly2V = poly2.getGlobalTransformedVertices();
             for(j in 0...poly1V.length) {
                 var vert: Vector2 = poly1V[j];
                 var nextVert: Vector2 = poly1V[(j + 1)%poly1V.length];
@@ -161,7 +161,7 @@ class Collisions {
 
     // & Checks for a collision between a polygon and a circle
     public static inline function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
-        var polyV = poly.getGlobalTransformedVerticies();
+        var polyV = poly.getGlobalTransformedVertices();
         var circleCenter = circle.getAbsPosition();
         var circleRadius = circle.radius;
         var closestVertex: Vector2 = null;
@@ -243,17 +243,17 @@ class Collisions {
     
     // & Finds the intersection point between a polygon and a ray
     public static inline function polyWithRay(poly: CollisionPolygon, ray: CollisionRay): Vector2 {    
-        var verticies: Array<Vector2> = poly.getGlobalTransformedVerticies();
+        var vertices: Array<Vector2> = poly.getGlobalTransformedVertices();
         var closestIntersection: Vector2 = null;
         var rayPos = ray.getAbsPosition();
 
-        if(pointInPolygon(verticies, rayPos)) {
+        if(pointInPolygon(vertices, rayPos)) {
             return rayPos;
         }
 
-        for(i in 0...verticies.length) {
-            var vertex1: Vector2 = verticies[i];
-            var vertex2: Vector2 = verticies[(i + 1)%verticies.length];
+        for(i in 0...vertices.length) {
+            var vertex1: Vector2 = vertices[i];
+            var vertex2: Vector2 = vertices[(i + 1)%vertices.length];
 
             var intersection = lineIntersection(vertex1, vertex2, false, rayPos, ray.getGlobalTransformedCastPoint(), ray.infinite);
             if(intersection != null && ( closestIntersection == null || intersection.subtract(rayPos).getLength() < closestIntersection.subtract(rayPos).getLength())) {
@@ -338,7 +338,7 @@ class Collisions {
             var castPoint = ray.getGlobalTransformedCastPoint();
 
             // * Get every vertex of the AABB to make lines with them
-            var verticies: Array<Vector2> = [
+            var vertices: Array<Vector2> = [
                 boxBounds.min,
                 new Vector2(boxBounds.max.x, boxBounds.min.y),
                 boxBounds.max,
@@ -346,9 +346,9 @@ class Collisions {
             ];
             
             // * Find all line intersection with the edges of the AABB
-            for(i in 0...verticies.length) {
-                var vertex = verticies[i];
-                var nextVertex = verticies[(i + 1)%verticies.length];
+            for(i in 0...vertices.length) {
+                var vertex = vertices[i];
+                var nextVertex = vertices[(i + 1)%vertices.length];
 
                 var intersection = lineIntersection(vertex, nextVertex, false, rayPos, castPoint, ray.infinite);
                 if(intersection != null) {
@@ -379,7 +379,7 @@ class Collisions {
             var poly1V: Array<Vector2> = [];
             var poly2V: Array<Vector2> = [];
             if(i == 0) {
-                poly1V = poly.getGlobalTransformedVerticies();
+                poly1V = poly.getGlobalTransformedVertices();
                 poly2V = [
                     boxBounds.min,
                     new Vector2(boxBounds.max.x, boxBounds.min.y),
@@ -394,7 +394,7 @@ class Collisions {
                     boxBounds.max,
                     new Vector2(boxBounds.min.x, boxBounds.max.y)
                 ];
-                poly2V = poly.getGlobalTransformedVerticies();
+                poly2V = poly.getGlobalTransformedVertices();
             }
 
             
@@ -511,15 +511,15 @@ class Collisions {
     }
 
     // & Checks if a coordinite is inside a polygon
-    public static inline function pointInPolygon(verticies: Array<Vector2>, point: Vector2): Bool {
+    public static inline function pointInPolygon(vertices: Array<Vector2>, point: Vector2): Bool {
         var isPoint: Bool = false;
 
-        if(verticies.length >= 3) {
-            var p1: Vector2 = verticies[0];
+        if(vertices.length >= 3) {
+            var p1: Vector2 = vertices[0];
 
-            for(i in 2...verticies.length) {
-                var p2: Vector2 = verticies[i - 1],
-                    p3: Vector2 = verticies[i];
+            for(i in 2...vertices.length) {
+                var p2: Vector2 = vertices[i - 1],
+                    p3: Vector2 = vertices[i];
                 
                 if(pointInTriangle(p1, p2, p3, point)) {
                     isPoint = true;

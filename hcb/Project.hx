@@ -20,7 +20,7 @@ class Project {
     public var scene: h2d.Scene = null;
     public var renderables: h2d.Layers;
 
-    public var collisionWorld: CollisionWorld = new CollisionWorld();
+    public var collisionWorld: CollisionWorld;
     public var navigationGrids: Map<String, hcb.pathfinding.PathfindingGrid> = [];
 
     public var ldtkEntityPrefabs: Map<String, ldtk.Entity->Array<Component>> = [];
@@ -29,10 +29,12 @@ class Project {
 
     public var calledFrom: Dynamic;
 
-    public function new(calledFrom: Dynamic) {
+    public function new(calledFrom: Dynamic, collisionCellSize: Float = 256) {
         resetScene();
         audioManager = Manager.get();
+        
         this.calledFrom = calledFrom;
+        collisionWorld = new CollisionWorld(collisionCellSize);
     }
 
     public function addEntity(components: Array<hcb.comp.Component>): Entity {

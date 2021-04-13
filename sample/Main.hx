@@ -32,30 +32,26 @@ class Main extends hxd.App {
         proj.renderables.add(rend, 0);
 
         collisionGridMap[1] = function(origin: Vector2, tileSize: Int): CollisionShape {
-            var shape: CollisionPolygon = new CollisionPolygon("poly");
+            var verts: Array<Vector2> = [
+                new Vector2(tileSize - 1, 0),
+                new Vector2(tileSize - 1, tileSize - 1),
+                new Vector2(0, tileSize - 1)
+            ];
+            var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
             shape.offsetX = origin.x;
             shape.offsetY = origin.y;
-            shape.setVerticies(
-                [
-                    new Vector2(tileSize - 1, 0),
-                    new Vector2(tileSize - 1, tileSize - 1),
-                    new Vector2(0, tileSize - 1)
-                ]
-            );
             return shape;
         }
 
         collisionGridMap[2] = function(origin: Vector2, tileSize: Int): CollisionShape {
-            var shape: CollisionPolygon = new CollisionPolygon("poly");
+            var verts: Array<Vector2> = [
+                new Vector2(0, 0),
+                new Vector2(tileSize - 1, tileSize - 1),
+                new Vector2(0, tileSize - 1)
+            ];
+            var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
             shape.offsetX= origin.x;
             shape.offsetY= origin.y;
-            shape.setVerticies(
-                [
-                    new Vector2(0, 0),
-                    new Vector2(tileSize - 1, tileSize - 1),
-                    new Vector2(0, tileSize - 1)
-                ]
-            );
             return shape;
         }
         proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"], null, collisionGridMap);

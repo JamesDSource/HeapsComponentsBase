@@ -1,15 +1,16 @@
 package hcb.comp.col;
 
+import hcb.Origin.OriginPoint;
 import hcb.comp.col.CollisionShape;
 import hcb.math.Vector2;
 
 // TODO: Make rotation work
 class CollisionPolygon extends CollisionShape {
     // ^ The points that define the polygon
-    // * All verticies are relative to the x/y position
-    private var verticies: Array<Vector2> = [];
+    // * All vertices are relative to the x/y position
+    private var vertices: Array<Vector2> = [];
     // ^ The points after scaling and rotation
-    private var transformedVerticies: Array<Vector2> = [];
+    private var transformedVertices: Array<Vector2> = [];
 
     // ^ Transformation data
     // ^ Rotation is in degrees
@@ -54,7 +55,7 @@ class CollisionPolygon extends CollisionShape {
                 lgX = Math.NEGATIVE_INFINITY,
                 lgY = Math.NEGATIVE_INFINITY;
 
-            for(vertex in transformedVerticies) {
+            for(vertex in transformedVertices) {
                 if(vertex.x < smX) {
                     smX = vertex.x;
                 }
@@ -77,52 +78,73 @@ class CollisionPolygon extends CollisionShape {
         return lastBounds;
     }
 
-    public function new(name: String) {
+    public function new(name: String, vertices: Array<Vector2>) {
         super(name);
+        setVertices(vertices);
     }
 
-    public function getVerticies(): Array<Vector2> {
-        var returnVerticies: Array<Vector2> = [];
-        for(vertex in verticies) {
-            returnVerticies.push(vertex.clone());
+    public function getVertices(): Array<Vector2> {
+        var returnVertices: Array<Vector2> = [];
+        for(vertex in vertices) {
+            returnVertices.push(vertex.clone());
         }
-        return returnVerticies;
+        return returnVertices;
     }
 
-    public function getTransformedVerticies(): Array<Vector2> {
-        var returnVerticies: Array<Vector2> = [];
-        for(vertex in transformedVerticies) {
-            returnVerticies.push(vertex.clone());
+    public function getTransformedVertices(): Array<Vector2> {
+        var returnVertices: Array<Vector2> = [];
+        for(vertex in transformedVertices) {
+            returnVertices.push(vertex.clone());
         }
-        return returnVerticies;
+        return returnVertices;
     }
 
-    public function getGlobalTransformedVerticies(): Array<Vector2> {
-        var returnVerticies: Array<Vector2> = getTransformedVerticies();
+    public function getGlobalTransformedVertices(): Array<Vector2> {
+        var returnVertices: Array<Vector2> = getTransformedVertices();
         var absPosition: Vector2 = getAbsPosition();
         if(absPosition == null) {
             return null;
         }
         
-        for(vert in returnVerticies) {
+        for(vert in returnVertices) {
             vert.addMutate(absPosition);
         }
-        return returnVerticies;
+        return returnVertices;
     }
 
     private function updateTransformations(): Void {
-        transformedVerticies = [];
-        for(vertex in verticies) {
+        transformedVertices = [];
+        for(vertex in vertices) {
             var tVertex = vertex.mult(polyScale);
             tVertex.setAngle(hxd.Math.degToRad(rotation) + vertex.getAngle());
-            transformedVerticies.push(tVertex);
+            transformedVertices.push(tVertex);
         }
         shapeChanged = true;
         updateCollisionCells();
     }
 
-    public function setVerticies(verticies: Array<Vector2>) {
-        this.verticies = verticies;
+    public function setVertices(vertices: Array<Vector2>) {
+        this.vertices = [];
+        for(vert in vertices) {
+            this.vertices.push(vert.clone());
+        }
+        updateTransformations();
+    }
+
+    public function rectangle(width: Float, height: Float, origin: OriginPoint = OriginPoint.topLeft) {
+        var verts: Array<Vector2> = [
+            new Vector2(0, 0),
+            new Vector2(width - 1, 0),
+            new Vector2(width - 1, height - 1),
+            new Vector2(0, height - 1)
+        ];
+
+        var originOffset: Vector2 = Origin.getOriginOffset(origin, new Vector2(width, height));
+        for(vert in verts) {
+            vert.addMutate(originOffset);
+        }
+
+        this.vertices = verts;
         updateTransformations();
     }
 }

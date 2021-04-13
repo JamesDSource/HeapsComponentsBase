@@ -8,10 +8,12 @@ class CollisionWorld {
     private var shapes: Array<CollisionShape> = [];
     private var renderAssets = new h2d.Object();
 
-    private var collisionCellSize = 128;
+    private var collisionCellSize: Float = 128;
     public var collisionCells = new SignedArray<SignedArray<Array<CollisionShape>>>();
 
-    public function new() {}
+    public function new(collisionCellSize: Float = 256) {
+        this.collisionCellSize = collisionCellSize;
+    }
 
     public function addShape(shape: CollisionShape) {
         shapes.push(shape);
