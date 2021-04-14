@@ -25,8 +25,12 @@ class CollisionShape extends Component {
     public var collisionWorld: CollisionWorld;
     private var cellsIn: Array<Array<CollisionShape>> = [];
 
-    public function new(name: String) {
+    public function new(name: String, ?offset: Vector2) {
         super(name);
+        if(offset != null) {
+            offsetX = offset.x;
+            offsetY = offset.y;
+        }
         updateable = true;
     }
 

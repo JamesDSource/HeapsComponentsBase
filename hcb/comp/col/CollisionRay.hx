@@ -22,8 +22,8 @@ class CollisionRay extends CollisionShape {
         }
     }
 
-    public function new(name: String, infinite: Bool) {
-        super(name);  
+    public function new(name: String, infinite: Bool, ?offset: Vector2) {
+        super(name, offset);  
         this.infinite = infinite;
     }
 

@@ -20,8 +20,8 @@ class CollisionCircle extends CollisionShape {
         }
     }
 
-    public function new(name: String, radius: Float = 10) {
-        super(name);
+    public function new(name: String, radius: Float = 10, ?offset: Vector2) {
+        super(name, offset);
         this.radius = radius;
     }
 }

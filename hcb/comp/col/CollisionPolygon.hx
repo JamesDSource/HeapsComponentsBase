@@ -78,8 +78,8 @@ class CollisionPolygon extends CollisionShape {
         return lastBounds;
     }
 
-    public function new(name: String, vertices: Array<Vector2>) {
-        super(name);
+    public function new(name: String, vertices: Array<Vector2>, ?offset: Vector2) {
+        super(name, offset);
         setVertices(vertices);
     }
 
@@ -131,7 +131,7 @@ class CollisionPolygon extends CollisionShape {
         updateTransformations();
     }
 
-    public function rectangle(width: Float, height: Float, origin: OriginPoint = OriginPoint.topLeft) {
+    public static function rectangle(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.topLeft) {
         var verts: Array<Vector2> = [
             new Vector2(0, 0),
             new Vector2(width - 1, 0),
@@ -144,7 +144,6 @@ class CollisionPolygon extends CollisionShape {
             vert.addMutate(originOffset);
         }
 
-        this.vertices = verts;
-        updateTransformations();
+        return new CollisionPolygon(name, verts);
     }
 }

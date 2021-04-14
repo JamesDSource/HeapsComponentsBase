@@ -48,8 +48,8 @@ class CollisionAABB extends CollisionShape {
         }
     }
 
-    public function new(name: String, width: Float, height: Float, ?origin: OriginPoint) {
-        super(name);
+    public function new(name: String, width: Float, height: Float, ?origin: OriginPoint, ?offset: Vector2) {
+        super(name, offset);
 
         this.width = width;
         this.height = height;
