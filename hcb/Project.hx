@@ -18,7 +18,6 @@ class Project {
     public var entities: Array<Entity> = [];
 
     public var scene: h2d.Scene = null;
-    public var renderables: h2d.Layers;
 
     public var collisionWorld: CollisionWorld;
     public var navigationGrids: Map<String, hcb.pathfinding.PathfindingGrid> = [];
@@ -64,7 +63,6 @@ class Project {
         }
 
         navigationGrids = [];
-        renderables = new h2d.Layers(scene);
         ldtkEntityPrefabs = [];
     }
     

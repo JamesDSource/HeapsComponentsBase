@@ -12,7 +12,7 @@ class Prefabs {
             new Transform2D("Position"),
             new PlayerController("Controller"),
             new CollisionAABB("AABB", 10, 20, OriginPoint.bottomCenter),
-            new AnimationPlayer("Animations", 1)
+            new AnimationPlayer("Animations", null, 1)
         ];
         
         return player;

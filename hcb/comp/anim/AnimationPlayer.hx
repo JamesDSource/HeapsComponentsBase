@@ -11,15 +11,39 @@ private typedef AnimationSlot = {
 class AnimationPlayer extends Component {
     private var animationSlots: Map<String, AnimationSlot> = new Map<String, AnimationSlot>();
     private var animationLayers: h2d.Layers = new h2d.Layers();
-    private var layer: Int;
+    private var layer: Int = 0;
+    private var renderParent(default, set): h2d.Object;
 
-    public function new(name: String, layer: Int) {
+    private function set_renderParent(renderParent: h2d.Object): h2d.Object {
+        if(animationLayers.parent != null) {
+            animationLayers.parent.removeChild(animationLayers);
+        }
+        
+        if(renderParent != null) {
+            if(Std.isOfType(renderParent, h2d.Layers)) {
+                var layerParent: h2d.Layers = cast renderParent;
+                layerParent.add(animationLayers, layer);
+            }
+            else {
+                renderParent.addChild(animationLayers);
+            }
+        }
+
+        this.renderParent = renderParent;
+        return renderParent;
+    }
+
+    public function new(name: String, ?renderParent: h2d.Object, layer: Int = 0) {
+        // * renderParent should be null if you want it to just be added to the scene
         super(name);
+        this.renderParent = renderParent;
         this.layer = layer;
     }
 
     public override function init() {
-        project.renderables.add(animationLayers, layer);
+        if(renderParent == null) {
+            renderParent = project.scene;
+        }
     }
 
     public override function update(delta: Float) { 

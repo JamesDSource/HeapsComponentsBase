@@ -30,7 +30,7 @@ class Main extends hxd.App {
         proj.ldtkAddEntities(cast levels.all_levels.Test.l_Entities.getAllUntyped());
 
         var rend = levels.all_levels.Test.l_Collisions.render();
-        proj.renderables.add(rend, 0);
+        proj.scene.add(rend, 0);
 
         collisionGridMap[1] = function(origin: Vec2, tileSize: Int): CollisionShape {
             var verts: Array<Vec2> = [
