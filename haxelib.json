@@ -9,6 +9,7 @@
     "contributors": ["JamesD"],
     "dependencies": {
       "heaps": "",
-      "ldtk-haxe-api": ""
+      "ldtk-haxe-api": "",
+      "vector-math": ""
     }
   }

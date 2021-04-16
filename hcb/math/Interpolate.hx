@@ -1,5 +1,7 @@
 package hcb.math;
 
+import VectorMath;
+
 class Interpolate {
 
     // & Interpolates between two floats
@@ -16,8 +18,8 @@ class Interpolate {
     }
 
     // & Interpolates between two vectirs
-    public static function interpolateVector2(start: Vector2, ideal: Vector2, offset: Float): Vector2 {
-        var directionVector: Vector2 = ideal.subtract(start).normalized();
-        return new Vector2(interpolateF(start.x, ideal.x, directionVector.x*offset), interpolateF(start.y, ideal.y, directionVector.y*offset));
+    public static function interpolateVector2(start: Vec2, ideal: Vec2, offset: Float): Vec2 {
+        var directionVector: Vec2 = (ideal - start).normalize();
+        return vec2(interpolateF(start.x, ideal.x, directionVector.x*offset), interpolateF(start.y, ideal.y, directionVector.y*offset));
     }
 }

@@ -8,4 +8,4 @@ Features
   - Behavior trees
   - Animation Player
 
-This game base relies on heaps and the ldtk-haxe-api
+This game base relies on heaps, ldtk-haxe-api, and vector-math
