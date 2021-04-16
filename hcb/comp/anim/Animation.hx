@@ -3,7 +3,7 @@ package hcb.comp.anim;
 import h2d.Anim;
 import h2d.Tile;
 import hcb.Origin;
-import hcb.math.Vector2;
+import VectorMath;
 
 class Animation extends Anim {
     public var flipX(default, set): Bool = false;
@@ -37,7 +37,7 @@ class Animation extends Anim {
             var h = animFrame.height;
 
             // * Setting the origin
-            var offset: Vector2 = Origin.getOriginOffset(originPoint, new Vector2(w, h));
+            var offset: Vec2 = Origin.getOriginOffset(originPoint, vec2(w, h));
             animFrame.dx = offset.x;
             animFrame.dy = offset.y;
         }

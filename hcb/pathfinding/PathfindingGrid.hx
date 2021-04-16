@@ -4,7 +4,7 @@ import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.CollisionAABB;
 import hcb.comp.col.Collisions;
 import hcb.comp.Transform2D;
-import hcb.math.Vector2;
+import VectorMath;
 
 typedef GridNode = {
     movementCostMult: Float,
@@ -19,19 +19,19 @@ typedef GridNode = {
 
 class PathfindingGrid {
     private var cellSize: Float;
-    private var gridSize: Vector2;
-    private var originPoint: Vector2;
+    private var gridSize: Vec2;
+    private var originPoint: Vec2;
     
     public var grid: Array<Array<GridNode>> = [];
 
     public var collisionShape: CollisionAABB;
     
-    public function new(cellSize: Float, gridSize: Vector2, ?originPoint: Vector2) {
+    public function new(cellSize: Float, gridSize: Vec2, ?originPoint: Vec2) {
         this.cellSize = cellSize;
         this.gridSize = gridSize;
         
         if(originPoint == null) {
-            this.originPoint = new Vector2();
+            this.originPoint = vec2(0, 0);
         }
         else {
             this.originPoint = originPoint;
@@ -51,26 +51,26 @@ class PathfindingGrid {
     }
 
     // & Gets a node from a vector
-    function get(index: Vector2): GridNode {
+    function get(index: Vec2): GridNode {
         return grid[cast index.x][cast index.y];
     }
 
     // & Checks if an index is in range
-    function inRange(index: Vector2): Bool {
+    function inRange(index: Vec2): Bool {
         return index.x > 0 && index.x < grid.length && index.y > 0 && index.y < grid[0].length;
     }
 
     // & Gets all the nodes connecting to the index. The diagCheck argument determins if the function
     // & Will check if diagnal connections can be made
     function getConnecting(index: GridNode, diagCheck: Bool = true): Array<GridNode> {
-        var possibleSpaces: Array<Vector2> = [];
-        var pos = new Vector2(index.xPos, index.yPos);
+        var possibleSpaces: Array<Vec2> = [];
+        var pos: Vec2 = vec2(index.xPos, index.yPos);
         if(diagCheck) {
             possibleSpaces = [
-                new Vector2(pos.x + 1,  pos.y),     // * Right
-                new Vector2(pos.x,      pos.y + 1), // * Down
-                new Vector2(pos.x - 1,  pos.y),     // * Left
-                new Vector2(pos.x,      pos.y - 1)  // * Up
+                vec2(pos.x + 1,  pos.y),     // * Right
+                vec2(pos.x,      pos.y + 1), // * Down
+                vec2(pos.x - 1,  pos.y),     // * Left
+                vec2(pos.x,      pos.y - 1)  // * Up
             ];
 
             var rObs = inRange(possibleSpaces[0]) ? get(possibleSpaces[0]).isObsticle : false,
@@ -79,28 +79,28 @@ class PathfindingGrid {
                 uObs = inRange(possibleSpaces[3]) ? get(possibleSpaces[3]).isObsticle : false;
 
             if(!rObs && !dObs) {  // * Right Down
-                possibleSpaces.push(new Vector2(pos.x + 1, pos.y + 1));
+                possibleSpaces.push(vec2(pos.x + 1, pos.y + 1));
             }
             if(!lObs && !dObs) {  // * Left Down
-                possibleSpaces.push(new Vector2(pos.x - 1, pos.y + 1));
+                possibleSpaces.push(vec2(pos.x - 1, pos.y + 1));
             }
             if(!rObs && !uObs) {  // * Right up
-                possibleSpaces.push(new Vector2(pos.x + 1, pos.y - 1));
+                possibleSpaces.push(vec2(pos.x + 1, pos.y - 1));
             }
             if(!lObs && !uObs) {  // * Left up
-                possibleSpaces.push(new Vector2(pos.x - 1, pos.y - 1));
+                possibleSpaces.push(vec2(pos.x - 1, pos.y - 1));
             }
         }
         else {
             possibleSpaces = [
-                new Vector2(pos.x + 1,  pos.y),      // * Right    
-                new Vector2(pos.x,      pos.y + 1),  // * Down
-                new Vector2(pos.x - 1,  pos.y),      // * Left
-                new Vector2(pos.x,      pos.y - 1),  // * Up
-                new Vector2(pos.x + 1,  pos.y + 1),  // * Right down
-                new Vector2(pos.x - 1,  pos.y + 1),  // * Left down
-                new Vector2(pos.x + 1,  pos.y - 1),  // * Right up
-                new Vector2(pos.x - 1,  pos.y - 1)   // * Left up
+                vec2(pos.x + 1,  pos.y),      // * Right    
+                vec2(pos.x,      pos.y + 1),  // * Down
+                vec2(pos.x - 1,  pos.y),      // * Left
+                vec2(pos.x,      pos.y - 1),  // * Up
+                vec2(pos.x + 1,  pos.y + 1),  // * Right down
+                vec2(pos.x - 1,  pos.y + 1),  // * Left down
+                vec2(pos.x + 1,  pos.y - 1),  // * Right up
+                vec2(pos.x - 1,  pos.y - 1)   // * Left up
             ];
         }
 
@@ -128,22 +128,22 @@ class PathfindingGrid {
     }
 
     // & Gets the coordinates on the grid from a certain position
-    public function positionToCoord(position: Vector2): Vector2 {
-        var coords = position.divF(cellSize);
+    public function positionToCoord(position: Vec2): Vec2 {
+        var coords = position/cellSize;
         coords.x = hxd.Math.clamp(Math.floor(coords.x), 0, gridSize.x - 1);
         coords.y = hxd.Math.clamp(Math.floor(coords.y), 0, gridSize.y - 1);
         return coords;
     }
 
     // & Gets the position of the center of a grid coordinate
-    public function coordToPosition(coord: Vector2): Vector2 {
-        var pos = coord.multF(cellSize);
-        pos.addFMutate(cellSize/2 - 1);
+    public function coordToPosition(coord: Vec2): Vec2 {
+        var pos = coord*cellSize;
+        pos += cellSize/2 - 1;
         return pos;
     }
 
     // & Gets the closest grid point that isn't an obsticle
-    public function getClosestCoord(position: Vector2): Vector2 {
+    public function getClosestCoord(position: Vec2): Vec2 {
         var coords = positionToCoord(position);
         if(grid[cast coords.x][cast coords.y].isObsticle = false) {
             return coords;
@@ -161,7 +161,7 @@ class PathfindingGrid {
                             newOpened.push(possibleSpace);
                         }
                         else if(!possibleSpace.isObsticle) {
-                            return new Vector2(possibleSpace.xPos, possibleSpace.yPos);
+                            return vec2(possibleSpace.xPos, possibleSpace.yPos);
                         }
                     }
 
@@ -174,13 +174,13 @@ class PathfindingGrid {
     }
 
     // & Gets the closest point that isn't an obsticle on the grid
-    public function getClosestPoint(position: Vector2): Vector2 {
-        var closestCoord: Vector2 = getClosestCoord(position);
+    public function getClosestPoint(position: Vec2): Vec2 {
+        var closestCoord: Vec2 = getClosestCoord(position);
         return coordToPosition(closestCoord);
     }
 
     // & Sets the obsticle value of a single grid node 
-    public function setIsObsticle(coords: Vector2, isObsticle: Bool): Void {
+    public function setIsObsticle(coords: Vec2, isObsticle: Bool): Void {
         grid[cast coords.x][cast coords.y].isObsticle = isObsticle;
     }
 
@@ -194,7 +194,7 @@ class PathfindingGrid {
 
                 for(i in cast(tl.x, Int)...cast br.x + 1) {
                     for(j in cast(tl.y, Int)...cast br.y + 1) {
-                        var node = get(new Vector2(i, j));
+                        var node = get(vec2(i, j));
 
                         if(!node.isObsticle) {
                             collisionShape.offsetX  = i*cellSize;
@@ -211,7 +211,7 @@ class PathfindingGrid {
     }
 
     // & Sets the movement cost of a single grid node 
-    public function setMovementCostMult(coords: Vector2, newCost: Float): Void {
+    public function setMovementCostMult(coords: Vec2, newCost: Float): Void {
         grid[cast coords.x][cast coords.y].movementCostMult = newCost;
     }
 
@@ -244,7 +244,7 @@ class PathfindingGrid {
     }
 
     // & Gets the path in grid coordinates
-    public function getPathGrid(startCoord: Vector2, endCoord: Vector2): Array<Vector2> {
+    public function getPathGrid(startCoord: Vec2, endCoord: Vec2): Array<Vec2> {
         if(get(endCoord).isObsticle) {
             return [];
         }
@@ -286,9 +286,9 @@ class PathfindingGrid {
     }
 
     // & Gets the path in pixel coordinates
-    public function getPath(startPos: Vector2, endPos: Vector2): Array<Vector2> {
+    public function getPath(startPos: Vec2, endPos: Vec2): Array<Vec2> {
         var gridPath = getPathGrid(positionToCoord(startPos), positionToCoord(endPos));
-        var returnPath: Array<Vector2> = [];
+        var returnPath: Array<Vec2> = [];
         for(coord in gridPath) {
             var newCoord = coordToPosition(coord);
             returnPath.push(newCoord);
@@ -297,18 +297,18 @@ class PathfindingGrid {
     }
 
     // & For the A* to trace back the nodes and create a path
-    private function retracePath(startNodePos: Vector2, endNodePos: Vector2): Array<Vector2> {
-        var path: Array<Vector2> = [];
+    private function retracePath(startNodePos: Vec2, endNodePos: Vec2): Array<Vec2> {
+        var path: Array<Vec2> = [];
 
         var startNode = get(startNodePos),
             endNode = get(endNodePos);
 
-        var dist = Math.ceil(startNodePos.distanceTo(endNodePos));
+        var dist = Math.ceil(distance(startNodePos, endNodePos));
 
         var currentNode: GridNode = endNode;
         var iteration: Int = 0;
         while(currentNode != startNode) {
-            path.push(new Vector2(currentNode.xPos, currentNode.yPos));
+            path.push(vec2(currentNode.xPos, currentNode.yPos));
             if(currentNode.parent != null) {
                 currentNode = currentNode.parent;
             }

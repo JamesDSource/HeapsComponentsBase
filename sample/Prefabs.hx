@@ -1,7 +1,6 @@
 import hcb.comp.anim.AnimationPlayer;
 import hcb.Origin.OriginPoint;
 import hcb.comp.*;
-import hcb.math.Vector2;
 import h2d.Tile;
 import hcb.comp.col.*;
 

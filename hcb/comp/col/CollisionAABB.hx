@@ -1,7 +1,8 @@
 package hcb.comp.col;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.Origin;
-import hcb.math.Vector2;
+import VectorMath;
+
 class CollisionAABB extends CollisionShape {
 
     public var origin: OriginPoint = OriginPoint.topLeft;
@@ -12,7 +13,7 @@ class CollisionAABB extends CollisionShape {
     public var transformedHeight(default, null): Float;
     public var scaleX(default, set): Float = 1;
     public var scaleY(default, set): Float = 1;
-    private var scale: Vector2 = new Vector2(1, 1);
+    private var scale: Vec2 = vec2(1, 1);
 
     private function set_width(width: Float): Float {
         this.width = width;
@@ -41,14 +42,14 @@ class CollisionAABB extends CollisionShape {
     }
 
     private override function get_bounds(): Bounds {
-        var tl = getAbsPosition().add(Origin.getOriginOffset(origin, new Vector2(transformedWidth, transformedHeight)));
+        var tl = getAbsPosition() + Origin.getOriginOffset(origin, vec2(transformedWidth, transformedHeight));
         return {
-            min: new Vector2(tl.x, tl.y),
-            max: new Vector2(tl.x + transformedWidth - 1, tl.y + transformedHeight - 1)
+            min: vec2(tl.x, tl.y),
+            max: vec2(tl.x + transformedWidth - 1, tl.y + transformedHeight - 1)
         }
     }
 
-    public function new(name: String, width: Float, height: Float, ?origin: OriginPoint, ?offset: Vector2) {
+    public function new(name: String, width: Float, height: Float, ?origin: OriginPoint, ?offset: Vec2) {
         super(name, offset);
 
         this.width = width;

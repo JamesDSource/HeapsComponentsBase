@@ -1,31 +1,31 @@
 package hcb.comp.col;
 
+import VectorMath.vec2;
 import hcb.Project.PauseMode;
-import hxsl.Types.Vec;
-import hcb.math.Vector2;
+import VectorMath;
 
 typedef Bounds = {
-    min: Vector2,
-    max: Vector2
+    min: Vec2,
+    max: Vec2
 }
 
 class CollisionShape extends Component {
     public var active: Bool = true;
-    public var bounds(get, null): Bounds = {min: new Vector2(), max: new Vector2()};
+    public var bounds(get, null): Bounds;
 
     public var tags: Array<String> = [];
     public var ignoreTags: Array<String> = [];
 
-    private var offset: Vector2 = new Vector2();
+    private var offset: Vec2 = vec2(0, 0);
     public var offsetX(default, set): Float = 0;
     public var offsetY(default, set): Float = 0;
 
-    public var overridePosition: Vector2 = null;
+    public var overridePosition: Vec2 = null;
 
     public var collisionWorld: CollisionWorld;
     private var cellsIn: Array<Array<CollisionShape>> = [];
 
-    public function new(name: String, ?offset: Vector2) {
+    public function new(name: String, ?offset: Vec2) {
         super(name);
         if(offset != null) {
             offsetX = offset.x;
@@ -35,7 +35,7 @@ class CollisionShape extends Component {
     }
 
     private dynamic function get_bounds(): Bounds {
-        return {min: new Vector2(), max: new Vector2()};
+        return {min: vec2(0, 0), max: vec2(0, 0)};
     }
 
     private function set_offsetX(offsetX: Float): Float {
@@ -80,9 +80,9 @@ class CollisionShape extends Component {
         }
     }
 
-    public function getAbsPosition(acceptOverride: Bool = true): Vector2 {
+    public function getAbsPosition(acceptOverride: Bool = true): Vec2 {
         if(acceptOverride && overridePosition != null) {
-            return overridePosition.add(offset);
+            return overridePosition + offset;
         }
         
         if(parentEntity == null) {
@@ -91,7 +91,7 @@ class CollisionShape extends Component {
         else {
             var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
             if(transform != null) {
-                return transform.getPosition().add(offset);
+                return transform.getPosition() + offset;
             }
             else {
                 return offset.clone();
@@ -136,7 +136,7 @@ class CollisionShape extends Component {
     }
 
     // & Event listener for when the Transform2D moves
-    private function onMove(to: Vector2, from: Vector2) {
+    private function onMove(to: Vec2, from: Vec2) {
         updateCollisionCells();
     }
 

@@ -3,13 +3,15 @@ package hcb.comp;
 import hcb.Project.PauseMode;
 import h2d.Object;
 
+
 class Component {
     // * Read only, do not change manually
     public var parentEntity: hcb.Entity = null;
     public var project: Project;
 
     public var updateable(default, set): Bool = true;
-    public function set_updateable(updateable: Bool): Bool {
+    
+    private function set_updateable(updateable: Bool): Bool {
         if(parentEntity != null && this.updateable != updateable) {
             var hasAsUpdateable: Bool = parentEntity.updatableComponents.contains(this);
 

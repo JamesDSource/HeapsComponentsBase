@@ -1,9 +1,10 @@
+import haxe.rtti.Meta;
 import hxd.Window;
 import h2d.Graphics;
 import h2d.Tile;
 import h2d.Bitmap;
 import hcb.Origin.OriginPoint;
-import hcb.math.Vector2;
+import VectorMath;
 import hcb.pathfinding.PathfindingGrid;
 import hcb.Project;
 import hcb.comp.*;
@@ -13,7 +14,7 @@ class Main extends hxd.App {
     private var proj: hcb.Project;
     private var player: Array<hcb.comp.Component> = [];
 
-    private var collisionGridMap: Map<Int, Vector2 -> Int -> CollisionShape> = new Map<Int, Vector2 -> Int -> CollisionShape>();
+    private var collisionGridMap: Map<Int, Vec2 -> Int -> CollisionShape> = new Map<Int, Vec2 -> Int -> CollisionShape>();
     
     override function init() {
         Window.getInstance().vsync = false;
@@ -31,11 +32,11 @@ class Main extends hxd.App {
         var rend = levels.all_levels.Test.l_Collisions.render();
         proj.renderables.add(rend, 0);
 
-        collisionGridMap[1] = function(origin: Vector2, tileSize: Int): CollisionShape {
-            var verts: Array<Vector2> = [
-                new Vector2(tileSize - 1, 0),
-                new Vector2(tileSize - 1, tileSize - 1),
-                new Vector2(0, tileSize - 1)
+        collisionGridMap[1] = function(origin: Vec2, tileSize: Int): CollisionShape {
+            var verts: Array<Vec2> = [
+                vec2(tileSize - 1, 0),
+                vec2(tileSize - 1, tileSize - 1),
+                vec2(0, tileSize - 1)
             ];
             var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
             shape.offsetX = origin.x;
@@ -43,11 +44,11 @@ class Main extends hxd.App {
             return shape;
         }
 
-        collisionGridMap[2] = function(origin: Vector2, tileSize: Int): CollisionShape {
-            var verts: Array<Vector2> = [
-                new Vector2(0, 0),
-                new Vector2(tileSize - 1, tileSize - 1),
-                new Vector2(0, tileSize - 1)
+        collisionGridMap[2] = function(origin: Vec2, tileSize: Int): CollisionShape {
+            var verts: Array<Vec2> = [
+                vec2(0, 0),
+                vec2(tileSize - 1, tileSize - 1),
+                vec2(0, tileSize - 1)
             ];
             var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
             shape.offsetX= origin.x;

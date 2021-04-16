@@ -1,7 +1,7 @@
 package hcb.comp.anim;
 
 import hcb.comp.anim.Animation;
-import hcb.math.Vector2;
+import VectorMath;
 
 private typedef AnimationSlot = {
     animation: Animation,
@@ -26,7 +26,7 @@ class AnimationPlayer extends Component {
         var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
         
         if(transform != null) {
-            var position: Vector2 = transform.getPosition();
+            var position: Vec2 = transform.getPosition();
             for(animationSlot in animationSlots) {
                 if(animationSlot.animation != null) {
                     // * Updating the position

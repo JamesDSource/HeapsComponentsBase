@@ -1,58 +1,58 @@
 package hcb.comp.col;
 
 import hcb.comp.col.CollisionShape.Bounds;
-import hcb.math.Vector2;
+import VectorMath;
 
 class CollisionRay extends CollisionShape {
     // ^ Cast points are set in local coordinates
-    private var castPoint: Vector2 = new Vector2();
-    private var castPointTransformed: Vector2 = new Vector2();
+    private var castPoint: Vec2 = vec2(0, 0);
+    private var castPointTransformed: Vec2 = vec2(0, 0);
 
     public var scaleX: Float = 1;
     public var scaleY: Float = 1;
-    private var scale: Vector2 = new Vector2(1, 1);
+    private var scale: Vec2 = vec2(1, 1);
     public var infinite: Bool;
 
     private override function get_bounds(): Bounds {
         var pos = getAbsPosition();
 
         return {
-            min: new Vector2(Math.min(pos.x, pos.x + castPointTransformed.x), Math.min(pos.y, pos.y + castPointTransformed.y)),
-            max: new Vector2(Math.max(pos.x, pos.x + castPointTransformed.x), Math.max(pos.y, pos.y + castPointTransformed.y))
+            min: vec2(Math.min(pos.x, pos.x + castPointTransformed.x), Math.min(pos.y, pos.y + castPointTransformed.y)),
+            max: vec2(Math.max(pos.x, pos.x + castPointTransformed.x), Math.max(pos.y, pos.y + castPointTransformed.y))
         }
     }
 
-    public function new(name: String, infinite: Bool, ?offset: Vector2) {
+    public function new(name: String, infinite: Bool, ?offset: Vec2) {
         super(name, offset);  
         this.infinite = infinite;
     }
 
-    public function getCastPoint(): Vector2 {
+    public function getCastPoint(): Vec2 {
         return castPoint.clone();
     }
 
-    public function getTransformedCastPoint(): Vector2 {
+    public function getTransformedCastPoint(): Vec2 {
         return castPointTransformed.clone();
     }
 
-    public function getGlobalTransformedCastPoint(): Vector2 {
-        return castPointTransformed.add(getAbsPosition());
+    public function getGlobalTransformedCastPoint(): Vec2 {
+        return castPointTransformed + getAbsPosition();
     }
 
-    public function setCastPoint(point: Vector2) {
+    public function setCastPoint(point: Vec2) {
         castPoint = point.clone();
         updateTransformations();
     }
 
-    public function setCastPointGlobal(point: Vector2) {
-        castPoint = point.subtract(getAbsPosition());
+    public function setCastPointGlobal(point: Vec2) {
+        castPoint = point - getAbsPosition();
         updateTransformations();
     }
 
     // && Sets 'castPointTransformed' to 'castPoint' rotated and scaled
     private function updateTransformations() {
         castPointTransformed = castPoint;
-        castPointTransformed = castPointTransformed.mult(scale);
+        castPointTransformed = castPointTransformed*scale;
         updateCollisionCells();
     }
 }

@@ -1,6 +1,6 @@
 package hcb;
 
-import hcb.math.Vector2;
+import VectorMath;
 
 enum OriginPoint {
 	topLeft;
@@ -15,8 +15,8 @@ enum OriginPoint {
 }
 
 class Origin {
-	public static function getOriginOffset(origin: OriginPoint, size:Vector2): Vector2 {
-		var offset: Vector2 = new Vector2(0, 0);
+	public static function getOriginOffset(origin: OriginPoint, size:Vec2): Vec2 {
+		var offset: Vec2 = vec2(0, 0);
 		switch(origin) {
 			case OriginPoint.topLeft:
 			case OriginPoint.topCenter:

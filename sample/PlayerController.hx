@@ -1,3 +1,4 @@
+import VectorMath.normalize;
 import haxe.display.Display.Package;
 import h2d.Scene.ScaleModeAlign;
 import h2d.Camera;
@@ -8,7 +9,7 @@ import hxd.Key;
 import hcb.comp.Component;
 import hcb.comp.*;
 import hcb.comp.col.*;
-import hcb.math.Vector2;
+import VectorMath;
 import hxd.Res;
 
 class PlayerController extends Component {
@@ -28,7 +29,7 @@ class PlayerController extends Component {
 
     private var camera: Camera;
 
-    private var animationDirection: Vector2 = new Vector2();
+    private var animationDirection: Vec2 = vec2(0, 0);
 
     public function new(name: String) {
         super(name);
@@ -58,33 +59,33 @@ class PlayerController extends Component {
 
     public override function update(delta: Float) {
         var transformPos = transform.getPosition();
-        var moveVector: Vector2 = new Vector2();
+        var moveVector: Vec2 = vec2(0, 0);
 
         if(Key.isDown(Key.UP)) {
             moveVector.y -= 1;
-            animationDirection.set(0, -1);
+            animationDirection = vec2(0, -1);
         }
         if(Key.isDown(Key.DOWN)) {
             moveVector.y += 1;
-            animationDirection.set(0, 1);
+            animationDirection = vec2(0, 1);
         }
         if(Key.isDown(Key.LEFT)) {
             moveVector.x -= 1;
-            animationDirection.set(-1, 0);
+            animationDirection = vec2(-1, 0);
         }
         else if(Key.isDown(Key.RIGHT)) {
             moveVector.x += 1;
-            animationDirection.set(1, 0);
+            animationDirection = vec2(1, 0);
         }
-        moveVector = moveVector.normalized();
-        moveVector.multFMutate(speed);
+        moveVector = normalize(moveVector);
+        moveVector *= speed;
 
-        animate(animationDirection, !moveVector.equals(new Vector2()));
+        animate(animationDirection, moveVector != vec2(0, 0));
 
-        var velocity: Vector2 = moveVector.multF(delta);
+        var velocity: Vec2 = moveVector*delta;
 
         if(velocity.x != 0) {
-            while(project.collisionWorld.isCollisionAt(collisionBox, transformPos.add(new Vector2(moveVector.x, 0)))) {
+            while(project.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(moveVector.x, 0))) {
                 velocity.x = Math.max(velocity.x - 1, 0);
                 if(velocity.x == 0) {
                     break;
@@ -93,7 +94,7 @@ class PlayerController extends Component {
         }
 
         if(velocity.y != 0) {
-            while(project.collisionWorld.isCollisionAt(collisionBox, transformPos.add(new Vector2(0, moveVector.y)))) {
+            while(project.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(0, moveVector.y))) {
                 velocity.y = Math.max(velocity.y - 1, 0);
                 if(velocity.y == 0) {
                     break;
@@ -101,14 +102,14 @@ class PlayerController extends Component {
             }
         }
 
-        transformPos.addMutate(velocity);
+        transformPos += velocity;
         transform.moveTo(transformPos);
 
         camera.x = transformPos.x;
         camera.y = transformPos.y;
     }
 
-    private function animate(direction: Vector2, moving: Bool) {
+    private function animate(direction: Vec2, moving: Bool) {
         if(direction.x != 0) {
             if(moving) {
                 animationPlayer.setAnimationSlot("Default", runSide);

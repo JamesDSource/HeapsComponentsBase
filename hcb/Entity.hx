@@ -14,8 +14,7 @@ class Entity {
         this.project = project;
     }
 
-    public function addComponent(component: Component, callInit: Bool = true): Void {
-        
+    public function addComponent(component: Component): Void {
         if(component.parentEntity != null) {
             component.parentEntity.removeComponent(component);
         }
@@ -27,10 +26,28 @@ class Entity {
         component.parentEntity = this;
         component.project = project;
         
-        if(callInit) {
+        component.init();
+        componentAddedEventCall(component);
+    }
+
+    public function addComponents(components: Array<Component>): Void {
+        for(component in components) {
+            if(component.parentEntity != null) {
+                component.parentEntity.removeComponent(component);
+            }
+            
+            this.components.push(component);
+            if(component.updateable) {
+                updatableComponents.push(component);
+            }
+            component.parentEntity = this;
+            component.project = project;
+            componentAddedEventCall(component);
+        }
+
+        for(component in components) {
             component.init();
         }
-        componentAddedEventCall(component);
     }
 
     public function removeComponent(component: Component): Void {
@@ -45,7 +62,7 @@ class Entity {
             componentRemovedEventCall(component);
         }
         else {
-            trace("Trying to remove component that does not exist.");
+            trace("Trying to remove component that does not exist");
         }
     }
 

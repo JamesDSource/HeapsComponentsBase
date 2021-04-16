@@ -1,44 +1,44 @@
 package hcb.comp;
 
-import hcb.math.Vector2;
+import VectorMath;
 import hcb.comp.Component;
 
 class Transform2D extends Component {
-    private var position: Vector2;
-    private var eventListeners: Array<(Vector2, Vector2) -> Void> = new Array<(Vector2, Vector2) -> Void>();
+    private var position: Vec2;
+    private var eventListeners: Array<(Vec2, Vec2) -> Void> = new Array<(Vec2, Vec2) -> Void>();
 
-    public function new(name: String, ?position: Vector2) {
+    public function new(name: String, ?position: Vec2) {
         super(name);
         updateable = false;
 
-        this.position = position == null ? new Vector2() : position;
+        this.position = position == null ? vec2(0, 0) : position;
     }
 
-    public function getPosition(): Vector2 {
+    public function getPosition(): Vec2 {
         return position.clone();
     }
 
-    public function move(moveVector: Vector2) {
+    public function move(moveVector: Vec2) {
         var ev = moveEventCall.bind(_, position.clone());
-        position.addMutate(moveVector);
+        position += moveVector;
         ev(position.clone());
     }
 
-    public function moveTo(position: Vector2) {
+    public function moveTo(position: Vec2) {
         var ev = moveEventCall.bind(_, position.clone());
         this.position = position.clone();
         ev(position.clone());
     }
 
-    public function moveEventSubscribe(callBack: (Vector2, Vector2) -> Void) {
+    public function moveEventSubscribe(callBack: (Vec2, Vec2) -> Void) {
         eventListeners.push(callBack);
     }
 
-    public function moveEventRemove(callBack: (Vector2, Vector2) -> Void) {
+    public function moveEventRemove(callBack: (Vec2, Vec2) -> Void) {
         eventListeners.remove(callBack);
     }
 
-    private function moveEventCall(to: Vector2, from: Vector2) {
+    private function moveEventCall(to: Vec2, from: Vec2) {
         for(listener in eventListeners) {
             listener(to, from);
         }
