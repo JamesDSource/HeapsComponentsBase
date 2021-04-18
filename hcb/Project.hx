@@ -36,8 +36,18 @@ class Project {
         collisionWorld = new CollisionWorld(collisionCellSize);
     }
 
-    public function addEntity(components: Array<hcb.comp.Component>): Entity {
+    public function addEntity(components: Array<hcb.comp.Component>, ?position: Vec2): Entity {
         var entity = new Entity(this);
+
+        if(position != null) {
+            for(comp in components) {
+                if(Std.isOfType(comp, Transform2D)) {
+                    var transform: Transform2D = cast comp;
+                    transform.moveTo(position);
+                }
+            }
+        }
+
         entity.addComponents(components);
         entities.push(entity);
         return entity;
@@ -70,14 +80,8 @@ class Project {
         var entitiesAdded: Array<Entity> = [];
         for(entity in entities) {
             if(ldtkEntityPrefabs.exists(entity.identifier)) {
-                var ent = addEntity(ldtkEntityPrefabs[entity.identifier](entity));
-                var transform: Transform2D = cast ent.getComponentOfType(Transform2D);
-                if(transform != null) {
-                    transform.moveTo(vec2(entity.pixelX, entity.pixelY));
-                    if(offset != null) {
-                        transform.move(offset);
-                    }
-                }
+                var pos: Vec2 = offset == null ? vec2(entity.pixelX, entity.pixelY) : vec2(entity.pixelX, entity.pixelY) + offset;
+                var ent = addEntity(ldtkEntityPrefabs[entity.identifier](entity), pos);
                 entitiesAdded.push(ent);
             }
         }
