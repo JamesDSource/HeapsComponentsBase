@@ -15,7 +15,7 @@ enum OriginPoint {
 }
 
 class Origin {
-	public static function getOriginOffset(origin: OriginPoint, size:Vec2): Vec2 {
+	public static inline function getOriginOffset(origin: OriginPoint, size:Vec2): Vec2 {
 		var offset: Vec2 = vec2(0, 0);
 		switch(origin) {
 			case OriginPoint.topLeft:

@@ -11,8 +11,8 @@ private typedef AnimationSlot = {
 class AnimationPlayer extends Component {
     private var animationSlots: Map<String, AnimationSlot> = new Map<String, AnimationSlot>();
     private var animationLayers: h2d.Layers = new h2d.Layers();
-    private var layer: Int = 0;
-    private var renderParent(default, set): h2d.Object;
+    public var layer(default, set): Int = 0;
+    public var renderParent(default, set): h2d.Object;
 
     private function set_renderParent(renderParent: h2d.Object): h2d.Object {
         if(animationLayers.parent != null) {
@@ -31,6 +31,15 @@ class AnimationPlayer extends Component {
 
         this.renderParent = renderParent;
         return renderParent;
+    }
+
+    private function set_layer(layer: Int): Int {
+        if(this.layer != layer && renderParent != null && Std.isOfType(renderParent, h2d.Layers)) {
+            var layerParent: h2d.Layers = cast renderParent;
+            layerParent.add(animationLayers, layer);
+        }
+        this.layer = layer;
+        return layer;
     }
 
     public function new(name: String, ?renderParent: h2d.Object, layer: Int = 0) {
@@ -58,9 +67,6 @@ class AnimationPlayer extends Component {
                     animationSlot.animation.y = position.y;
                 }
             }
-        }
-        else {
-            trace("AnimationPlayer needs a transform to draw");
         }
     }
 
