@@ -110,6 +110,16 @@ class PlayerController extends Component {
 
         camera.x = transformPos.x;
         camera.y = transformPos.y;
+
+
+        if(Key.isPressed(Key.SPACE)) {
+            if(project.room == Main.room1) {
+                project.room = Main.room2;
+            }
+            else {
+                project.room = Main.room1;
+            }
+        }
     }
 
     private function animate(direction: Vec2, moving: Bool) {

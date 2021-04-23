@@ -10,6 +10,7 @@ class Component {
     public var attached(get, null): Bool;
 
     public var room: Room = null;
+    public var project(get, null): Project;
 
     public var updateable(default, set): Bool = true;
 
@@ -17,6 +18,13 @@ class Component {
         return parentEntity != null;
     }
     
+    private function get_project(): Project {
+        if(room != null) {
+            return room.project;
+        }
+        return null;
+    }
+
     private function set_updateable(updateable: Bool): Bool {
         if(parentEntity != null && this.updateable != updateable) {
             var hasAsUpdateable: Bool = parentEntity.updatableComponents.contains(this);
