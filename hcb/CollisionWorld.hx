@@ -27,6 +27,12 @@ class CollisionWorld {
         shape.updateCollisionCells();
     }
 
+    public function clear() {
+        for(shape in getShapes()) {
+            removeShape(shape);
+        }
+    }
+
     public function getShapes(): Array<CollisionShape> {
         return shapes.copy();
     }

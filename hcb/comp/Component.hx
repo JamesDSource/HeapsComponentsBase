@@ -1,15 +1,21 @@
 package hcb.comp;
 
-import hcb.Project.PauseMode;
+import hcb.Room.PauseMode;
 import h2d.Object;
 
 
 class Component {
     // * Read only, do not change manually
     public var parentEntity: hcb.Entity = null;
-    public var project: Project;
+    public var attached(get, null): Bool;
+
+    public var room: Room = null;
 
     public var updateable(default, set): Bool = true;
+
+    private function get_attached(): Bool {
+        return parentEntity != null;
+    }
     
     private function set_updateable(updateable: Bool): Bool {
         if(parentEntity != null && this.updateable != updateable) {
@@ -28,24 +34,24 @@ class Component {
     }
 
     public var name: String;
-    public var pauseMode: PauseMode = PauseMode.idle;
+    public var pauseMode: PauseMode = PauseMode.Idle;
 
     public function new(name: String) {
         this.name = name;
     }
 
     // & called when the component is added to an entity
-    public dynamic function init(): Void {
-        
-    }
+    public dynamic function init() {}
 
     // & Called automatically by the Project class every frame if updateable
-    public dynamic function update(delta: Float): Void {
+    public dynamic function update(delta: Float) {}
 
-    }
+    // & Called when the component is removed from an entity
+    public dynamic function onRemoved() {}
 
-    // & Called when the component is removed
-    public dynamic function onDestroy(): Void {
-
-    }
+    // & Called when the parent entity is added to a room
+    public dynamic function addedToRoom() {}
+    
+    // & Called when the parent entity is removed from a room
+    public dynamic function removedFromRoom() {}
 }

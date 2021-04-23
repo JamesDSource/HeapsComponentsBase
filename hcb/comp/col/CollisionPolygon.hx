@@ -131,7 +131,7 @@ class CollisionPolygon extends CollisionShape {
         updateTransformations();
     }
 
-    public static function rectangle(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.topLeft) {
+    public static function rectangle(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft) {
         var verts: Array<Vec2> = [
             vec2(0, 0),
             vec2(width - 1, 0),

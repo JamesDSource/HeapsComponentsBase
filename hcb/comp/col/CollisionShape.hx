@@ -1,7 +1,6 @@
 package hcb.comp.col;
 
 import VectorMath.vec2;
-import hcb.Project.PauseMode;
 import VectorMath;
 
 typedef Bounds = {
@@ -24,6 +23,8 @@ class CollisionShape extends Component {
 
     public var collisionWorld: CollisionWorld;
     private var cellsIn: Array<Array<CollisionShape>> = [];
+
+    private var transform: Transform2D;
 
     public function new(name: String, ?offset: Vec2) {
         super(name);
@@ -53,31 +54,30 @@ class CollisionShape extends Component {
     }
 
     public override function init() {
-        if(project != null) {
-            project.collisionWorld.addShape(this);
-        }
-
         parentEntity.componentAddedEventSubscribe(onComponentAdded);
         parentEntity.componentRemovedEventSubscribe(onComponentRemoved);
 
-        var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
+        transform = cast parentEntity.getComponentOfType(Transform2D);
         if(transform != null) {
             transform.moveEventSubscribe(onMove);
         }
     }
 
-    public override function onDestroy() {
-        if(collisionWorld != null) {
-            collisionWorld.removeShape(this);
-        }
-
+    public override function onRemoved() {
         parentEntity.componentAddedEventRemove(onComponentAdded);
         parentEntity.componentRemovedEventRemove(onComponentRemoved);
 
-        var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
         if(transform != null) {
             transform.moveEventRemove(onMove);
         }
+    }
+
+    public override function addedToRoom() {
+        room.collisionWorld.addShape(this);
+    }
+
+    public override function removedFromRoom() {
+        collisionWorld.removeShape(this);
     }
 
     public function getAbsPosition(acceptOverride: Bool = true): Vec2 {
@@ -142,17 +142,17 @@ class CollisionShape extends Component {
 
     // & Incase the transform is added later
     private function onComponentAdded(component: Component) {
-        if(Std.isOfType(component, Transform2D)) {
-            var transform: Transform2D = cast component;
+        if(transform == null && Std.isOfType(component, Transform2D)) {
+            transform = cast component;
             transform.moveEventSubscribe(onMove);
         }
     }
 
     // & If the transform gets removed, remove the event listener
     private function onComponentRemoved(component: Component) {
-        if(Std.isOfType(component, Transform2D)) {
-            var transform: Transform2D = cast component;
+        if(component == transform) {
             transform.moveEventRemove(onMove);
+            transform = null;
         }
     }
 }

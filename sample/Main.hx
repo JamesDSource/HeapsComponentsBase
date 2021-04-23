@@ -1,20 +1,14 @@
-import haxe.rtti.Meta;
+import hcb.*;
 import hxd.Window;
-import h2d.Graphics;
-import h2d.Tile;
-import h2d.Bitmap;
-import hcb.Origin.OriginPoint;
 import VectorMath;
-import hcb.pathfinding.PathfindingGrid;
-import hcb.Project;
-import hcb.comp.*;
 import hcb.comp.col.*;
 
 class Main extends hxd.App {
     private var proj: hcb.Project;
-    private var player: Array<hcb.comp.Component> = [];
+    private var room1: Room;
+    private var room2: Room;
 
-    private var collisionGridMap: Map<Int, Vec2 -> Int -> CollisionShape> = new Map<Int, Vec2 -> Int -> CollisionShape>();
+    private var collisionGridMap: Map<Int, Vec2 -> Float -> CollisionShape> = new Map<Int, Vec2 -> Float -> CollisionShape>();
     
     override function init() {
         Window.getInstance().vsync = false;
@@ -23,16 +17,17 @@ class Main extends hxd.App {
 
         // * Project init
         proj = new Project(this);
-        setScene(proj.scene);
+        room1 = new Room();
+        proj.room = room1;
 
 
-        proj.ldtkEntityPrefabs["Player"] = Prefabs.player;
-        proj.ldtkAddEntities(cast levels.all_levels.Test.l_Entities.getAllUntyped());
+        LdtkEntities.ldtkEntityPrefabs["Player"] = Prefabs.player;
+        LdtkEntities.ldtkAddEntities(room1, cast levels.all_levels.Test2.l_Entities.getAllUntyped());
 
-        var rend = levels.all_levels.Test.l_Collisions.render();
-        proj.scene.add(rend, 0);
+        var rend = levels.all_levels.Test2.l_Collisions.render();
+        room1.scene.add(rend, 0);
 
-        collisionGridMap[1] = function(origin: Vec2, tileSize: Int): CollisionShape {
+        collisionGridMap[1] = function(origin: Vec2, tileSize: Float): CollisionShape {
             var verts: Array<Vec2> = [
                 vec2(tileSize - 1, 0),
                 vec2(tileSize - 1, tileSize - 1),
@@ -44,7 +39,7 @@ class Main extends hxd.App {
             return shape;
         }
 
-        collisionGridMap[2] = function(origin: Vec2, tileSize: Int): CollisionShape {
+        collisionGridMap[2] = function(origin: Vec2, tileSize: Float): CollisionShape {
             var verts: Array<Vec2> = [
                 vec2(0, 0),
                 vec2(tileSize - 1, tileSize - 1),
@@ -55,11 +50,17 @@ class Main extends hxd.App {
             shape.offsetY= origin.y;
             return shape;
         }
-        proj.ldtkAddCollisionLayer(levels.all_levels.Test.l_Collisions, ["Static"], null, collisionGridMap);
+        var collisionIndexGrid = IndexGrid.ldtkTilesConvert(levels.all_levels.Test2.l_Collisions);
+        var staticCollisionShapes = IndexGrid.convertToCollisionShapes(collisionIndexGrid, ["Static"], collisionGridMap);
+        for(shape in staticCollisionShapes) {
+            room1.collisionWorld.addShape(shape);
+        }
     }  
 
     override function update(delta: Float) {
-        proj.update(delta);
+        var targetDelta: Float = 1/60;
+        var deltaMult = Math.min(delta/targetDelta, 3);
+        proj.update(deltaMult);
     }
 
     static function main() {

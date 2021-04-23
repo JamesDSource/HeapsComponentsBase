@@ -1,17 +1,40 @@
 package hcb;
 
-import hcb.comp.Component;
+import hcb.comp.*;
 
 class Entity {
-    public var project: Project;
+    public var room(default, set): Room = null;
+    // ^ Should not be set directly outside the Room class
     private var components: Array<Component> = [];
     public var updatableComponents: Array<Component> = [];
 
     private var componentAddedEventListeners = new Array<Component -> Void>();
     private var componentRemovedEventListeners = new Array<Component -> Void>();
 
-    public function new(project: Project) {
-        this.project = project;
+    private function set_room(room: Room): Room {
+        for(comp in components) {
+            comp.room = room;
+        }
+
+        this.room = room;
+        
+        return room;
+    }
+
+    public function new(?components: Array<Component>, ?position: Vec2) {
+        if(components != null) {
+            // * If a position was defined, set any Transform2D component positions to position
+            if(position != null) {
+                for(comp in components) {
+                    if(Std.isOfType(comp, Transform2D)) {
+                        var transform: Transform2D = cast comp;
+                        transform.moveTo(position);
+                    }
+                }
+            }
+
+            addComponents(components);
+        }
     }
 
     public function addComponent(component: Component): Void {
@@ -24,7 +47,7 @@ class Entity {
             updatableComponents.push(component);
         }
         component.parentEntity = this;
-        component.project = project;
+        component.room = room;
         
         component.init();
         componentAddedEventCall(component);
@@ -41,7 +64,7 @@ class Entity {
                 updatableComponents.push(component);
             }
             component.parentEntity = this;
-            component.project = project;
+            component.room = room;
             componentAddedEventCall(component);
         }
 
@@ -52,37 +75,45 @@ class Entity {
 
     public function removeComponent(component: Component): Void {
         if(components.contains(component)) {
-            component.onDestroy();
+            component.onRemoved();
             components.remove(component);
             if(updatableComponents.contains(component)) {
                 updatableComponents.remove(component);
             }
 
-            component.parentEntity = null;
             componentRemovedEventCall(component);
+            if(component.room != null) {
+                component.removedFromRoom();
+                component.room = null;
+            }
+            component.parentEntity = null;
         }
         else {
             trace("Trying to remove component that does not exist");
         }
     }
 
-    public function destroy(): Void {
-        if(project.entities.contains(this)) {
-            project.entities.remove(this);
+    public function clearComponents() {
+        for(comp in components.copy()) {
+            removeComponent(comp);
         }
+    }
 
-        for(component in components) {
-            component.onDestroy();
+    public function remove() {
+        if(room != null && room.hasEntity(this)) {
+            room.removeEntity(this);
         }
-
-        components = [];
-        updatableComponents = [];
     }
 
     public function update(delta: Float): Void {
         for(updateableComponent in updatableComponents) {
             updateableComponent.update(delta);
         }
+    }
+
+    // & Gets all components
+    public function getComponents(): Array<Component> {
+        return components.copy();
     }
 
     // & Gets the first component with a particular name

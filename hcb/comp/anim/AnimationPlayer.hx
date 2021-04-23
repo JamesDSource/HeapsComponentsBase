@@ -49,9 +49,15 @@ class AnimationPlayer extends Component {
         this.layer = layer;
     }
 
-    public override function init() {
+    public override function addedToRoom() {
         if(renderParent == null) {
-            renderParent = project.scene;
+            renderParent = room.scene;
+        }
+    }
+
+    public override function removedFromRoom() {
+        if(renderParent == room.scene) {
+            renderParent = null;
         }
     }
 

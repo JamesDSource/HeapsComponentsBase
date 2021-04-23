@@ -5,7 +5,7 @@ import VectorMath;
 
 class CollisionAABB extends CollisionShape {
 
-    public var origin: OriginPoint = OriginPoint.topLeft;
+    public var origin: OriginPoint = OriginPoint.TopLeft;
 
     public var width(default, set): Float;
     public var height(default, set): Float;

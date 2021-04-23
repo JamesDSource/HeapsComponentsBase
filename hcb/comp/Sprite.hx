@@ -11,7 +11,7 @@ class Sprite extends Component {
     public var flipY(default, set): Bool = false;
 
     public var tile(default, set): Tile;
-    public var originPoint(default, set): OriginPoint = OriginPoint.topLeft;
+    public var originPoint(default, set): OriginPoint = OriginPoint.TopLeft;
     public var originOffsetX(default, set): Float = 0;
     public var originOffsetY(default, set): Float = 0;
 
@@ -19,6 +19,8 @@ class Sprite extends Component {
 
     public var renderParent(default, set): Object;
     public var layer(default, set): Int;
+
+    public var rotation(get, set): Float;
 
     private function set_flipX(flipX: Bool): Bool {
         if(this.flipX != flipX) {
@@ -94,8 +96,18 @@ class Sprite extends Component {
         return layer;
     }
 
-    public function new(name: String, ?renderParent: Object, layer: Int = 0, originPoint: OriginPoint = OriginPoint.topLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+    private function get_rotation(): Float {
+        return bitmap.rotation;
+    }
+
+    private function set_rotation(rotation: Float): Float {
+        bitmap.rotation = rotation;
+        return rotation;
+    }
+
+    public function new(name: String, ?tile: Tile, ?renderParent: Object, layer: Int = 0, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
         super(name);
+        this.tile = tile;
         this.renderParent = renderParent;
         this.layer = layer;
         this.originPoint = originPoint;
@@ -103,9 +115,15 @@ class Sprite extends Component {
         this.originOffsetY = originOffsetY;
     }
 
-    public override function init() {
+    public override function addedToRoom() {
         if(renderParent == null) {
-            renderParent = project.scene;
+            renderParent = room.scene;
+        }
+    }
+
+    public override function removedFromRoom() {
+        if(renderParent == room.scene) {
+            renderParent = null;
         }
     }
 

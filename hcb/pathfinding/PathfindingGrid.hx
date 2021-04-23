@@ -18,6 +18,9 @@ typedef GridNode = {
 }
 
 class PathfindingGrid {
+    public static var navigationGrids(default, null): Map<String, hcb.pathfinding.PathfindingGrid> = [];
+    // ^ For storing pathfinding grids that can be used globally
+    
     private var cellSize: Float;
     private var gridSize: Vec2;
     private var originPoint: Vec2;

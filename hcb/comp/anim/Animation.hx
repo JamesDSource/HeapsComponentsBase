@@ -9,7 +9,7 @@ class Animation extends Anim {
     public var flipX(default, set): Bool = false;
     public var flipY(default, set): Bool = false;
 
-    public var originPoint(default, set): OriginPoint = OriginPoint.topLeft;
+    public var originPoint(default, set): OriginPoint = OriginPoint.TopLeft;
     public var originOffsetX(default, set): Float = 0;
     public var originOffsetY(default, set): Float = 0;
 
@@ -57,7 +57,7 @@ class Animation extends Anim {
         return flipY;
     }
 
-    public function new(strip: Tile, frames: Int, speed: Float = 15, originPoint: OriginPoint = OriginPoint.topLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+    public function new(strip: Tile, frames: Int, speed: Float = 15, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
         var animFrames: Array<Tile> = strip.split(frames);
         super(animFrames, speed);
         this.originPoint = originPoint;

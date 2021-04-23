@@ -40,21 +40,23 @@ class PlayerController extends Component {
         collisionBox = cast parentEntity.getComponentOfType(CollisionAABB);
         animationPlayer = cast parentEntity.getComponentOfType(AnimationPlayer);
 
-        idleSide  = new Animation(Res.WitchIdleSide.toTile(), 3, 3, OriginPoint.bottomCenter);
-        idleFront = new Animation(Res.WitchIdleFront.toTile(), 3, 3, OriginPoint.bottomCenter);
-        idleBack  = new Animation(Res.WitchIdleBack.toTile(), 3, 3, OriginPoint.bottomCenter);
-        runSide   = new Animation(Res.WitchRunSide.toTile(), 6, 10, OriginPoint.bottomCenter);
-        runFront  = new Animation(Res.WitchRunFront.toTile(), 6, 10, OriginPoint.bottomCenter);
-        runBack   = new Animation(Res.WitchRunBack.toTile(), 6, 10, OriginPoint.bottomCenter);
+        idleSide  = new Animation(Res.WitchIdleSide.toTile(), 3, 3, OriginPoint.BottomCenter);
+        idleFront = new Animation(Res.WitchIdleFront.toTile(), 3, 3, OriginPoint.BottomCenter);
+        idleBack  = new Animation(Res.WitchIdleBack.toTile(), 3, 3, OriginPoint.BottomCenter);
+        runSide   = new Animation(Res.WitchRunSide.toTile(), 6, 10, OriginPoint.BottomCenter);
+        runFront  = new Animation(Res.WitchRunFront.toTile(), 6, 10, OriginPoint.BottomCenter);
+        runBack   = new Animation(Res.WitchRunBack.toTile(), 6, 10, OriginPoint.BottomCenter);
 
         animationPlayer.addAnimationSlot("Default", 0);
         animationPlayer.setAnimationSlot("Default", idleFront);
+    }
 
-        camera = project.scene.camera;
+    public override function addedToRoom() {
+        camera = room.scene.camera;
         camera.anchorX = 0.5;
         camera.anchorY = 0.5;
 
-        project.scene.scaleMode = ScaleMode.Stretch(480, 270);
+        room.scene.scaleMode = ScaleMode.Stretch(480, 270);
     }
 
     public override function update(delta: Float) {
@@ -85,7 +87,7 @@ class PlayerController extends Component {
         var velocity: Vec2 = moveVector*delta;
 
         if(velocity.x != 0) {
-            while(project.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(moveVector.x, 0))) {
+            while(room.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(moveVector.x, 0))) {
                 velocity.x = Math.max(velocity.x - 1, 0);
                 if(velocity.x == 0) {
                     break;
@@ -94,7 +96,7 @@ class PlayerController extends Component {
         }
 
         if(velocity.y != 0) {
-            while(project.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(0, moveVector.y))) {
+            while(room.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(0, moveVector.y))) {
                 velocity.y = Math.max(velocity.y - 1, 0);
                 if(velocity.y == 0) {
                     break;
@@ -104,6 +106,7 @@ class PlayerController extends Component {
 
         transformPos += velocity;
         transform.moveTo(transformPos);
+
 
         camera.x = transformPos.x;
         camera.y = transformPos.y;

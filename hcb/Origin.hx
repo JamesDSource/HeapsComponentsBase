@@ -3,40 +3,40 @@ package hcb;
 import VectorMath;
 
 enum OriginPoint {
-	topLeft;
-	topCenter;
-	topRight;
-	centerLeft;
-	center;
-	centerRight;
-	bottomLeft;
-	bottomCenter;
-	bottomRight;
+	TopLeft;
+	TopCenter;
+	TopRight;
+	CenterLeft;
+	Center;
+	CenterRight;
+	BottomLeft;
+	BottomCenter;
+	BottomRight;
 }
 
 class Origin {
 	public static inline function getOriginOffset(origin: OriginPoint, size:Vec2): Vec2 {
 		var offset: Vec2 = vec2(0, 0);
 		switch(origin) {
-			case OriginPoint.topLeft:
-			case OriginPoint.topCenter:
+			case OriginPoint.TopLeft:
+			case OriginPoint.TopCenter:
 				offset.x = -size.x/2;
-			case OriginPoint.topRight:
+			case OriginPoint.TopRight:
 				offset.x = -size.x;
-			case OriginPoint.centerLeft:
+			case OriginPoint.CenterLeft:
 				offset.y = -size.y/2;
-			case OriginPoint.center:
+			case OriginPoint.Center:
 				offset.x = -size.x/2;
 				offset.y = -size.y/2;
-			case OriginPoint.centerRight:
+			case OriginPoint.CenterRight:
 				offset.x = -size.x;
 				offset.y = -size.y/2;
-			case OriginPoint.bottomLeft:
+			case OriginPoint.BottomLeft:
 				offset.y = -size.y;
-			case OriginPoint.bottomCenter:
+			case OriginPoint.BottomCenter:
 				offset.x = -size.x/2;
 				offset.y = -size.y;
-			case OriginPoint.bottomRight:
+			case OriginPoint.BottomRight:
 				offset.x = -size.x;
 				offset.y = -size.y;
 		}
