@@ -1,5 +1,6 @@
 package hcb;
 
+import hcb.comp.Component.PauseMode;
 import hcb.comp.*;
 
 class Entity {
@@ -105,9 +106,11 @@ class Entity {
         }
     }
 
-    public function update(delta: Float): Void {
+    public function update(delta: Float, paused: Bool = false): Void {
         for(updateableComponent in updatableComponents) {
-            updateableComponent.update(delta);
+            if(!paused || updateableComponent.pauseMode == PauseMode.Resume) {
+                updateableComponent.update(delta);
+            }
         }
     }
 

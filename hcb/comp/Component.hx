@@ -1,8 +1,12 @@
 package hcb.comp;
 
-import hcb.Room.PauseMode;
 import h2d.Object;
 
+
+enum PauseMode {
+    Idle;
+    Resume;
+}
 
 class Component {
     // * Read only, do not change manually

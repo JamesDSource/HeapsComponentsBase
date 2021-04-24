@@ -1,3 +1,4 @@
+import hxd.Key;
 import hxd.Window;
 import hcb.Project;
 import hcb.LdtkEntities;
@@ -27,7 +28,10 @@ class Main extends hxd.App {
         var targetDelta: Float = 1/60;
         var deltaMult = Math.min(delta/targetDelta, 3);
         proj.update(deltaMult);
-        room1.collisionWorld.representShapes(room1.scene, 4);
+
+        if(Key.isPressed(Key.ESCAPE)) {
+            proj.room.paused = !proj.room.paused;
+        }
     }
 
     static function main() {

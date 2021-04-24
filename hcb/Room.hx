@@ -2,11 +2,6 @@ package hcb;
 
 import hcb.comp.Component;
 
-enum PauseMode {
-    Idle;
-    Resume;
-}
-
 class Room {
     public var project: Project;
     // ^ Do not set this manually, should only be accessed by Project class
@@ -15,7 +10,20 @@ class Room {
     private var entities: Array<Entity> = [];
     public var collisionWorld(default, null): CollisionWorld;
 
-    public var paused: Bool = false;
+    public var paused(default, set): Bool = false;
+    private var onPauseListeners: Array<(Bool) -> Void> = [];
+
+    public function set_paused(paused: Bool) {
+        if(this.paused != paused) {
+            this.paused = paused;
+
+            // * Call the on pause event
+            for(listener in onPauseListeners) {
+                listener(paused);
+            }
+        }
+        return paused;
+    }
 
     public function new(collisionCellSize: Float = 256) {
         scene = new h2d.Scene();
@@ -41,7 +49,7 @@ class Room {
 
     public function update(delta: Float) {
         for(entity in entities) {
-            entity.update(delta);
+            entity.update(delta, paused);
         }
     }
 
@@ -86,5 +94,16 @@ class Room {
     // & Returns all the entities in the room
     public function getEntities(): Array<Entity> {
         return entities.copy();
+    }
+
+    // & Functions for the onPause event
+    public function onPauseEventSubscribe(callBack: (Bool) -> Void) {
+        if(!onPauseListeners.contains(callBack)) {
+            onPauseListeners.push(callBack);
+        }
+    }
+
+    public function onPauseEventRemove(callBack: (Bool) -> Void) {
+        onPauseListeners.remove(callBack);
     }
 }
