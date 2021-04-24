@@ -26,6 +26,7 @@ class PlayerController extends Component {
     private var runBack: Animation;
 
     private var speed: Float = 2;
+    private var remainder: Vec2 = vec2(0, 0);
 
     private var camera: Camera;
 
@@ -84,7 +85,9 @@ class PlayerController extends Component {
 
         animate(animationDirection, moveVector != vec2(0, 0));
 
-        var velocity: Vec2 = moveVector*delta;
+        remainder += moveVector*delta;
+        var velocity: Vec2 = remainder.floor();
+        remainder -= remainder.floor();
 
         if(velocity.x != 0) {
             while(room.collisionWorld.isCollisionAt(collisionShape, transformPos + vec2(moveVector.x, 0))) {

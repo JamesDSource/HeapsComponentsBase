@@ -21,14 +21,13 @@ class Main extends hxd.App {
         room2.build();
 
         proj.room = room1;
-
-        room1.collisionWorld.representShapes(room1.scene, 4);
     }  
 
     override function update(delta: Float) {
         var targetDelta: Float = 1/60;
         var deltaMult = Math.min(delta/targetDelta, 3);
         proj.update(deltaMult);
+        room1.collisionWorld.representShapes(room1.scene, 4);
     }
 
     static function main() {

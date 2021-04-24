@@ -207,7 +207,7 @@ class CollisionWorld {
         return pushValue;
     }
 
-    public function representShapes(layers: h2d.Layers, layer: Int) {
+    public function representShapes(layers: h2d.Layers, layer: Int, showBonds: Bool = false) {
         shapeRender.clear();
 
         for(shape in shapes) {

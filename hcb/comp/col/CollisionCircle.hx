@@ -15,8 +15,8 @@ class CollisionCircle extends CollisionShape {
     private override function get_bounds(): Bounds {
         var pos = getAbsPosition();
         return {
-            min: vec2(pos.x - radius/2, pos.y - radius/2),
-            max: vec2(pos.x + radius/2, pos.y + radius/2)
+            min: vec2(pos.x - radius, pos.y - radius),
+            max: vec2(pos.x + radius, pos.y + radius)
         }
     }
 

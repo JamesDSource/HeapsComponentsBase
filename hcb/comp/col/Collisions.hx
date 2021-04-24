@@ -128,33 +128,15 @@ class Collisions {
             for(j in 0...poly1V.length) {
                 var vert: Vec2 = poly1V[j];
                 var nextVert: Vec2 = poly1V[(j + 1)%poly1V.length];
-                var axisProj: Vec2 = new Vec2(-(vert.y - nextVert.y), vert.x - nextVert.x);
+                var axisProj: Vec2 = new Vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
 
-                // * Projecting each point from both polygons onto
-                // * the axis, and seeing if they match up
-                var minR1 = Math.POSITIVE_INFINITY;
-                var maxR1 = Math.NEGATIVE_INFINITY;
-                for(vertex in poly1V) {
-                    var dot: Float = dot(vertex, axisProj);
-                    minR1 = Math.min(minR1, dot);
-                    maxR1 = Math.max(maxR1, dot);
-                } 
-
-                var minR2 = Math.POSITIVE_INFINITY;
-                var maxR2 = Math.POSITIVE_INFINITY;
-                for(vertex in poly2V) {
-                    var dot: Float = dot(vertex, axisProj);
-                    minR2 = Math.min(minR2, dot);
-                    maxR2 = Math.max(maxR2, dot);
-                }
-                
-                // * Checking if the shapes overlap
-                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                if(!overlapOnAxis(poly1V, poly2V, axisProj)) {
                     isCollision = false;
                     break;
                 }
             }
 
+            if(!isCollision) break;
         }
         return isCollision;
     }
@@ -181,28 +163,14 @@ class Collisions {
             for(i in 0...polyV.length) {
                 var vert = polyV[i];
                 var nextVert = polyV[(i + 1)%polyV.length];
-                var axisProj: Vec2 = vec2(-(vert.y - nextVert.y), vert.x - nextVert.x);
+                var axisProj: Vec2 =  vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
                 
                 // * Getting the vetex closest to the center of the circle
                 if(closestVertex == null || distance(closestVertex, circleCenter) > distance(vert, circleCenter)) {
                     closestVertex = vert;
                 }
 
-                // * Projecting each point from the polygon
-                var minR1 = Math.POSITIVE_INFINITY;
-                var maxR1 = Math.NEGATIVE_INFINITY;
-                for(vertex in polyV) {
-                    var dot: Float = dot(vertex, axisProj);
-                    minR1 = Math.min(minR1, dot);
-                    maxR1 = Math.max(maxR1, dot);
-                } 
-                // * Projecting the center of the circle and adding/subtracting the radius
-                var projNormal = normalize(axisProj);
-                var minR2 = (circleCenter - projNormal*circleRadius).dot(axisProj);
-                var maxR2 = (circleCenter + projNormal*circleRadius).dot(axisProj);
-                
-                // * Checking if the shapes overlap
-                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                if(!overlapOnAxis(polyV, [circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj)) {
                     isCollision = false;
                     break;
                 }
@@ -213,23 +181,9 @@ class Collisions {
                 isCollision = false;
             }
             else if(isCollision) { 
-                var axisProj: Vec2 = vec2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x);
+                var axisProj: Vec2 = vec2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x).normalize();
                 
-                // * Projecting each point from the polygon
-                var minR1 = Math.POSITIVE_INFINITY;
-                var maxR1 = Math.NEGATIVE_INFINITY;
-                for(vertex in polyV) {
-                    var dot: Float = dot(vertex, axisProj);
-                    minR1 = Math.min(minR1, dot);
-                    maxR1 = Math.max(maxR1, dot);
-                } 
-                // * Projecting the center of the circle and adding/subtracting the radius
-                var projNormal = normalize(axisProj);
-                var minR2 = (circleCenter - projNormal*circleRadius).dot(axisProj);
-                var maxR2 = (circleCenter + projNormal*circleRadius).dot(axisProj);
-                
-                // * Checking if the shapes overlap
-                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                if(!overlapOnAxis(polyV, [circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj)) {
                     isCollision = false;
                 }
             }
@@ -409,36 +363,15 @@ class Collisions {
             for(j in 0...poly1V.length) {
                 var vert: Vec2 = poly1V[j];
                 var nextVert: Vec2 = poly1V[(j + 1)%poly1V.length];
-                var axisProj: Vec2 = vec2(-(vert.y - nextVert.y), vert.x - nextVert.x);
+                var axisProj: Vec2 = vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
 
-                // * Projecting each point from both polygons onto
-                // * the axis, and seeing if they match up
-                var minR1 = Math.POSITIVE_INFINITY;
-                var maxR1 = Math.NEGATIVE_INFINITY;
-                for(vertex in poly1V) {
-                    var dot: Float = dot(vertex, axisProj);
-                    minR1 = Math.min(minR1, dot);
-                    maxR1 = Math.max(maxR1, dot);
-                } 
-
-                var minR2 = Math.POSITIVE_INFINITY;
-                var maxR2 = Math.POSITIVE_INFINITY;
-                for(vertex in poly2V) {
-                    var dot: Float = dot(vertex, axisProj);
-                    minR2 = Math.min(minR2, dot);
-                    maxR2 = Math.max(maxR2, dot);
-                }
-                
-                // * Checking if the shapes overlap
-                if(!(maxR2 >= minR1 && maxR1 >= minR2)) {
+                if(!overlapOnAxis(poly1V, poly2V, axisProj)) {
                     isCollision = false;
                     break;
                 }
             }
 
-            if(!isCollision) {
-                break;
-            }
+            if(!isCollision) break;
         }
         return isCollision;
     }
@@ -446,15 +379,35 @@ class Collisions {
     // & Checks for a collision between an AABB and a circle
     public static inline function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): Bool {
         var bounds = aabb.bounds;
-        var aabbMidPoint = bounds.min + vec2((aabb.transformedWidth - 1)/2, (aabb.transformedHeight - 1)/2);
-
         var circlePos = circle.getAbsPosition();
 
-        var differenceVector = circlePos.clone();
-        differenceVector.x = hxd.Math.clamp(differenceVector.x, bounds.min.x, bounds.max.x);
-        differenceVector.y = hxd.Math.clamp(differenceVector.y, bounds.min.y, bounds.max.y);
+        var closestPoint = circlePos.clone();
+        closestPoint.x = hxd.Math.clamp(closestPoint.x, bounds.min.x, bounds.max.x);
+        closestPoint.y = hxd.Math.clamp(closestPoint.y, bounds.min.y, bounds.max.y);
 
-        return distance(differenceVector, circlePos) < circle.radius;
+        return distance(closestPoint, circlePos) <= circle.radius;
+    }
+
+    // & Checks if two polygons overlap on a certain axis
+    public static inline function overlapOnAxis(vertices1: Array<Vec2>, vertices2: Array<Vec2>, axis: Vec2) {
+        var interval1 = getInterval(vertices1, axis);
+        var interval2 = getInterval(vertices2, axis);
+
+        return (interval2.min <= interval1.max && interval1.min <= interval2.max);
+    }
+
+    // & Gets the interval of a polygon with a certain axis
+    public static inline function getInterval(vertices: Array<Vec2>, axis: Vec2): {min: Float, max: Float} {
+        var min = Math.POSITIVE_INFINITY;
+        var max = Math.NEGATIVE_INFINITY;
+
+        for(vert in vertices) {
+            var projection: Float = axis.dot(vert);
+            max = Math.max(max, projection);
+            min = Math.min(min, projection);
+        }
+
+        return {min: min, max: max};
     }
 
     // & Checks if two radiuses intersect

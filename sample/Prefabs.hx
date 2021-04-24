@@ -2,6 +2,7 @@ import hcb.comp.anim.AnimationPlayer;
 import hcb.Origin.OriginPoint;
 import hcb.comp.*;
 import hcb.comp.col.*;
+import VectorMath;
 
 class Prefabs {
     public static function player(entity: ldtk.Entity): Array<Component> {
