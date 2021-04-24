@@ -1,7 +1,6 @@
 import hcb.comp.anim.AnimationPlayer;
 import hcb.Origin.OriginPoint;
 import hcb.comp.*;
-import h2d.Tile;
 import hcb.comp.col.*;
 
 class Prefabs {

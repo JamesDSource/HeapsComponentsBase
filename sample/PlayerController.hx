@@ -15,7 +15,7 @@ import hxd.Res;
 class PlayerController extends Component {
 
     private var transform: Transform2D;
-    private var collisionBox: CollisionAABB;
+    private var collisionShape: CollisionShape;
     private var animationPlayer: AnimationPlayer;
     
     private var idleSide: Animation;
@@ -37,7 +37,7 @@ class PlayerController extends Component {
 
     public override function init() {
         transform = cast parentEntity.getComponentOfType(Transform2D);
-        collisionBox = cast parentEntity.getComponentOfType(CollisionAABB);
+        collisionShape = cast parentEntity.getComponentOfType(CollisionShape);
         animationPlayer = cast parentEntity.getComponentOfType(AnimationPlayer);
 
         idleSide  = new Animation(Res.WitchIdleSide.toTile(), 3, 3, OriginPoint.BottomCenter);
@@ -87,7 +87,7 @@ class PlayerController extends Component {
         var velocity: Vec2 = moveVector*delta;
 
         if(velocity.x != 0) {
-            while(room.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(moveVector.x, 0))) {
+            while(room.collisionWorld.isCollisionAt(collisionShape, transformPos + vec2(moveVector.x, 0))) {
                 velocity.x = Math.max(velocity.x - 1, 0);
                 if(velocity.x == 0) {
                     break;
@@ -96,7 +96,7 @@ class PlayerController extends Component {
         }
 
         if(velocity.y != 0) {
-            while(room.collisionWorld.isCollisionAt(collisionBox, transformPos + vec2(0, moveVector.y))) {
+            while(room.collisionWorld.isCollisionAt(collisionShape, transformPos + vec2(0, moveVector.y))) {
                 velocity.y = Math.max(velocity.y - 1, 0);
                 if(velocity.y == 0) {
                     break;

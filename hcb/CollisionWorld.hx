@@ -6,7 +6,7 @@ import hcb.SignedArray;
 
 class CollisionWorld {
     private var shapes: Array<CollisionShape> = [];
-    private var renderAssets = new h2d.Object();
+    private var shapeRender = new h2d.Graphics();
 
     private var collisionCellSize: Float = 128;
     public var collisionCells = new SignedArray<SignedArray<Array<CollisionShape>>>();
@@ -207,18 +207,32 @@ class CollisionWorld {
         return pushValue;
     }
 
-    public function representBoundingBoxes(layers: h2d.Layers, layer: Int) {
-        renderAssets.removeChildren();
+    public function representShapes(layers: h2d.Layers, layer: Int) {
+        shapeRender.clear();
 
         for(shape in shapes) {
-            var bounds: Bounds = shape.bounds;
+            shapeRender.lineStyle(1, 0x00FF00);
 
-            var customGraphics: h2d.Graphics = new h2d.Graphics();
-            customGraphics.lineStyle(3, 0xFFFFFF);
-            customGraphics.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
-            renderAssets.addChild(customGraphics);
+            switch(Type.getClass(shape)) {
+                case CollisionAABB:
+                    var bounds: Bounds = shape.bounds;
+                    shapeRender.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+                case CollisionPolygon:
+                    var poly: CollisionPolygon = cast shape;
+                    var vertices: Array<Vec2> = poly.getGlobalTransformedVertices();
+                    for(i in 0...vertices.length) {
+                        var vert = vertices[i];
+                        var nextVert = vertices[(i + 1)%vertices.length];
+                        shapeRender.moveTo(vert.x, vert.y);
+                        shapeRender.lineTo(nextVert.x, nextVert.y);
+                    }
+                case CollisionCircle:
+                    var circle: CollisionCircle = cast shape;
+                    var pos = shape.getAbsPosition();
+                    shapeRender.drawCircle(pos.x, pos.y, circle.radius);
+            }
         }
         
-        layers.add(renderAssets, layer);
+        layers.add(shapeRender, layer);
     }
 }

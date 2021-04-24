@@ -22,8 +22,8 @@ class Room extends hcb.Room {
         collisionGridMap[1] = function(origin: Vec2, tileSize: Float): CollisionShape {
             var verts: Array<Vec2> = [
                 vec2(tileSize - 1, 0),
-                vec2(tileSize - 1, tileSize - 1),
-                vec2(0, tileSize - 1)
+                vec2(0, tileSize - 1),
+                vec2(tileSize - 1, tileSize - 1)
             ];
             var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
             shape.offsetX = origin.x;
@@ -33,9 +33,9 @@ class Room extends hcb.Room {
 
         collisionGridMap[2] = function(origin: Vec2, tileSize: Float): CollisionShape {
             var verts: Array<Vec2> = [
+                vec2(0, tileSize - 1),
                 vec2(0, 0),
-                vec2(tileSize - 1, tileSize - 1),
-                vec2(0, tileSize - 1)
+                vec2(tileSize - 1, tileSize - 1)
             ];
             var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
             shape.offsetX= origin.x;

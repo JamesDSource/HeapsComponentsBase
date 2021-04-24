@@ -20,7 +20,9 @@ class Main extends hxd.App {
         room1.build();
         room2.build();
 
-        proj.room = room2;
+        proj.room = room1;
+
+        room1.collisionWorld.representShapes(room1.scene, 4);
     }  
 
     override function update(delta: Float) {

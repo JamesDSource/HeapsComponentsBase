@@ -67,6 +67,14 @@ class Collisions {
         else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionPolygon)) {
             return polyWithCircle(cast(shape2, CollisionPolygon), cast(shape1, CollisionCircle));
         }
+        // * AABB with Circle
+        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionCircle)) {
+            return aabbWithCircle(cast(shape1, CollisionAABB), cast(shape2, CollisionCircle));
+        }
+        // * Circle with AABB
+        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionAABB)) {
+            return aabbWithCircle(cast(shape2, CollisionAABB), cast(shape1, CollisionCircle));
+        }
         else {
             trace("Unknown collision combination");
             return false;
@@ -442,11 +450,11 @@ class Collisions {
 
         var circlePos = circle.getAbsPosition();
 
-        var differenceVector = circlePos - aabbMidPoint;
+        var differenceVector = circlePos.clone();
         differenceVector.x = hxd.Math.clamp(differenceVector.x, bounds.min.x, bounds.max.x);
         differenceVector.y = hxd.Math.clamp(differenceVector.y, bounds.min.y, bounds.max.y);
 
-        return  distance(differenceVector, circlePos) < circle.radius;
+        return distance(differenceVector, circlePos) < circle.radius;
     }
 
     // & Checks if two radiuses intersect
