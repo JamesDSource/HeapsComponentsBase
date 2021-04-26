@@ -9,6 +9,8 @@ class Room {
     public var scene(default, null): h2d.Scene;
     private var entities: Array<Entity> = [];
     public var collisionWorld(default, null): CollisionWorld;
+    public var physicsWorld(default, null): hcb.physics.PhysicsWorld;
+    public var usesPhysics: Bool;
 
     public var paused(default, set): Bool = false;
     private var onPauseListeners: Array<(Bool) -> Void> = [];
@@ -25,9 +27,11 @@ class Room {
         return paused;
     }
 
-    public function new(collisionCellSize: Float = 256) {
+    public function new(collisionCellSize: Float = 256, usesPhysics: Bool = false) {
         scene = new h2d.Scene();
         collisionWorld = new CollisionWorld(collisionCellSize);
+        physicsWorld = new hcb.physics.PhysicsWorld(collisionWorld);
+        this.usesPhysics = usesPhysics;
     }
 
     // & Completely clears out the room
@@ -50,6 +54,10 @@ class Room {
     public function update(delta: Float) {
         for(entity in entities) {
             entity.update(delta, paused);
+        }
+
+        if(usesPhysics) {
+            physicsWorld.update(delta);
         }
     }
 

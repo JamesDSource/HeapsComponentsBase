@@ -3,82 +3,85 @@ package hcb.comp.col;
 import hcb.comp.col.CollisionShape.Bounds;
 import VectorMath;
 
+
+typedef CollisionInfo = {
+    seperation: Vec2,
+    ?intersectionPoint: Vec2
+    // ^ For rays only
+}
+
 class Collisions {
     public static function test(shape1: CollisionShape, shape2: CollisionShape): Bool {
         if(!shape1.canInteractWith(shape2)) {
             return false;
         }
-        
-        // * Poly with poly
-        if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionPolygon)) {
-            return polyWithPoly(cast(shape1, CollisionPolygon), cast(shape2, CollisionPolygon));
+
+        switch(Type.getClass(shape1)) {
+            case CollisionAABB:
+                switch(Type.getClass(shape2)) {
+                    // * AABB with AABB
+                    case CollisionAABB:
+                        return true;
+                        // ^ We already tested for a bounds intersection, so if the code made it this far,
+                        // ^ aabbWithAabb is already true
+                    // * AABB with poly
+                    case CollisionPolygon:
+                        return aabbWithPoly(cast shape1, cast shape2);
+                    // * AABB with ray
+                    case CollisionRay:
+                        return aabbwithRay(cast shape1, cast shape2) != null;
+                    // * AABB with circle
+                    case CollisionCircle:
+                        return aabbWithCircle(cast shape1, cast shape2);
+                }
+            case CollisionPolygon:
+                switch(Type.getClass(shape2)) {
+                    // * poly with AABB
+                    case CollisionAABB:
+                        return aabbWithPoly(cast shape2, cast shape1);
+                    // * Poly with poly
+                    case CollisionPolygon:
+                        return polyWithPoly(cast shape1, cast shape2);
+                    // * Poly with ray
+                    case CollisionRay:
+                        return polyWithRay(cast shape1, cast shape2) != null;
+                    // * Poly with circle
+                    case CollisionCircle:
+                        return polyWithCircle(cast shape1, cast shape2);
+                }
+            case CollisionRay:
+                switch(Type.getClass(shape2)) {
+                    // * Ray with AABB
+                    case CollisionAABB:
+                        return aabbwithRay(cast shape2, cast shape1) != null;
+                    // * Ray with poly
+                    case CollisionPolygon:
+                        return polyWithRay(cast shape2, cast shape1) != null;
+                    // * Ray with ray
+                    case CollisionRay:
+                        return rayWithRay(cast shape1, cast shape2) != null;
+                    // * Ray with circle
+                    case CollisionCircle:
+                        return circleWithRay(cast shape2, cast shape1) != null;
+                }
+            case CollisionCircle:
+                switch(Type.getClass(shape2)) {
+                    // * Circle with AABB
+                    case CollisionAABB:
+                        return aabbWithCircle(cast shape2, cast shape1);
+                    // * Circle with poly
+                    case CollisionPolygon:
+                        return polyWithCircle(cast shape2, cast shape1);
+                    // * Circle with ray
+                    case CollisionRay:
+                        return circleWithRay(cast shape1, cast shape2) != null;
+                    // * Circle with circle
+                    case CollisionCircle:
+                        return circleWithCircle(cast shape1, cast shape2);
+                }
         }
-        // * Ray with ray
-        else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionRay)) {
-            return rayWithRay(cast(shape1, CollisionRay), cast(shape2, CollisionRay)) != null;
-        }
-        // * Circle with circle
-        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionCircle)) {
-            return circleWithCircle(cast(shape1, CollisionCircle), cast(shape2, CollisionCircle));
-        }
-        // * AABB with AABB
-        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionAABB)) {
-            // ^ We already tested for a bounds intersection, so if the code made it this far,
-            // ^ aabbWithAabb is already true
-            return true;
-        }
-        // * Circle with ray
-        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionRay)) {
-            return circleWithRay(cast(shape1, CollisionCircle), cast(shape2, CollisionRay)) != null;
-        }
-        // * Ray with circle
-        else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionCircle)) {
-            return circleWithRay(cast(shape2, CollisionCircle), cast(shape1, CollisionRay)) != null;
-        }
-        // * Poly with ray
-        else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionRay)) {
-            return polyWithRay(cast(shape1, CollisionPolygon), cast(shape2, CollisionRay)) != null;
-        }
-        // * Ray with poly
-        else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionPolygon)) {
-            return polyWithRay(cast(shape2, CollisionPolygon), cast(shape1, CollisionRay)) != null;
-        }
-        // * AABB with ray
-        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionRay)) {
-            return aabbwithRay(cast(shape1, CollisionAABB), cast(shape2, CollisionRay)) != null;
-        }
-        // * Ray with AABB
-        else if(Std.isOfType(shape1, CollisionRay) && Std.isOfType(shape2, CollisionAABB)) {
-            return aabbwithRay(cast(shape2, CollisionAABB), cast(shape1, CollisionRay)) != null;
-        }
-        // * AABB with poly
-        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionPolygon)) {
-            return aabbWithPoly(cast(shape1, CollisionAABB), cast(shape2, CollisionPolygon));
-        }
-        // * Poly with AABB
-        else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionAABB)) {
-            return aabbWithPoly(cast(shape2, CollisionAABB), cast(shape1, CollisionPolygon));
-        }
-        // * Poly with circle
-        else if(Std.isOfType(shape1, CollisionPolygon) && Std.isOfType(shape2, CollisionCircle)) {
-            return polyWithCircle(cast(shape1, CollisionPolygon), cast(shape2, CollisionCircle));
-        }
-        // * Circle with poly
-        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionPolygon)) {
-            return polyWithCircle(cast(shape2, CollisionPolygon), cast(shape1, CollisionCircle));
-        }
-        // * AABB with Circle
-        else if(Std.isOfType(shape1, CollisionAABB) && Std.isOfType(shape2, CollisionCircle)) {
-            return aabbWithCircle(cast(shape1, CollisionAABB), cast(shape2, CollisionCircle));
-        }
-        // * Circle with AABB
-        else if(Std.isOfType(shape1, CollisionCircle) && Std.isOfType(shape2, CollisionAABB)) {
-            return aabbWithCircle(cast(shape2, CollisionAABB), cast(shape1, CollisionCircle));
-        }
-        else {
-            trace("Unknown collision combination");
-            return false;
-        }
+        trace("Unknown collision combination");
+        return false;
     }
 
     // & Tests for an intersection with a ray, and returns the point of collision
@@ -87,21 +90,18 @@ class Collisions {
             return null;
         }
 
-        if(Std.isOfType(shape, CollisionPolygon)) {
-            return polyWithRay(cast(shape, CollisionPolygon), ray);
+        switch(Type.getClass(shape)) {
+            case CollisionAABB:
+                return aabbwithRay(cast shape, ray);
+            case CollisionPolygon:
+                return polyWithRay(cast shape, ray);
+            case CollisionRay:
+                return rayWithRay(ray, cast shape);
+            case CollisionCircle:
+                return circleWithRay(cast shape, ray);
         }
-        else if(Std.isOfType(shape, CollisionRay)) {
-            return rayWithRay(ray, cast(shape, CollisionRay));
-        }
-        else if(Std.isOfType(shape, CollisionCircle)) {
-            return circleWithRay(cast(shape, CollisionCircle), ray);
-        }
-        else if(Std.isOfType(shape, CollisionAABB)) {
-            return aabbwithRay(cast(shape, CollisionAABB), ray);
-        }
-        else {
-            return null;
-        }
+
+        return null;
     }
 
 
