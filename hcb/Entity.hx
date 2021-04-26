@@ -1,5 +1,6 @@
 package hcb;
 
+import VectorMath;
 import hcb.comp.Component.PauseMode;
 import hcb.comp.*;
 
@@ -11,6 +12,9 @@ class Entity {
 
     private var componentAddedEventListeners = new Array<Component -> Void>();
     private var componentRemovedEventListeners = new Array<Component -> Void>();
+
+    private var position: Vec2 = vec2(0, 0);
+    private var onMoveEventListeners: Array<(Vec2, Vec2) -> Void> = new Array<(Vec2, Vec2) -> Void>();
 
     private function set_room(room: Room): Room {
         for(comp in components) {
@@ -26,12 +30,7 @@ class Entity {
         if(components != null) {
             // * If a position was defined, set any Transform2D component positions to position
             if(position != null) {
-                for(comp in components) {
-                    if(Std.isOfType(comp, Transform2D)) {
-                        var transform: Transform2D = cast comp;
-                        transform.moveTo(position);
-                    }
-                }
+                this.position = position.clone();
             }
 
             addComponents(components);
@@ -151,6 +150,25 @@ class Entity {
         return null;
     }
 
+    // & Gets the entities position
+    public function getPosition(): Vec2 {
+        return position.clone();
+    }
+
+    // & Moves the position by a vector
+    public function move(moveVector: Vec2) {
+        var ev = onMoveEventCall.bind(_, position.clone());
+        position += moveVector;
+        ev(position.clone());
+    }
+
+    // & Moves the position to a specific location vector
+    public function moveTo(position: Vec2) {
+        var ev = onMoveEventCall.bind(_, this.position.clone());
+        this.position = position.clone();
+        ev(position.clone());
+    }
+
     // & Component added event
     public function componentAddedEventSubscribe(callBack: Component -> Void) {
         componentAddedEventListeners.push(callBack);
@@ -178,6 +196,21 @@ class Entity {
     private function componentRemovedEventCall(component: Component) {
         for(listener in componentRemovedEventListeners) {
             listener(component);
+        }
+    }
+
+    // & on move event
+    public function onMoveEventSubscribe(callBack: (Vec2, Vec2) -> Void) {
+        onMoveEventListeners.push(callBack);
+    }
+
+    public function onMoveEventRemove(callBack: (Vec2, Vec2) -> Void) {
+        onMoveEventListeners.remove(callBack);
+    }
+
+    private function onMoveEventCall(to: Vec2, from: Vec2) {
+        for(listener in onMoveEventListeners) {
+            listener(to, from);
         }
     }
 }

@@ -1,9 +1,7 @@
 package hcb.pathfinding;
 
+import hcb.comp.col.*;
 import hcb.comp.col.CollisionShape.Bounds;
-import hcb.comp.col.CollisionAABB;
-import hcb.comp.col.Collisions;
-import hcb.comp.Transform2D;
 import VectorMath;
 
 typedef GridNode = {

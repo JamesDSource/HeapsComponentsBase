@@ -128,14 +128,10 @@ class Sprite extends Component {
     }
 
     public override function update(delta: Float) {
-        var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
-        
-        if(transform != null) {
-            var position: Vec2 = transform.getPosition();
-            // * Updating the position
-            bitmap.x = position.x;
-            bitmap.y = position.y;
-        }
+        var position: Vec2 = parentEntity.getPosition();
+        // * Updating the position
+        bitmap.x = position.x;
+        bitmap.y = position.y;
     }
 
     private function setOrigin() {

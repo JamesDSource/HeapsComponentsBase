@@ -14,7 +14,6 @@ import hxd.Res;
 
 class PlayerController extends Component {
 
-    private var transform: Transform2D;
     private var collisionShape: CollisionShape;
     private var animationPlayer: AnimationPlayer;
     
@@ -37,7 +36,6 @@ class PlayerController extends Component {
     }
 
     public override function init() {
-        transform = cast parentEntity.getComponentOfType(Transform2D);
         collisionShape = cast parentEntity.getComponentOfType(CollisionShape);
         animationPlayer = cast parentEntity.getComponentOfType(AnimationPlayer);
 
@@ -61,7 +59,7 @@ class PlayerController extends Component {
     }
 
     public override function update(delta: Float) {
-        var transformPos = transform.getPosition();
+        var transformPos = parentEntity.getPosition();
         var moveVector: Vec2 = vec2(0, 0);
 
         if(Key.isDown(Key.UP)) {
@@ -108,21 +106,11 @@ class PlayerController extends Component {
         }
 
         transformPos += velocity;
-        transform.moveTo(transformPos);
+        parentEntity.moveTo(transformPos);
 
 
         camera.x = transformPos.x;
         camera.y = transformPos.y;
-
-
-        if(Key.isPressed(Key.SPACE)) {
-            if(project.room == Main.room1) {
-                project.room = Main.room2;
-            }
-            else {
-                project.room = Main.room1;
-            }
-        }
     }
 
     private function animate(direction: Vec2, moving: Bool) {

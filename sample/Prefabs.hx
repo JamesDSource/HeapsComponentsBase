@@ -9,12 +9,24 @@ class Prefabs {
         var playerEnt: Levels.Entity_Player = cast entity;
 
         var player: Array<Component> = [
-            new Transform2D("Position"),
             new PlayerController("Controller"),
             new CollisionAABB("AABB", 10, 20, OriginPoint.BottomCenter),
             new AnimationPlayer("Animations", null, 1)
         ];
         
         return player;
+    }
+
+    public static function physicsCircle(entity: ldtk.Entity): Array<Component> {
+        var circleEnt: Levels.Entity_PhysicsCircle = cast entity;
+
+        var colCircle = new CollisionCircle("Circle", 16);
+
+        var circle: Array<Component> = [
+            colCircle,
+            new Body("Physics", {shape: colCircle})
+        ];
+        
+        return circle;
     }
 }

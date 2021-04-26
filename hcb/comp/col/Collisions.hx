@@ -5,9 +5,10 @@ import VectorMath;
 
 
 typedef CollisionInfo = {
-    seperation: Vec2,
-    ?intersectionPoint: Vec2
-    // ^ For rays only
+    isColliding: Bool,
+    normal: Vec2,
+    depth: Float,
+    contactPoints: Array<Vec2>
 }
 
 class Collisions {
@@ -77,7 +78,7 @@ class Collisions {
                         return circleWithRay(cast shape1, cast shape2) != null;
                     // * Circle with circle
                     case CollisionCircle:
-                        return circleWithCircle(cast shape1, cast shape2);
+                        return circleWithCircle(cast shape1, cast shape2).isColliding;
                 }
         }
         trace("Unknown collision combination");
@@ -142,11 +143,19 @@ class Collisions {
     }
 
     // & Checks for a collision between two circles
-    public static inline function circleWithCircle(circle1: CollisionCircle, circle2: CollisionCircle) {
+    public static inline function circleWithCircle(circle1: CollisionCircle, circle2: CollisionCircle): CollisionInfo {
         var absPos1 = circle1.getAbsPosition(),
             absPos2 = circle2.getAbsPosition();
 
-        return radiusIntersection(absPos1, absPos2, circle1.radius, circle2.radius);
+        var depth: Float = radiusIntersectionDepth(absPos1, absPos2, circle1.radius, circle2.radius),
+            normal: Vec2 = (absPos1 - absPos2).normalize();
+
+        return {
+            isColliding: depth < 0,
+            normal: normal,
+            depth: depth,
+            contactPoints:  [absPos2 + normal*(circle2.radius - depth)]
+        }
     }
 
     // & Checks for a collision between a polygon and a circle
@@ -411,9 +420,9 @@ class Collisions {
     }
 
     // & Checks if two radiuses intersect
-    public static inline function radiusIntersection(pos1: Vec2, pos2: Vec2, radius1: Float, radius2: Float): Bool {
+    public static inline function radiusIntersectionDepth(pos1: Vec2, pos2: Vec2, radius1: Float, radius2: Float): Float {
         var distance = (pos1 - pos2).length();
-        return distance < radius1 + radius2;
+        return distance - (radius1 + radius2);
     }
 
     public static inline function lineIntersection(l1P1: Vec2, l1P2: Vec2, l1Infinite: Bool, l2P1: Vec2, l2P2: Vec2, l2Infinite: Bool): Vec2 {

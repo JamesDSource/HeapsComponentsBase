@@ -1,6 +1,6 @@
 package hcb.comp;
 
-import hcb.math.Vector2;
+import VectorMath;
 
 class Navigation extends Component {
     public function new(name: String) {
@@ -8,20 +8,17 @@ class Navigation extends Component {
         updateable = false;
     }
 
-    public function getPathFrom(grid: hcb.pathfinding.PathfindingGrid, startPosition: Vector2, endPosition: Vector2, addEnd: Bool = true): Array<Vector2> {
-        var path: Array<Vector2> = grid.getPath(grid.getClosestPoint(startPosition), grid.getClosestPoint(endPosition));
+    public function getPathFrom(grid: hcb.pathfinding.PathfindingGrid, startPosition: Vec2, endPosition: Vec2, addEnd: Bool = true): Array<Vec2> {
+        var path: Array<Vec2> = grid.getPath(grid.getClosestPoint(startPosition), grid.getClosestPoint(endPosition));
         if(path.length > 0 && !path[path.length - 1].equals(endPosition) && addEnd) {
             path[path.length - 1] = endPosition;
         }
         return path;
     }
 
-    public function getPathTo(grid: hcb.pathfinding.PathfindingGrid, targetPosition: Vector2): Array<Vector2> {
+    public function getPathTo(grid: hcb.pathfinding.PathfindingGrid, targetPosition: Vec2): Array<Vec2> {
         if(parentEntity != null) {
-            var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
-            if(transform != null) {
-                return getPathFrom(grid, transform.position, targetPosition);
-            }
+            return getPathFrom(grid, parentEntity.getPosition(), targetPosition);
         }
         return []; 
     }

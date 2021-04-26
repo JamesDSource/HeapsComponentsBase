@@ -12,8 +12,6 @@ typedef BodyOptions = {
 }
 
 class Body extends Component {
-    public var transform: Transform2D;
-
     public var forceAccum: Vec2 = vec2(0, 0);
     public var velocity: Vec2 = vec2(0, 0);
     public var angularVelocity: Float = 0;
@@ -37,23 +35,9 @@ class Body extends Component {
 
         var acceleration: Vec2 = forceAccum*inverseMass;
         velocity += acceleration*delta;
-        transform.move(velocity*delta);
+        parentEntity.move(velocity*delta);
 
         forceAccum = vec2(0, 0);
-    }
-
-    public override function init() {
-        transform = cast parentEntity.getComponentOfType(Transform2D);
-
-        parentEntity.componentAddedEventSubscribe(componentAdded);
-        parentEntity.componentRemovedEventSubscribe(componentRemoved);
-    }
-
-    public override function onRemoved() {
-        transform = null;
-
-        parentEntity.componentAddedEventRemove(componentAdded);
-        parentEntity.componentRemovedEventRemove(componentRemoved);
     }
 
     public override function addedToRoom() {
@@ -62,18 +46,6 @@ class Body extends Component {
 
     public override function removedFromRoom() {
         room.physicsWorld.removeBody(this);
-    }
-
-    private function componentAdded(component: Component) {
-        if(transform == null && Std.isOfType(component, Transform2D)) {
-            transform = cast component;
-        }
-    }
-
-    private function componentRemoved(component: Component) {
-        if(transform == component) {
-            transform = null;
-        }
     }
 
     public function impulse(force: Vec2) {

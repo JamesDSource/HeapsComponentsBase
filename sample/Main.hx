@@ -5,23 +5,21 @@ import hcb.LdtkEntities;
 
 class Main extends hxd.App {
     private var proj: hcb.Project;
-    public static var room1: Room;
-    public static var room2: Room;
+    private var room: Room;
     
     override function init() {
         var levels = new Levels();
 
         // * Project init
         proj = new Project(this);
-        room1 = new Room(levels.all_levels.Test);
-        room2 = new Room(levels.all_levels.Test2); 
+        room = new Room(levels.all_levels.Test);
 
         LdtkEntities.ldtkEntityPrefabs["Player"] = Prefabs.player;
+        LdtkEntities.ldtkEntityPrefabs["PhysicsCircle"] = Prefabs.physicsCircle;
 
-        room1.build();
-        room2.build();
+        room.build();
 
-        proj.room = room1;
+        proj.room = room;
     }  
 
     override function update(delta: Float) {
@@ -32,6 +30,8 @@ class Main extends hxd.App {
         if(Key.isPressed(Key.ESCAPE)) {
             proj.room.paused = !proj.room.paused;
         }
+
+        room.collisionWorld.representShapes(room.scene, 3);
     }
 
     static function main() {

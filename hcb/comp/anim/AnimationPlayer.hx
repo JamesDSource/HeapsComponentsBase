@@ -76,17 +76,13 @@ class AnimationPlayer extends Component {
         }
     }
 
-    public override function update(delta: Float) { 
-        var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
-        
-        if(transform != null) {
-            var position: Vec2 = transform.getPosition();
-            for(animationSlot in animationSlots) {
-                if(animationSlot.animation != null) {
-                    // * Updating the position
-                    animationSlot.animation.x = position.x;
-                    animationSlot.animation.y = position.y;
-                }
+    public override function update(delta: Float) {       
+        var position: Vec2 = parentEntity.getPosition();
+        for(animationSlot in animationSlots) {
+            if(animationSlot.animation != null) {
+                // * Updating the position
+                animationSlot.animation.x = position.x;
+                animationSlot.animation.y = position.y;
             }
         }
     }

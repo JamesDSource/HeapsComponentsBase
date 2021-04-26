@@ -8,8 +8,8 @@ class Room extends hcb.Room {
 
     private var collisionGridMap: Map<Int, Vec2 -> Float -> CollisionShape> = [];
     
-    public function new(collisionCellSize: Float = 256, level: Levels.Levels_Level) {
-        super(collisionCellSize);
+    public function new(level: Levels.Levels_Level, usesPhysics: Bool = true, collisionCellSize: Float = 256) {
+        super(collisionCellSize, usesPhysics);
         this.level = level;
     }
 

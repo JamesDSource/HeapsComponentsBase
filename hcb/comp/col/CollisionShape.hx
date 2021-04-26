@@ -24,8 +24,6 @@ class CollisionShape extends Component {
     public var collisionWorld: CollisionWorld;
     private var cellsIn: Array<Array<CollisionShape>> = [];
 
-    private var transform: Transform2D;
-
     public function new(name: String, ?offset: Vec2) {
         super(name);
         if(offset != null) {
@@ -54,22 +52,11 @@ class CollisionShape extends Component {
     }
 
     public override function init() {
-        parentEntity.componentAddedEventSubscribe(onComponentAdded);
-        parentEntity.componentRemovedEventSubscribe(onComponentRemoved);
-
-        transform = cast parentEntity.getComponentOfType(Transform2D);
-        if(transform != null) {
-            transform.moveEventSubscribe(onMove);
-        }
+        parentEntity.onMoveEventSubscribe(onMove);
     }
 
     public override function onRemoved() {
-        parentEntity.componentAddedEventRemove(onComponentAdded);
-        parentEntity.componentRemovedEventRemove(onComponentRemoved);
-
-        if(transform != null) {
-            transform.moveEventRemove(onMove);
-        }
+        parentEntity.onMoveEventRemove(onMove);
     }
 
     public override function addedToRoom() {
@@ -89,13 +76,7 @@ class CollisionShape extends Component {
             return offset.clone();
         }
         else {
-            var transform: Transform2D = cast parentEntity.getComponentOfType(Transform2D);
-            if(transform != null) {
-                return transform.getPosition() + offset;
-            }
-            else {
-                return offset.clone();
-            }
+            return parentEntity.getPosition() + offset;
         }
     }
 
@@ -138,21 +119,5 @@ class CollisionShape extends Component {
     // & Event listener for when the Transform2D moves
     private function onMove(to: Vec2, from: Vec2) {
         updateCollisionCells();
-    }
-
-    // & Incase the transform is added later
-    private function onComponentAdded(component: Component) {
-        if(transform == null && Std.isOfType(component, Transform2D)) {
-            transform = cast component;
-            transform.moveEventSubscribe(onMove);
-        }
-    }
-
-    // & If the transform gets removed, remove the event listener
-    private function onComponentRemoved(component: Component) {
-        if(component == transform) {
-            transform.moveEventRemove(onMove);
-            transform = null;
-        }
     }
 }
