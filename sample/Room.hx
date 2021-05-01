@@ -1,3 +1,4 @@
+import h2d.Scene.ScaleMode;
 import hcb.LdtkEntities;
 import hcb.comp.col.*;
 import VectorMath;
@@ -14,6 +15,10 @@ class Room extends hcb.Room {
     }
 
     public override function build() {
+        scene.add(physicsWorld.graphics, 5);
+
+        scene.scaleMode = ScaleMode.Stretch(cast 1920/2, cast 1080/2);
+
         LdtkEntities.ldtkAddEntities(this, cast level.l_Entities.getAllUntyped());
         
         var rend = level.l_Collisions.render();
