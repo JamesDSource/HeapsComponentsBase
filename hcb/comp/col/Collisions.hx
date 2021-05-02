@@ -69,7 +69,7 @@ class Collisions {
     }
 
     // & Tests for an intersection with a ray, and returns the point of collision
-    public static function rayCastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
+    public static function raycastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
         switch(Type.getClass(shape)) {
             case CollisionAABB:
                 return aabbRaycast(cast shape, raycast);
@@ -123,7 +123,7 @@ class Collisions {
                 if(overlap < minOverlap) {
                     minOverlap = overlap;
                     smallestAxis = axisProj.normalize();
-                    if((poly2.getAbsPosition() - poly1.getAbsPosition()).dot(smallestAxis) <= 0) {
+                    if((polygon1.getAbsPosition() - polygon2.getAbsPosition()).dot(smallestAxis) > 0) {
                         smallestAxis *= -1;
                     }
                 }
@@ -161,25 +161,25 @@ class Collisions {
                 }
 
                 // * Getting the edge that is the most perpendicular
-                var vertTest1: Int = index == 0                   ? verts.length - 1  : index - 1;
-                var vertTest2: Int = index == verts.length - 1    ? 0                 : index + 1;
+                var vert1: Vec2 = verts[index];
+                var vert2: Vec2;
 
-                var vert1: Vec2 ;
-                var vert2: Vec2 = verts[index];
-                if(verts[vertTest1].normalize().dot(normal) <= verts[vertTest2].normalize().dot(normal)) {
-                    vert1 = verts[vertTest1];
-                }
-                else {
-                    vert1 = verts[vertTest2];
-                }
+                var v0 = verts[(index + 1)%verts.length];
+                var l: Vec2 = (vert1 - v0).normalize();
+                var v1 = verts[index == 0 ? verts.length - 1 : index - 1];
+                var r: Vec2 = (vert1 - v1).normalize();
+                
+                vert2 = r.dot(normal) <= l.dot(normal) ? v1 : v0;
 
                 if(i == 0) {
                     edge1[0] = vert1;
                     edge1[1] = vert2;
+                    edge1[2] = vert2 - vert1;
                 }  
                 else {
                     edge2[0] = vert1;
                     edge2[1] = vert2;
+                    edge2[2] = vert2 - vert1;
                 }
             }
 
@@ -189,36 +189,39 @@ class Collisions {
             var flip: Bool = false;
             // ^ Indicating that the ref and inc edge are flipped
 
-            if(Math.abs((edge1[1] - edge1[0]).dot(smallestAxis)) <= Math.abs((edge2[1] - edge2[0]).dot(smallestAxis))) {
+            var edge1Dot = Math.abs(edge1[2].dot(smallestAxis));
+            var edge2Dot = Math.abs(edge2[2].dot(smallestAxis));
+            if(edge1Dot < edge2Dot || edge1Dot - edge2Dot < 0.0001) {
                 refEdge = edge1;
                 incEdge = edge2;
+                flip = true;
             }
             else {
                 refEdge = edge2;
                 incEdge = edge1;
-                flip = true;
             }
 
-            var refV: Vec2 = (refEdge[1] - refEdge[0]).normalize();
+            // * Starting to clip
+            var refV: Vec2 = refEdge[2].normalize();
             var o1 = refV.dot(refEdge[0]);
             var clippedPoints = clip(incEdge[0], incEdge[1], refV, o1);
 
             // * We need at least two points
             if(clippedPoints.length >= 2) {
-
                 var o2: Float = refV.dot(refEdge[1]);
                 clippedPoints = clip(clippedPoints[0], clippedPoints[1], -refV, -o2);
 
                 if(clippedPoints.length >= 2) {
                     // * Ref edge normal
-                    var refNorm: Vec2 = refEdge[1] - refEdge[0];
-                    refNorm = vec2(refNorm.y * -1, refNorm.x);
+                    var refNorm: Vec2 = refEdge[2].normalize();
+                    refNorm = vec2(refNorm.y, refNorm.x * -1);
                     if(flip) refNorm *= -1;
 
                     var max: Float = refNorm.dot(refEdge[0]);
 
                     var fPoint = clippedPoints[0];
                     var sPoint = clippedPoints[1];
+
                     if(refNorm.dot(fPoint) - max < 0) {
                         clippedPoints.remove(fPoint);
                     }

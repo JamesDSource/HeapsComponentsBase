@@ -40,6 +40,11 @@ class PhysicsWorld {
                     var result: CollisionInfo = Collisions.polyWithPoly(cast body1.shape , cast body2.shape);
                     
                     if(result.isColliding) {
+                        graphics.beginFill(0x0000ff);
+                        for(point in result.contactPoints) {
+                            //graphics.drawCircle(point.x, point.y, 1);
+                        }
+                        graphics.endFill();
                         collisions.push({body1: body1, body2: body2, collision: result});
                     }
                 }
@@ -76,7 +81,6 @@ class PhysicsWorld {
 
         // * Do nothing if they are moving away from each other
         if(relativeVelocity.dot(normal) > 0) {
-            trace("Happening");
             return;
         }
 

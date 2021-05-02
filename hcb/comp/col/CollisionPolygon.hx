@@ -139,9 +139,11 @@ class CollisionPolygon extends CollisionShape {
             vec2(0, height - 1)
         ];
 
-        var originOffset: Vec2 = Origin.getOriginOffset(origin, vec2(width, height));
-        for(vert in verts) {
-            vert += originOffset;
+        if(origin != OriginPoint.TopLeft) {
+            var originOffset: Vec2 = Origin.getOriginOffset(origin, vec2(width, height));
+            for(vert in verts) {
+                vert += originOffset;
+            }
         }
 
         return new CollisionPolygon(name, verts);

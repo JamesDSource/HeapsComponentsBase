@@ -1,3 +1,6 @@
+import hcb.comp.col.Collisions;
+import hxd.clipper.Rect;
+import hcb.comp.col.CollisionPolygon;
 import hxd.Key;
 import hxd.Window;
 import hcb.Project;
@@ -20,6 +23,16 @@ class Main extends hxd.App {
         room.build();
 
         proj.room = room;
+
+        var body1 = CollisionPolygon.rectangle("poly1", 16, 16);
+        var body2 = CollisionPolygon.rectangle("poly2", 16, 16);
+
+        body1.offsetX = 0;
+        body2.offsetX = 0;
+        body2.offsetY = 8;
+        
+        var result = Collisions.polyWithPoly(body1, body2);
+        trace(result.contactPoints.length);
     }  
 
     override function update(delta: Float) {
@@ -29,6 +42,11 @@ class Main extends hxd.App {
 
         if(Key.isPressed(Key.ESCAPE)) {
             proj.room.paused = !proj.room.paused;
+        }
+
+        if(Key.isPressed(Key.R)) {
+            room.clear();
+            room.build();
         }
 
         room.collisionWorld.representShapes(room.scene, 3);
