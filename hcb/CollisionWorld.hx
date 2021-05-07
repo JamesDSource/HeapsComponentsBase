@@ -98,7 +98,7 @@ class CollisionWorld {
         colShape.overridePosition = position;
         var cellShapes = getShapesFromBounds(colShape.bounds);
         for(shape in cellShapes) {
-            if(colShape != shape && Collisions.test(colShape, shape)) {
+            if(colShape != shape && Collisions.test(colShape, shape).isColliding) {
                 returnResult = true;
                 break;
             }
@@ -116,7 +116,7 @@ class CollisionWorld {
             colShape.overridePosition = position;
             var cellShapes = getShapesFromBounds(colShape.bounds);
             for(shape in cellShapes) {
-                if(!colShapes.contains(shape) && Collisions.test(colShape, shape)) {
+                if(!colShapes.contains(shape) && Collisions.test(colShape, shape).isColliding) {
                     returnResult = true;
                     break;
                 }
@@ -133,7 +133,7 @@ class CollisionWorld {
         colShape.overridePosition = position;
         var cellShapes = getShapesFromBounds(colShape.bounds);
         for(shape in cellShapes) {
-            if(colShape != shape && Collisions.test(colShape, shape)) {
+            if(colShape != shape && Collisions.test(colShape, shape).isColliding) {
                 returnResult.push(shape);
             }
         }
@@ -151,7 +151,7 @@ class CollisionWorld {
             colShape.overridePosition = position;
             var cellShapes = getShapesFromBounds(colShape.bounds);
             for(shape in cellShapes) {
-                if(!returnResult.contains(shape) && !colShapes.contains(shape) && Collisions.test(colShape, shape)) {
+                if(!returnResult.contains(shape) && !colShapes.contains(shape) && Collisions.test(colShape, shape).isColliding) {
                     returnResult.push(shape);
                 }
             }

@@ -7,6 +7,7 @@ typedef BodyOptions = {
     ?shape: CollisionShape,
     ?mass: Null<Float>,
     ?elasticity: Null<Float>,
+    ?staticFriction: Null<Float>,
     ?velocity: Vec2,
     ?angularVelocity: Null<Float>
 }
@@ -18,11 +19,28 @@ class Body extends Component {
     public var linearDamping: Float = 0;
     public var angularDamping: Float = 0;
 
-    public var shape: CollisionShape = null;
+    public var shape(default, set): CollisionShape = null;
     public var mass: Float = 0;
     public var inverseMass(get, null): Float;
     public var infiniteMass(get, null): Bool;
     public var elasticity: Float = 1.0;
+    public var staticFriction: Float = 1.0;
+    public var dynamicFriction: Float = 1.0;
+
+    private inline function set_shape(shape: CollisionShape): CollisionShape {
+        if(shape != null) {
+            if(shape.body != null) {
+                shape.body.shape = null;
+            }
+            shape.body = this;
+        }
+        else if(this.shape != null) {
+            this.shape.body = null;
+        }
+        
+        this.shape = shape;
+        return shape;
+    }
 
     private inline function get_inverseMass(): Float {
         return mass == 0 ? 0 : 1/mass;
@@ -49,6 +67,10 @@ class Body extends Component {
         
         if(options.elasticity != null) {
             elasticity = options.elasticity;
+        }
+
+        if(options.staticFriction != null) {
+            staticFriction = options.staticFriction;
         }
 
         if(options.velocity != null) {

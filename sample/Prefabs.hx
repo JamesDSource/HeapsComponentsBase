@@ -20,14 +20,14 @@ class Prefabs {
     public static function physicsCircle(entity: ldtk.Entity): Array<Component> {
         var circleEnt: Levels.Entity_PhysicsCircle = cast entity;
 
-        var mass = Math.random()*15 + 1;
+        var mass = 30;
 
-        var col = CollisionPolygon.rectangle("rect", mass, mass, OriginPoint.Center);
+        var col = CollisionPolygon.rectangle("rect", 16, 16, OriginPoint.Center);
         //var col = new CollisionCircle("circle", mass);
 
         var circle: Array<Component> = [
             col,
-            new Body("Physics", {shape: col, mass: mass, velocity: vec2(0, (-1 + Math.random()*2)), elasticity: 1})
+            new Body("Physics", {shape: col, mass: mass, velocity: vec2(0, -1 + Math.random()*2), elasticity: 0.5})
         ];
         
         return circle;

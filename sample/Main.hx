@@ -24,15 +24,15 @@ class Main extends hxd.App {
 
         proj.room = room;
 
-        var body1 = CollisionPolygon.rectangle("poly1", 16, 16);
-        var body2 = CollisionPolygon.rectangle("poly2", 16, 16);
-
-        body1.offsetX = 0;
-        body2.offsetX = 0;
-        body2.offsetY = 8;
+        //var body1 = CollisionPolygon.rectangle("poly1", 16, 16);
+        //var body2 = CollisionPolygon.rectangle("poly2", 16, 16);
         
-        var result = Collisions.polyWithPoly(body1, body2);
-        trace(result.contactPoints.length);
+        //body1.offsetX = 40;
+        //body2.offsetX = 40;
+        //body2.offsetY = 8;
+        
+        //var result = Collisions.polyWithPoly(body1, body2);
+        //trace(result.depth, result.normal.x, result.normal.y, result.contactPoints.length);
     }  
 
     override function update(delta: Float) {

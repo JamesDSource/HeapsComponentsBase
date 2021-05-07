@@ -1,11 +1,14 @@
 package hcb.comp.col;
 
+import hcb.comp.col.CollisionShape;
 import hcb.comp.col.CollisionShape.Bounds;
 import VectorMath;
 
 
 typedef CollisionInfo = {
     isColliding: Bool,
+    shape1: CollisionShape,
+    shape2: CollisionShape,
     normal: Vec2,
     depth: Float,
     contactPoints: Array<Vec2>
@@ -19,53 +22,71 @@ typedef Raycast = {
 }
 
 class Collisions {
-    public static function test(shape1: CollisionShape, shape2: CollisionShape): Bool {
+    public static function test(shape1: CollisionShape, shape2: CollisionShape): CollisionInfo {
+        var result: CollisionInfo = {
+            isColliding: false,
+            shape1: null,
+            shape2: null,
+            normal: null,
+            depth: 0,
+            contactPoints: []
+        }
+        
         if(!shape1.canInteractWith(shape2)) {
-            return false;
+            return result;
         }
 
+        var flipped: Bool = false;
         switch(Type.getClass(shape1)) {
             case CollisionAABB:
                 switch(Type.getClass(shape2)) {
                     // * AABB with AABB
                     case CollisionAABB:
-                        return true;
+                        //return true;
                         // ^ We already tested for a bounds intersection, so if the code made it this far,
                         // ^ aabbWithAabb is already true
                     // * AABB with poly
                     case CollisionPolygon:
-                        return aabbWithPoly(cast shape1, cast shape2);
+                        //result = aabbWithPoly(cast shape1, cast shape2);
                     // * AABB with circle
                     case CollisionCircle:
-                        return aabbWithCircle(cast shape1, cast shape2);
+                        //result = aabbWithCircle(cast shape1, cast shape2);
                 }
             case CollisionPolygon:
                 switch(Type.getClass(shape2)) {
                     // * poly with AABB
                     case CollisionAABB:
-                        return aabbWithPoly(cast shape2, cast shape1);
+                        //result = aabbWithPoly(cast shape2, cast shape1);
+                        flipped = true;
                     // * Poly with poly
                     case CollisionPolygon:
-                        return polyWithPoly(cast shape1, cast shape2) != null;
+                        result = polyWithPoly(cast shape1, cast shape2);
                     // * Poly with circle
                     case CollisionCircle:
-                        return polyWithCircle(cast shape1, cast shape2);
+                        //result = polyWithCircle(cast shape1, cast shape2);
                 }
             case CollisionCircle:
                 switch(Type.getClass(shape2)) {
                     // * Circle with AABB
                     case CollisionAABB:
-                        return aabbWithCircle(cast shape2, cast shape1);
+                        //result = aabbWithCircle(cast shape2, cast shape1);
+                        flipped = true;
                     // * Circle with poly
                     case CollisionPolygon:
-                        return polyWithCircle(cast shape2, cast shape1);
+                        //result = polyWithCircle(cast shape2, cast shape1);
+                        flipped = true;
                     // * Circle with circle
                     case CollisionCircle:
-                        return circleWithCircle(cast shape1, cast shape2).isColliding;
+                        result = circleWithCircle(cast shape1, cast shape2);
                 }
         }
-        trace("Unknown collision combination");
-        return false;
+
+        result.shape1 = shape1;
+        result.shape2 = shape2;
+        if(flipped) {
+            result.normal *= -1;
+        }
+        return result;
     }
 
     // & Tests for an intersection with a ray, and returns the point of collision
@@ -236,6 +257,8 @@ class Collisions {
 
         return {
             isColliding: isCollision,
+            shape1: polygon1,
+            shape2: polygon2,
             depth: minOverlap,
             normal: smallestAxis,
             contactPoints: contactPoints
@@ -252,6 +275,8 @@ class Collisions {
 
         return {
             isColliding: depth < 0,
+            shape1: circle1,
+            shape2: circle2,
             normal: normal,
             depth: depth,
             contactPoints:  [absPos1 + normal*(circle1.radius - depth/2)]
