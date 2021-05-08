@@ -56,7 +56,7 @@ class Component {
     public dynamic function init() {}
 
     // & Called automatically by the Project class every frame if updateable
-    public dynamic function update(delta: Float) {}
+    public dynamic function update() {}
 
     // & Called when the component is removed from an entity
     public dynamic function onRemoved() {}

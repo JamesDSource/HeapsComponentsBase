@@ -22,7 +22,7 @@ class PhysicsWorld {
         forceRegistry = new ForceRegistry();
     }
 
-    public function update(delta: Float) { 
+    public function update() { 
 
         // * Collisions
         collisions = [];
@@ -32,7 +32,7 @@ class PhysicsWorld {
 
                 // * Both cannot have infinite mass, and both must have a shape
                 if(body1.shape != null && body2.shape != null && (!body1.infiniteMass || !body2.infiniteMass)) {
-                    var result: CollisionInfo = Collisions.polyWithPoly(cast body1.shape , cast body2.shape);
+                    var result: CollisionInfo = Collisions.test(body1.shape , body2.shape);
                     
                     if(result.isColliding) {
                         graphics.beginFill(0x0000ff);
@@ -47,7 +47,7 @@ class PhysicsWorld {
         }
 
         // * Update the forces
-        forceRegistry.updateForces(delta);
+        forceRegistry.updateForces();
 
         // * Resolving collisions via iterative impulse resolution
         for(i in 0...impulseIterations) {
@@ -58,7 +58,7 @@ class PhysicsWorld {
 
 
         for(body in bodies) {
-            body.physicsUpdate(delta);
+            body.physicsUpdate();
         }
     }
 
@@ -124,5 +124,11 @@ class PhysicsWorld {
 
     public function contains(body: Body) {
         return bodies.contains(body);
+    }
+
+    public function clear() {
+        for(body in bodies.copy()) {
+            removeBody(body);
+        }
     }
 }

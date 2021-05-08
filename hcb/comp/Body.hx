@@ -8,6 +8,7 @@ typedef BodyOptions = {
     ?mass: Null<Float>,
     ?elasticity: Null<Float>,
     ?staticFriction: Null<Float>,
+    ?dynamicFriction: Null<Float>,
     ?velocity: Vec2,
     ?angularVelocity: Null<Float>
 }
@@ -73,6 +74,10 @@ class Body extends Component {
             staticFriction = options.staticFriction;
         }
 
+        if(options.dynamicFriction != null) {
+            dynamicFriction = options.dynamicFriction;
+        }
+
         if(options.velocity != null) {
             velocity = options.velocity.clone();
         }
@@ -82,12 +87,12 @@ class Body extends Component {
         } 
     }
 
-    public function physicsUpdate(delta: Float) {
-        if(mass == 0) return;
+    public function physicsUpdate() {
+        if(mass == 0 || parentEntity == null) return;
 
         var acceleration: Vec2 = forceAccum*inverseMass;
-        velocity += acceleration*delta;
-        parentEntity.move(velocity*delta);
+        velocity += acceleration;
+        parentEntity.move(velocity);
 
         forceAccum = vec2(0, 0);
     }

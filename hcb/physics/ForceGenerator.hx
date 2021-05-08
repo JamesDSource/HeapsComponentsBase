@@ -1,5 +1,5 @@
 package hcb.physics;
 
 interface ForceGenerator {
-    public function updateForce(body: hcb.comp.Body, delta: Float): Void;
+    public function updateForce(body: hcb.comp.Body): Void;
 }

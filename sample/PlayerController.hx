@@ -58,7 +58,7 @@ class PlayerController extends Component {
         room.scene.scaleMode = ScaleMode.Stretch(480, 270);
     }
 
-    public override function update(delta: Float) {
+    public override function update() {
         var transformPos = parentEntity.getPosition();
         var moveVector: Vec2 = vec2(0, 0);
 
@@ -83,7 +83,7 @@ class PlayerController extends Component {
 
         animate(animationDirection, moveVector != vec2(0, 0));
 
-        remainder += moveVector*delta;
+        remainder += moveVector;
         var velocity: Vec2 = remainder.floor();
         remainder -= remainder.floor();
 

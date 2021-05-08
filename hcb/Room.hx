@@ -1,7 +1,5 @@
 package hcb;
 
-import hcb.comp.Component;
-
 class Room {
     public var project: Project;
     // ^ Do not set this manually, should only be accessed by Project class
@@ -15,6 +13,9 @@ class Room {
     public var paused(default, set): Bool = false;
     private var onPauseListeners: Array<(Bool) -> Void> = [];
 
+    private var accumulator: Float = 0;
+    private var physicsAccumulator: Float = 0;
+
     public function set_paused(paused: Bool) {
         if(this.paused != paused) {
             this.paused = paused;
@@ -27,7 +28,7 @@ class Room {
         return paused;
     }
 
-    public function new(collisionCellSize: Float = 256, usesPhysics: Bool = false) {
+    public function new(usesPhysics: Bool = false, collisionCellSize: Float = 256) {
         scene = new h2d.Scene();
         collisionWorld = new CollisionWorld(collisionCellSize);
         physicsWorld = new hcb.physics.PhysicsWorld(collisionWorld);
@@ -41,6 +42,7 @@ class Room {
         }
 
         collisionWorld.clear();
+        physicsWorld.clear();
 
         scene.dispose();
         scene = new h2d.Scene();
@@ -51,15 +53,63 @@ class Room {
 
     public dynamic function build() {}
 
-    public function update(delta: Float) {
-        for(entity in entities) {
-            entity.update(delta, paused);
+    public function rebuild() {
+        clear();
+        build();
+        resync();
+    }
+
+    public function update(delta: Float, targetFrameRate: Float, targetPhysicsFrameRate: Float) {
+        // * Frame snapping
+        var threshold: Float  = 0.0002;
+        if(Math.abs(delta - 1/targetFrameRate) < threshold) {
+            delta = 1/targetFrameRate;
+        }
+        else if(Math.abs(delta - 1/targetPhysicsFrameRate) < threshold) {
+            delta = 1/targetPhysicsFrameRate;
+        }
+        else if(Math.abs(delta - 1/30) < threshold) {
+            delta = 1/30;
+        }
+        else if(Math.abs(delta - 1/60) < threshold) {
+            delta = 1/60;
+        }
+        else if(Math.abs(delta - 1/120) < threshold) {
+            delta = 1/120;
         }
 
-        if(usesPhysics) {
-            physicsWorld.update(delta);
+        // * Normal update loop
+        accumulator += delta;
+        while(accumulator >= 1/targetFrameRate) {
+            onUpdate();
+            for(entity in entities) {
+                entity.update(paused);
+            }
+            accumulator -= 1/targetFrameRate;
         }
+
+        // * Physics loop
+        if(usesPhysics) {
+            physicsAccumulator += delta;
+            while(physicsAccumulator >= 1/targetPhysicsFrameRate) {
+                onPhysicsUpdate();
+                physicsWorld.update();
+                physicsAccumulator -= 1/targetPhysicsFrameRate;
+            }
+        }
+
     }
+
+    public function resync() {
+        accumulator = 0;
+        physicsAccumulator = 0;
+    }
+
+    // & Event called when a normal update is called
+    public dynamic function onUpdate() {}
+
+    // & Event called when a physics update is called
+    public dynamic function onPhysicsUpdate() {}
 
     // & Event called when the room is added to a project
     public dynamic function roomSet() {}

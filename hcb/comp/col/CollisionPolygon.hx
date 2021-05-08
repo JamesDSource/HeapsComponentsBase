@@ -6,23 +6,54 @@ import VectorMath;
 
 // TODO: Make rotation work
 class CollisionPolygon extends CollisionShape {
-    // ^ The points that define the polygon
     // * All vertices are relative to the x/y position
     private var vertices: Array<Vec2> = [];
-    // ^ The points after scaling and rotation
+    // ^ The points that define the polygon
     private var transformedVertices: Array<Vec2> = [];
+    // ^ The points after scaling and rotation
 
-    // ^ Transformation data
-    // ^ Rotation is in degrees
+    public var localVertices(get, null): Array<Vec2>;
+    public var transLocalVertices(get, null): Array<Vec2>;
+    public var worldVertices(get, null): Array<Vec2>;
+    // ^ Properties only used to get the vertices, cannot be used to modify the polygon shape
+
     public var rotation(default, set): Float;
+    // ^ Rotation is in degrees
     public var scaleX(default, set): Float = 1;
     public var scaleY(default, set): Float = 1;
     private var polyScale: Vec2 = vec2(1, 1);
+    // ^ Transformation data
 
-    // ^ Varuiables for saving the bounding data if the shape hasn't moved
     private var lastPos: Vec2 = null;
     private var lastBounds: Bounds = null;
     private var shapeChanged: Bool = false;
+    // ^ Varuiables for saving the bounding data if the shape hasn't moved
+
+    private inline function get_localVertices(): Array<Vec2> {
+        var returnVertices: Array<Vec2> = [];
+        for(vertex in vertices) {
+            returnVertices.push(vertex.clone());
+        }
+        return returnVertices;
+    }
+
+    private inline function get_transLocalVertices(): Array<Vec2> {
+        var returnVertices: Array<Vec2> = [];
+        for(vertex in transformedVertices) {
+            returnVertices.push(vertex.clone());
+        }
+        return returnVertices;
+    }
+
+    private inline function get_worldVertices(): Array<Vec2> {
+        var returnVertices: Array<Vec2> = [];
+        var absPosition: Vec2 = getAbsPosition();
+        
+        for(vert in transformedVertices) {
+            returnVertices.push(vert + absPosition);
+        }
+        return returnVertices;
+    }
 
     private function set_rotation(polyRotation: Float): Float {
         this.rotation = polyRotation;
@@ -78,45 +109,27 @@ class CollisionPolygon extends CollisionShape {
         return lastBounds;
     }
 
+    private override function get_center(): Vec2 {
+        var center: Vec2 = vec2(0, 0);
+
+        for(vert in worldVertices) {
+            center += vert;
+        }
+        center /= vertices.length;
+
+        return center;
+    }
+
     public function new(name: String, vertices: Array<Vec2>, ?offset: Vec2) {
         super(name, offset);
         setVertices(vertices);
-    }
-
-    public function getVertices(): Array<Vec2> {
-        var returnVertices: Array<Vec2> = [];
-        for(vertex in vertices) {
-            returnVertices.push(vertex.clone());
-        }
-        return returnVertices;
-    }
-
-    public function getTransformedVertices(): Array<Vec2> {
-        var returnVertices: Array<Vec2> = [];
-        for(vertex in transformedVertices) {
-            returnVertices.push(vertex.clone());
-        }
-        return returnVertices;
-    }
-
-    public function getGlobalTransformedVertices(): Array<Vec2> {
-        var returnVertices: Array<Vec2> = getTransformedVertices();
-        var absPosition: Vec2 = getAbsPosition();
-        if(absPosition == null) {
-            return null;
-        }
-        
-        for(vert in returnVertices) {
-            vert += absPosition;
-        }
-        return returnVertices;
     }
 
     private function updateTransformations(): Void {
         transformedVertices = [];
         for(vertex in vertices) {
             var tVertex = vertex*polyScale;
-            tVertex = hcb.math.Vector.vec2Angle(rotation + hcb.math.Vector.getAngle(tVertex), tVertex.length());
+            tVertex = hcb.math.Vector.angleToVec2(rotation + hcb.math.Vector.getAngle(tVertex), tVertex.length());
             transformedVertices.push(tVertex);
         }
         shapeChanged = true;

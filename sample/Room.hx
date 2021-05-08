@@ -1,3 +1,4 @@
+import hcb.comp.Body;
 import h2d.Scene.ScaleMode;
 import hcb.LdtkEntities;
 import hcb.comp.col.*;
@@ -10,7 +11,7 @@ class Room extends hcb.Room {
     private var collisionGridMap: Map<Int, Vec2 -> Float -> CollisionShape> = [];
     
     public function new(level: Levels.Levels_Level, usesPhysics: Bool = true, collisionCellSize: Float = 256) {
-        super(collisionCellSize, usesPhysics);
+        super(usesPhysics, collisionCellSize);
         this.level = level;
     }
 
@@ -51,6 +52,8 @@ class Room extends hcb.Room {
         var staticCollisionShapes = IndexGrid.convertToCollisionShapes(collisionIndexGrid, ["Static"], collisionGridMap);
         for(shape in staticCollisionShapes) {
             collisionWorld.addShape(shape);
+            var body = new Body("Body", {mass: 0, elasticity: 1, shape: shape});
+            physicsWorld.addBody(body);
         }
     }
 }

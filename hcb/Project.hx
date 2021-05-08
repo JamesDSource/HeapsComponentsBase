@@ -5,6 +5,8 @@ class Project {
     private var app: hxd.App;
 
     public var room(default, set): Room = null;
+    public var targetFrameRate: Float = 60;
+    public var targetPhysicsFrameRate: Float = 60;
 
     private function set_room(room: Room): Room {
         if(this.room != room) {
@@ -27,7 +29,7 @@ class Project {
 
     public function update(delta: Float) {
         if(room != null) {
-            room.update(delta);
+            room.update(delta, targetFrameRate, targetPhysicsFrameRate);
         }
     }
 

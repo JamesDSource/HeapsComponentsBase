@@ -24,8 +24,32 @@ class CollisionShape extends Component {
     public var collisionWorld: CollisionWorld;
     private var cellsIn: Array<Array<CollisionShape>> = [];
 
+    public var center(get, null): Vec2;
+
     public var body: Body = null;
     // ^ Variable only set inside of the body, do not set manually
+
+    private dynamic function get_bounds(): Bounds {
+        return {min: vec2(0, 0), max: vec2(0, 0)};
+    }
+
+    private inline function set_offsetX(offsetX: Float): Float {
+        this.offsetX = offsetX;
+        offset.x = offsetX;
+        updateCollisionCells();
+        return offsetX;
+    }
+
+    private inline function set_offsetY(offsetY: Float): Float {
+        this.offsetX = offsetX;
+        offset.y = offsetY;
+        updateCollisionCells();
+        return offsetY;
+    }
+
+    private dynamic function get_center(): Vec2 {
+        return getAbsPosition();
+    }
 
     public function new(name: String, ?offset: Vec2) {
         super(name);
@@ -34,24 +58,6 @@ class CollisionShape extends Component {
             offsetY = offset.y;
         }
         updateable = true;
-    }
-
-    private dynamic function get_bounds(): Bounds {
-        return {min: vec2(0, 0), max: vec2(0, 0)};
-    }
-
-    private function set_offsetX(offsetX: Float): Float {
-        this.offsetX = offsetX;
-        offset.x = offsetX;
-        updateCollisionCells();
-        return offsetX;
-    }
-
-    private function set_offsetY(offsetY: Float): Float {
-        this.offsetX = offsetX;
-        offset.y = offsetY;
-        updateCollisionCells();
-        return offsetY;
     }
 
     public override function init() {
@@ -70,7 +76,7 @@ class CollisionShape extends Component {
         collisionWorld.removeShape(this);
     }
 
-    public function getAbsPosition(acceptOverride: Bool = true): Vec2 {
+    public inline function getAbsPosition(acceptOverride: Bool = true): Vec2 {
         if(acceptOverride && overridePosition != null) {
             return overridePosition + offset;
         }

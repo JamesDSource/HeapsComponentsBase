@@ -47,7 +47,7 @@ class Collisions {
                         // ^ aabbWithAabb is already true
                     // * AABB with poly
                     case CollisionPolygon:
-                        //result = aabbWithPoly(cast shape1, cast shape2);
+                        result = aabbWithPoly(cast shape1, cast shape2);
                     // * AABB with circle
                     case CollisionCircle:
                         //result = aabbWithCircle(cast shape1, cast shape2);
@@ -56,7 +56,7 @@ class Collisions {
                 switch(Type.getClass(shape2)) {
                     // * poly with AABB
                     case CollisionAABB:
-                        //result = aabbWithPoly(cast shape2, cast shape1);
+                        result = aabbWithPoly(cast shape2, cast shape1);
                         flipped = true;
                     // * Poly with poly
                     case CollisionPolygon:
@@ -106,8 +106,8 @@ class Collisions {
 
     // & Checks for a collision between two polygons
     public static inline function polyWithPoly(polygon1: CollisionPolygon, polygon2: CollisionPolygon): CollisionInfo {
-        var poly1: CollisionPolygon;
-        var poly2: CollisionPolygon;
+        var polygon1Vertices = polygon1.worldVertices;
+        var polygon2Vertices = polygon2.worldVertices;
 
         var isCollision: Bool = true;
         var minOverlap: Float = Math.POSITIVE_INFINITY;
@@ -116,17 +116,18 @@ class Collisions {
 
         // * Runs the code twice, switching which role each polygon plays both times
         for(i in 0...2) {
+            var poly1V: Array<Vec2>;
+            var poly2V: Array<Vec2>;
+            
             if(i == 0) {
-                poly1 = polygon1;
-                poly2 = polygon2;
+                poly1V = polygon1Vertices;
+                poly2V = polygon2Vertices;
             }
             else {
-                poly1 = polygon2;
-                poly2 = polygon1;
+                poly1V = polygon2Vertices;
+                poly2V = polygon1Vertices;
             }
 
-            var poly1V = poly1.getGlobalTransformedVertices();
-            var poly2V = poly2.getGlobalTransformedVertices();
             for(j in 0...poly1V.length) {
                 var vert: Vec2 = poly1V[j];
                 var nextVert: Vec2 = poly1V[(j + 1)%poly1V.length];
@@ -144,7 +145,7 @@ class Collisions {
                 if(overlap < minOverlap) {
                     minOverlap = overlap;
                     smallestAxis = axisProj.normalize();
-                    if((polygon1.getAbsPosition() - polygon2.getAbsPosition()).dot(smallestAxis) > 0) {
+                    if((polygon1.center - polygon2.center).dot(smallestAxis) > 0) {
                         smallestAxis *= -1;
                     }
                 }
@@ -155,104 +156,7 @@ class Collisions {
 
         // * USing the clipping method to get the contact points
         if(isCollision && smallestAxis != null) {
-            var edge1: Array<Vec2> = [];
-            var edge2: Array<Vec2> = [];
-
-            for(i in 0...2) {
-                var verts: Array<Vec2> = [];
-                var normal: Vec2 = smallestAxis.clone();
-                var maxProjection: Float = Math.NEGATIVE_INFINITY;
-                var index: Int = -1;
-
-                if(i == 0) {
-                    verts = polygon1.getGlobalTransformedVertices();
-                }
-                else {
-                    verts = polygon2.getGlobalTransformedVertices();
-                    normal *= -1;
-                }
-
-                // * Finding the index of the furthest point along the normal
-                for(vert in verts) {
-                    var projection = normal.dot(vert);
-                    if(projection > maxProjection) {
-                        maxProjection = projection;
-                        index = verts.indexOf(vert);
-                    }
-                }
-
-                // * Getting the edge that is the most perpendicular
-                var vert1: Vec2 = verts[index];
-                var vert2: Vec2;
-
-                var v0 = verts[(index + 1)%verts.length];
-                var l: Vec2 = (vert1 - v0).normalize();
-                var v1 = verts[index == 0 ? verts.length - 1 : index - 1];
-                var r: Vec2 = (vert1 - v1).normalize();
-                
-                vert2 = r.dot(normal) <= l.dot(normal) ? v1 : v0;
-
-                if(i == 0) {
-                    edge1[0] = vert1;
-                    edge1[1] = vert2;
-                    edge1[2] = vert2 - vert1;
-                }  
-                else {
-                    edge2[0] = vert1;
-                    edge2[1] = vert2;
-                    edge2[2] = vert2 - vert1;
-                }
-            }
-
-            // * Getting the ref and inc edge, the ref edge is more perpendicular to the seperation normal
-            var refEdge: Array<Vec2>;
-            var incEdge: Array<Vec2>;
-            var flip: Bool = false;
-            // ^ Indicating that the ref and inc edge are flipped
-
-            var edge1Dot = Math.abs(edge1[2].dot(smallestAxis));
-            var edge2Dot = Math.abs(edge2[2].dot(smallestAxis));
-            if(edge1Dot < edge2Dot || edge1Dot - edge2Dot < 0.0001) {
-                refEdge = edge1;
-                incEdge = edge2;
-                flip = true;
-            }
-            else {
-                refEdge = edge2;
-                incEdge = edge1;
-            }
-
-            // * Starting to clip
-            var refV: Vec2 = refEdge[2].normalize();
-            var o1 = refV.dot(refEdge[0]);
-            var clippedPoints = clip(incEdge[0], incEdge[1], refV, o1);
-
-            // * We need at least two points
-            if(clippedPoints.length >= 2) {
-                var o2: Float = refV.dot(refEdge[1]);
-                clippedPoints = clip(clippedPoints[0], clippedPoints[1], -refV, -o2);
-
-                if(clippedPoints.length >= 2) {
-                    // * Ref edge normal
-                    var refNorm: Vec2 = refEdge[2].normalize();
-                    refNorm = vec2(refNorm.y, refNorm.x * -1);
-                    if(flip) refNorm *= -1;
-
-                    var max: Float = refNorm.dot(refEdge[0]);
-
-                    var fPoint = clippedPoints[0];
-                    var sPoint = clippedPoints[1];
-
-                    if(refNorm.dot(fPoint) - max < 0) {
-                        clippedPoints.remove(fPoint);
-                    }
-                    if(refNorm.dot(sPoint) - max < 0) {
-                        clippedPoints.remove(sPoint);
-                    }
-
-                    contactPoints = clippedPoints;
-                }
-            }
+            contactPoints = getPolygonContactPoints(polygon1Vertices, polygon2Vertices, smallestAxis);
         }
 
         return {
@@ -285,7 +189,7 @@ class Collisions {
 
     // & Checks for a collision between a polygon and a circle
     public static inline function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
-        var polyV = poly.getGlobalTransformedVertices();
+        var polyV = poly.worldVertices;
         var circleCenter = circle.getAbsPosition();
         var circleRadius = circle.radius;
         var closestVertex: Vec2 = null;
@@ -329,31 +233,24 @@ class Collisions {
     }
 
     // & Checks for a collision between an AABB and a polygon
-    public static inline function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): Bool {
+    public static inline function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): CollisionInfo {
         var isCollision: Bool = true;
+        var minOverlap: Float = Math.POSITIVE_INFINITY;
+        var smallestAxis: Vec2 = null;
 
         // * Runs the code twice, switching between checking the poly to the AABB
-        var boxBounds = aabb.bounds;
+        var aabbVerts: Array<Vec2> = aabb.vertices;
+        var polyVerts: Array<Vec2> = poly.worldVertices;
         for(i in 0...2) {
             var poly1V: Array<Vec2> = [];
             var poly2V: Array<Vec2> = [];
             if(i == 0) {
-                poly1V = poly.getGlobalTransformedVertices();
-                poly2V = [
-                    boxBounds.min,
-                    vec2(boxBounds.max.x, boxBounds.min.y),
-                    boxBounds.max,
-                    vec2(boxBounds.min.x, boxBounds.max.y)
-                ];
+                poly1V = polyVerts;
+                poly2V = aabbVerts;
             }
             else {
-                poly2V = [
-                    boxBounds.min,
-                    vec2(boxBounds.max.x, boxBounds.min.y),
-                    boxBounds.max,
-                    vec2(boxBounds.min.x, boxBounds.max.y)
-                ];
-                poly2V = poly.getGlobalTransformedVertices();
+                poly1V = aabbVerts;
+                poly2V = polyVerts;
             }
 
             
@@ -364,15 +261,38 @@ class Collisions {
 
                 var interval1 = getInterval(poly1V, axisProj);
                 var interval2 = getInterval(poly2V, axisProj);
-                if(overlapOnAxis(interval1, interval2) < 0) {
+                var overlap: Float = overlapOnAxis(interval1, interval2);
+                if(overlap < 0) {
                     isCollision = false;
                     break;
+                }
+
+                // * Getting the depth and seperation normal
+                if(overlap < minOverlap) {
+                    minOverlap = overlap;
+                    smallestAxis = axisProj.normalize();
+                    if((aabb.center - poly.center).dot(smallestAxis) > 0) {
+                        smallestAxis *= -1;
+                    }
                 }
             }
 
             if(!isCollision) break;
         }
-        return isCollision;
+
+        var contactPoints: Array<Vec2> = [];
+        if(isCollision && smallestAxis != null) {
+            contactPoints = getPolygonContactPoints(aabbVerts, polyVerts, smallestAxis);
+        }
+
+        return {
+            isColliding: isCollision,
+            shape1: aabb,
+            shape2: poly,
+            normal: smallestAxis,
+            depth: minOverlap ,
+            contactPoints: contactPoints
+        };
     }
 
     // & Checks for a collision between an AABB and a circle
@@ -428,6 +348,109 @@ class Collisions {
         return points;
     }
 
+    // & Gets the contact points between two polygons
+    public static inline function getPolygonContactPoints(vertices1: Array<Vec2>, vertices2: Array<Vec2>, sepAxis: Vec2): Array<Vec2> {
+        var edge1: Array<Vec2> = [];
+        var edge2: Array<Vec2> = [];
+
+        for(i in 0...2) {
+            var verts: Array<Vec2> = [];
+            var normal: Vec2 = sepAxis.clone();
+            var maxProjection: Float = Math.NEGATIVE_INFINITY;
+            var index: Int = -1;
+
+            if(i == 0) {
+                verts = vertices1;
+            }
+            else {
+                verts = vertices2;
+                normal *= -1;
+            }
+
+            // * Finding the index of the furthest point along the normal
+            for(vert in verts) {
+                var projection = normal.dot(vert);
+                if(projection > maxProjection) {
+                    maxProjection = projection;
+                    index = verts.indexOf(vert);
+                }
+            }
+
+            // * Getting the edge that is the most perpendicular
+            var vert1: Vec2 = verts[index];
+            var vert2: Vec2;
+
+            var v0 = verts[(index + 1)%verts.length];
+            var l: Vec2 = (vert1 - v0).normalize();
+            var v1 = verts[index == 0 ? verts.length - 1 : index - 1];
+            var r: Vec2 = (vert1 - v1).normalize();
+            
+            vert2 = r.dot(normal) <= l.dot(normal) ? v1 : v0;
+
+            if(i == 0) {
+                edge1[0] = vert1;
+                edge1[1] = vert2;
+                edge1[2] = vert2 - vert1;
+            }  
+            else {
+                edge2[0] = vert1;
+                edge2[1] = vert2;
+                edge2[2] = vert2 - vert1;
+            }
+        }
+
+        // * Getting the ref and inc edge, the ref edge is more perpendicular to the seperation normal
+        var refEdge: Array<Vec2>;
+        var incEdge: Array<Vec2>;
+        var flip: Bool = false;
+        // ^ Indicating that the ref and inc edge are flipped
+        
+        var edge1Dot = Math.abs(edge1[2].dot(sepAxis));
+        var edge2Dot = Math.abs(edge2[2].dot(sepAxis));
+        if(edge1Dot < edge2Dot || edge1Dot - edge2Dot < 0.0001) {
+            refEdge = edge1;
+            incEdge = edge2;
+            flip = true;
+        }
+        else {
+            refEdge = edge2;
+            incEdge = edge1;
+        }
+
+        // * Starting to clip
+        var refV: Vec2 = refEdge[2].normalize();
+        var o1 = refV.dot(refEdge[0]);
+        var clippedPoints = clip(incEdge[0], incEdge[1], refV, o1);
+
+        // * We need at least two points
+        if(clippedPoints.length < 2) return []; 
+        
+            var o2: Float = refV.dot(refEdge[1]);
+        clippedPoints = clip(clippedPoints[0], clippedPoints[1], -refV, -o2);
+        
+        // * Once more, we need at least two points
+        if(clippedPoints.length < 2) return [];
+        
+        // * Ref edge normal
+        var refNorm: Vec2 = refEdge[2].normalize();
+        refNorm = vec2(refNorm.y, refNorm.x * -1);
+        if(flip) refNorm *= -1;
+        
+        var max: Float = refNorm.dot(refEdge[0]);
+        var fPoint = clippedPoints[0];
+        var sPoint = clippedPoints[1];
+        
+        if(refNorm.dot(fPoint) - max < 0) {
+            clippedPoints.remove(fPoint);
+        }
+        
+        if(refNorm.dot(sPoint) - max < 0) {
+            clippedPoints.remove(sPoint);
+        }
+        
+        return clippedPoints;
+    }
+
     // & Checks if two radiuses intersect
     public static inline function radiusIntersectionDepth(pos1: Vec2, pos2: Vec2, radius1: Float, radius2: Float): Float {
         var distance = (pos1 - pos2).length();
@@ -468,6 +491,10 @@ class Collisions {
                  bounds1.max.y > bounds2.min.y );
     }
 
+    public static inline function boundsSeperation(bounds1: Bounds, bounds2: Bounds): Vec2 {
+        return null;
+    }
+
     // & Finds the intersection point between two rays
     public static inline function rayRaycast(ray1: Raycast, ray2: Raycast): Vec2 {
         return lineIntersection(
@@ -482,7 +509,7 @@ class Collisions {
     
     // & Finds the intersection point between a polygon and a ray
     public static inline function polyRaycast(poly: CollisionPolygon, ray: Raycast): Vec2 {    
-        var vertices: Array<Vec2> = poly.getGlobalTransformedVertices();
+        var vertices: Array<Vec2> = poly.worldVertices;
         var closestIntersection: Vec2 = null;
         var rayPos = ray.origin;
         var castPoint = rayPos + ray.castTo;

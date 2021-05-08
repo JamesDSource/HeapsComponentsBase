@@ -105,10 +105,10 @@ class Entity {
         }
     }
 
-    public function update(delta: Float, paused: Bool = false): Void {
+    public function update(paused: Bool = false): Void {
         for(updateableComponent in updatableComponents) {
             if(!paused || updateableComponent.pauseMode == PauseMode.Resume) {
-                updateableComponent.update(delta);
+                updateableComponent.update();
             }
         }
     }

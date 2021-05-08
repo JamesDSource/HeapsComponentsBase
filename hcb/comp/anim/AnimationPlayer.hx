@@ -76,7 +76,7 @@ class AnimationPlayer extends Component {
         }
     }
 
-    public override function update(delta: Float) {       
+    public override function update() {       
         var position: Vec2 = parentEntity.getPosition();
         for(animationSlot in animationSlots) {
             if(animationSlot.animation != null) {

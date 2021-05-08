@@ -31,9 +31,9 @@ class ForceRegistry {
         registry = [];
     }
 
-    public function updateForces(delta: Float) {
+    public function updateForces() {
         for(register in registry) {
-            register.forceGenerator.updateForce(register.body, delta);
+            register.forceGenerator.updateForce(register.body);
         }
     }
 
