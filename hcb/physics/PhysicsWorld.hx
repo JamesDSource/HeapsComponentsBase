@@ -85,12 +85,8 @@ class PhysicsWorld {
         var force = numerator/invMassSum;
         var impulse = normal*force;
 
-        var massSum = body1.mass = body2.mass;
-        var ratio = body1.mass/massSum;
-        body1.velocity -= impulse*ratio*invMass1;
-        
-        ratio = body2.mass/massSum;
-        body2.velocity += impulse*ratio*invMass2;
+        body1.velocity -= impulse*invMass1;
+        body2.velocity += impulse*invMass2;
 
         // * Friction
         relativeVelocity = body2.velocity - body1.velocity;
@@ -108,8 +104,8 @@ class PhysicsWorld {
             fricImpulse = -force*t*dynamicFriction;
         }
 
-        body1.velocity -= fricImpulse*invMass1;
-        body2.velocity += fricImpulse*invMass2;
+        //body1.velocity -= fricImpulse*invMass1;
+        //body2.velocity += fricImpulse*invMass2;
     }
 
     public function addBody(body: Body) {
