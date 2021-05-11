@@ -1,3 +1,7 @@
+import hcb.comp.col.Collisions;
+import hcb.comp.col.Collisions.CollisionInfo;
+import hcb.comp.col.CollisionCircle;
+import hcb.comp.col.CollisionAABB;
 import hxd.Key;
 import hcb.Project;
 import hcb.LdtkEntities;
@@ -14,7 +18,7 @@ class Main extends hxd.App {
         room = new Room(levels.all_levels.Test);
 
         LdtkEntities.ldtkEntityPrefabs["Player"] = Prefabs.player;
-        LdtkEntities.ldtkEntityPrefabs["PhysicsCircle"] = Prefabs.physicsCircle;
+        LdtkEntities.ldtkEntityPrefabs["PhysicsBody"] = Prefabs.physicsBody;
 
         room.build();
 

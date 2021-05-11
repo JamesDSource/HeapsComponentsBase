@@ -17,13 +17,21 @@ class Prefabs {
         return player;
     }
 
-    public static function physicsCircle(entity: ldtk.Entity): Array<Component> {
-        var circleEnt: Levels.Entity_PhysicsCircle = cast entity;
+    public static function physicsBody(entity: ldtk.Entity): Array<Component> {
+        var bodyEnt: Levels.Entity_PhysicsBody = cast entity;
 
-        var mass = 30;
+        var mass = Math.random()*15 + 1;
 
-        var col = CollisionPolygon.rectangle("rect", 16, 16, OriginPoint.Center);
-        //var col = new CollisionCircle("circle", mass);
+        var col: CollisionShape;
+
+        switch(bodyEnt.f_Shape) {
+            case Levels.Enum_Shape.Circle:
+                col = new CollisionCircle("circle", mass);
+            case Levels.Enum_Shape.AABB:
+                col = new CollisionAABB("aabb", mass, mass, OriginPoint.Center);
+            case Levels.Enum_Shape.PolySquare:
+                col = CollisionPolygon.rectangle("rect", mass, mass, OriginPoint.Center);
+        }
 
         var circle: Array<Component> = [
             col,

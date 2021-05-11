@@ -42,15 +42,13 @@ class Collisions {
                 switch(Type.getClass(shape2)) {
                     // * AABB with AABB
                     case CollisionAABB:
-                        //return true;
-                        // ^ We already tested for a bounds intersection, so if the code made it this far,
-                        // ^ aabbWithAabb is already true
+                        result = aabbWithAabb(cast shape1, cast shape2);
                     // * AABB with poly
                     case CollisionPolygon:
                         result = aabbWithPoly(cast shape1, cast shape2);
                     // * AABB with circle
                     case CollisionCircle:
-                        //result = aabbWithCircle(cast shape1, cast shape2);
+                        result = aabbWithCircle(cast shape1, cast shape2);
                 }
             case CollisionPolygon:
                 switch(Type.getClass(shape2)) {
@@ -63,17 +61,17 @@ class Collisions {
                         result = polyWithPoly(cast shape1, cast shape2);
                     // * Poly with circle
                     case CollisionCircle:
-                        //result = polyWithCircle(cast shape1, cast shape2);
+                        result = polyWithCircle(cast shape1, cast shape2);
                 }
             case CollisionCircle:
                 switch(Type.getClass(shape2)) {
                     // * Circle with AABB
                     case CollisionAABB:
-                        //result = aabbWithCircle(cast shape2, cast shape1);
+                        result = aabbWithCircle(cast shape2, cast shape1);
                         flipped = true;
                     // * Circle with poly
                     case CollisionPolygon:
-                        //result = polyWithCircle(cast shape2, cast shape1);
+                        result = polyWithCircle(cast shape2, cast shape1);
                         flipped = true;
                     // * Circle with circle
                     case CollisionCircle:
@@ -103,6 +101,53 @@ class Collisions {
         return null;
     }
 
+    // & Checks for a collision between two AABBs
+    public static inline function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): CollisionInfo {
+        var verts1 = aabb1.vertices;
+        var verts2 = aabb2.vertices;
+
+        var isColliding = boundsIntersection(aabb1.bounds, aabb2.bounds);
+        var minOverlap: Float = Math.POSITIVE_INFINITY;
+        var smallestAxis: Vec2 = null;
+        var contactPoints: Array<Vec2> = [];
+
+        if(isColliding) {
+            var checkAxis: Array<Vec2> = [
+                vec2(1, 0),
+                vec2(0, 1)
+            ];
+
+            for(axis in checkAxis) {
+                var interval1 = getInterval(verts1, axis);
+                var interval2 = getInterval(verts2, axis);
+                var overlap = overlapOnAxis(interval1, interval2);
+                
+                // * Getting the depth and seperation normal
+                if(overlap < minOverlap) {
+                    minOverlap = overlap;
+                    smallestAxis = axis.normalize();
+                    if((aabb1.center - aabb2.center).dot(smallestAxis) > 0) {
+                        smallestAxis *= -1;
+                    }
+                }
+            }
+
+            if(smallestAxis != null) {
+                contactPoints = getPolygonContactPoints(verts1, verts2, smallestAxis);
+            }
+        }
+
+        
+        
+        return {
+            isColliding: isColliding,
+            shape1: aabb1,
+            shape2: aabb2,
+            normal: smallestAxis,
+            depth: minOverlap,
+            contactPoints: contactPoints
+        }
+    }
 
     // & Checks for a collision between two polygons
     public static inline function polyWithPoly(polygon1: CollisionPolygon, polygon2: CollisionPolygon): CollisionInfo {
@@ -188,48 +233,72 @@ class Collisions {
     }
 
     // & Checks for a collision between a polygon and a circle
-    public static inline function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): Bool {
+    public static inline function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): CollisionInfo {
         var polyV = poly.worldVertices;
         var circleCenter = circle.getAbsPosition();
         var circleRadius = circle.radius;
         var closestVertex: Vec2 = null;
         var isCollision: Bool = true;
 
-        // * Checking if the center point in inside the polygon
-        if(!pointInPolygon(polyV, circleCenter)){
-            // * First iteration checks the polygon
-            for(i in 0...polyV.length) {
-                var vert = polyV[i];
-                var nextVert = polyV[(i + 1)%polyV.length];
-                var axisProj: Vec2 =  vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
-                
-                // * Getting the vetex closest to the center of the circle
-                if(closestVertex == null || distance(closestVertex, circleCenter) > distance(vert, circleCenter)) {
-                    closestVertex = vert;
-                }
+        var minOverlap: Float = Math.POSITIVE_INFINITY;
+        var smallestAxis: Vec2 = null;
 
-                var polyInterval = getInterval(polyV, axisProj);
-                var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
-                if(overlapOnAxis(polyInterval, circleInterval) < 0) {
-                    isCollision = false;
-                    break;
-                }
+        // * First iteration checks the polygon
+        for(i in 0...polyV.length) {
+            var vert = polyV[i];
+            var nextVert = polyV[(i + 1)%polyV.length];
+            var axisProj: Vec2 =  vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
+            
+            // * Getting the vetex closest to the center of the circle
+            if(closestVertex == null || distance(closestVertex, circleCenter) > distance(vert, circleCenter)) {
+                closestVertex = vert;
             }
-
-            // * Checking the axis between the closest vertex and the circle center
-            if(closestVertex == null) {
+            var polyInterval = getInterval(polyV, axisProj);
+            var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
+            var overlap: Float = overlapOnAxis(polyInterval, circleInterval);
+            if(overlap < 0) {
                 isCollision = false;
+                break;
             }
-            else if(isCollision) { 
-                var axisProj: Vec2 = vec2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x).normalize();
-                var polyInterval = getInterval(polyV, axisProj);
-                var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
-                if(overlapOnAxis(polyInterval, circleInterval) < 0) {
-                    isCollision = false;
+            // * Getting the depth and seperation normal
+            if(overlap < minOverlap) {
+                minOverlap = overlap;
+                smallestAxis = axisProj.normalize();
+                if((poly.center - circleCenter).dot(smallestAxis) > 0) {
+                    smallestAxis *= -1;
                 }
             }
         }
-        return isCollision;
+        // * Checking the axis between the closest vertex and the circle center
+        if(closestVertex == null) {
+            isCollision = false;
+        }
+        else if(isCollision) { 
+            var axisProj: Vec2 = vec2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x).normalize();
+            var polyInterval = getInterval(polyV, axisProj);
+            var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
+            var overlap: Float = overlapOnAxis(polyInterval, circleInterval);
+            if(overlap < 0) {
+                isCollision = false;
+            }
+            // * Getting the depth and seperation normal
+            if(overlap < minOverlap) {
+                minOverlap = overlap;
+                smallestAxis = axisProj.normalize();
+                if((poly.center - circleCenter).dot(smallestAxis) > 0) {
+                    smallestAxis *= -1;
+                }
+            }
+        }
+
+        return {
+            isColliding: isCollision,
+            shape1: poly,
+            shape2: circle,
+            normal: smallestAxis,
+            depth: minOverlap,
+            contactPoints: [circleCenter - smallestAxis*(minOverlap/2 + circleRadius)]
+        };
     }
 
     // & Checks for a collision between an AABB and a polygon
@@ -296,15 +365,54 @@ class Collisions {
     }
 
     // & Checks for a collision between an AABB and a circle
-    public static inline function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): Bool {
+    public static inline function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): CollisionInfo {
         var bounds = aabb.bounds;
-        var circlePos = circle.getAbsPosition();
+        var circlePos = circle.center;
 
         var closestPoint = circlePos.clone();
         closestPoint.x = hxd.Math.clamp(closestPoint.x, bounds.min.x, bounds.max.x);
         closestPoint.y = hxd.Math.clamp(closestPoint.y, bounds.min.y, bounds.max.y);
 
-        return distance(closestPoint, circlePos) <= circle.radius;
+        var dist = distance(closestPoint, circlePos);
+        var isCollision = distance(closestPoint, circlePos) <= circle.radius;
+        var depth = circle.radius - dist;
+
+        var seperationAxis: Vec2 = null;
+
+        if(isCollision) {
+            var distanceToEdges: Array<Float> = [
+                closestPoint.x - bounds.min.x,  // * Left
+                closestPoint.x - bounds.max.x,  // * Right
+                closestPoint.y - bounds.min.y,  // * Up
+                closestPoint.y - bounds.max.y   // * Down
+            ];
+            var smallestLen: Float = Math.POSITIVE_INFINITY;
+            for(i in 0...distanceToEdges.length) {
+                var len = Math.abs(distanceToEdges[i]);
+                if(len < smallestLen) {
+                    switch(i) {
+                        case 0:
+                            seperationAxis = vec2(-1, 0);
+                        case 1:
+                            seperationAxis = vec2(1, 0);
+                        case 2:
+                            seperationAxis = vec2(0, -1);
+                        case 3:
+                            seperationAxis = vec2(0, 1);
+                    }
+                    smallestLen = len;
+                }
+            }
+        }
+
+        return {
+            isColliding: isCollision,
+            shape1: aabb,
+            shape2: circle,
+            normal: seperationAxis,
+            depth: depth,
+            contactPoints: [circlePos - seperationAxis*(circle.radius - depth/2)]
+        }
     }
 
     // & Checks if two polygons overlap on a certain axis

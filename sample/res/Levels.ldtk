@@ -9,7 +9,7 @@
 		"url": "https://ldtk.io"
 	},
 	"jsonVersion": "0.9.3",
-	"nextUid": 13,
+	"nextUid": 16,
 	"worldLayout": "Free",
 	"worldGridWidth": 32,
 	"worldGridHeight": 32,
@@ -95,7 +95,7 @@
 			"fieldDefs": []
 		},
 		{
-			"identifier": "PhysicsCircle",
+			"identifier": "PhysicsBody",
 			"uid": 12,
 			"tags": [],
 			"width": 32,
@@ -107,7 +107,7 @@
 			"lineOpacity": 1,
 			"hollow": false,
 			"color": "#001EFF",
-			"renderMode": "Ellipse",
+			"renderMode": "Rectangle",
 			"showName": true,
 			"tilesetId": null,
 			"tileId": null,
@@ -117,7 +117,28 @@
 			"limitBehavior": "MoveLastOne",
 			"pivotX": 0.5,
 			"pivotY": 0.5,
-			"fieldDefs": []
+			"fieldDefs": [
+				{
+					"identifier": "Shape",
+					"__type": "LocalEnum.Shape",
+					"uid": 15,
+					"type": { "id": "F_Enum", "params": [13] },
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "NameAndValue",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": true,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -137,7 +158,11 @@
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "000", "averageColors": "693339333933" }
 		}
-	], "enums": [], "externalEnums": [], "levelFields": [] },
+	], "enums": [{ "identifier": "Shape", "uid": 13, "values": [
+		{ "id": "Circle", "tileId": null, "color": 0, "__tileSrcRect": null },
+		{ "id": "AABB", "tileId": null, "color": 0, "__tileSrcRect": null },
+		{ "id": "PolySquare", "tileId": null, "color": 0, "__tileSrcRect": null }
+	], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null }], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
 			"identifier": "Test",
@@ -182,7 +207,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "PhysicsCircle",
+							"__identifier": "PhysicsBody",
 							"__grid": [11,12],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
@@ -190,21 +215,19 @@
 							"height": 32,
 							"defUid": 12,
 							"px": [368,400],
-							"fieldInstances": []
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
+								}]
+							}]
 						},
 						{
-							"__identifier": "PhysicsCircle",
-							"__grid": [11,9],
-							"__pivot": [0.5,0.5],
-							"__tile": null,
-							"width": 32,
-							"height": 32,
-							"defUid": 12,
-							"px": [368,304],
-							"fieldInstances": []
-						},
-						{
-							"__identifier": "PhysicsCircle",
+							"__identifier": "PhysicsBody",
 							"__grid": [11,6],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
@@ -212,7 +235,36 @@
 							"height": 32,
 							"defUid": 12,
 							"px": [368,208],
-							"fieldInstances": []
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "Circle",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["Circle"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [11,9],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [368,304],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "AABB",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["AABB"]
+								}]
+							}]
 						}
 					]
 				},
