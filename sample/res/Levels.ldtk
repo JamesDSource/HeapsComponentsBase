@@ -208,13 +208,13 @@
 					"entityInstances": [
 						{
 							"__identifier": "PhysicsBody",
-							"__grid": [11,12],
+							"__grid": [20,3],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
 							"width": 32,
 							"height": 32,
 							"defUid": 12,
-							"px": [368,400],
+							"px": [656,112],
 							"fieldInstances": [{
 								"__identifier": "Shape",
 								"__value": "PolySquare",
@@ -228,13 +228,13 @@
 						},
 						{
 							"__identifier": "PhysicsBody",
-							"__grid": [11,6],
+							"__grid": [2,10],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
 							"width": 32,
 							"height": 32,
 							"defUid": 12,
-							"px": [368,208],
+							"px": [80,336],
 							"fieldInstances": [{
 								"__identifier": "Shape",
 								"__value": "Circle",
@@ -243,26 +243,6 @@
 								"realEditorValues": [{
 									"id": "V_String",
 									"params": ["Circle"]
-								}]
-							}]
-						},
-						{
-							"__identifier": "PhysicsBody",
-							"__grid": [11,9],
-							"__pivot": [0.5,0.5],
-							"__tile": null,
-							"width": 32,
-							"height": 32,
-							"defUid": 12,
-							"px": [368,304],
-							"fieldInstances": [{
-								"__identifier": "Shape",
-								"__value": "AABB",
-								"__type": "LocalEnum.Shape",
-								"defUid": 15,
-								"realEditorValues": [{
-									"id": "V_String",
-									"params": ["AABB"]
 								}]
 							}]
 						}

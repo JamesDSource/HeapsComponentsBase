@@ -20,7 +20,7 @@ class Prefabs {
     public static function physicsBody(entity: ldtk.Entity): Array<Component> {
         var bodyEnt: Levels.Entity_PhysicsBody = cast entity;
 
-        var mass = Math.random()*15 + 1;
+        var mass = Math.random()*11 + 5;
 
         var col: CollisionShape;
 
@@ -35,7 +35,7 @@ class Prefabs {
 
         var circle: Array<Component> = [
             col,
-            new Body("Physics", {shape: col, mass: mass, velocity: vec2(0, -1 + Math.random()*2), elasticity: 0.5})
+            new Body("Physics", {shape: col, mass: mass, velocity: vec2(2*(-1 + Math.random()*2), 2*(-1 + Math.random()*2)), elasticity: 0.5, angularInertia: mass, dynamicFriction: 0.5, staticFriction: 0.5})
         ];
         
         return circle;

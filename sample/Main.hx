@@ -1,3 +1,4 @@
+import hcb.physics.Gravity;
 import hcb.comp.col.Collisions;
 import hcb.comp.col.Collisions.CollisionInfo;
 import hcb.comp.col.CollisionCircle;
@@ -11,6 +12,8 @@ class Main extends hxd.App {
     private var room: Room;
     
     override function init() {
+        Gravity.gravity.y = 0.1;
+
         var levels = new Levels();
 
         // * Project init

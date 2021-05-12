@@ -16,7 +16,7 @@ class Room extends hcb.Room {
     }
 
     public override function build() {
-        scene.add(physicsWorld.graphics, 5);
+        scene.add(physicsWorld.graphics, 8);
 
         scene.scaleMode = ScaleMode.Stretch(cast 1920/2, cast 1080/2);
 
@@ -24,6 +24,19 @@ class Room extends hcb.Room {
         
         var rend = level.l_Collisions.render();
         scene.add(rend, 0);
+
+        collisionGridMap[0] = function(origin: Vec2, tileSize: Float): CollisionShape {
+            var verts: Array<Vec2> = [
+                vec2(0, 0),
+                vec2(tileSize - 1, 0),
+                vec2(tileSize - 1, tileSize - 1),
+                vec2(0, tileSize - 1)
+            ];
+            var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
+            shape.offsetX = origin.x;
+            shape.offsetY = origin.y;
+            return shape;
+        }
 
         collisionGridMap[1] = function(origin: Vec2, tileSize: Float): CollisionShape {
             var verts: Array<Vec2> = [
@@ -54,6 +67,11 @@ class Room extends hcb.Room {
             collisionWorld.addShape(shape);
             var body = new Body("Body", {mass: 0, elasticity: 1, shape: shape});
             physicsWorld.addBody(body);
+        }
+        
+        var grav = new hcb.physics.Gravity();
+        for(body in physicsWorld.getBodies()) {
+            physicsWorld.forceRegistry.add(grav, body);
         }
     }
 }

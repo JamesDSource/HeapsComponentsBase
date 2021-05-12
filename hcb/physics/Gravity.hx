@@ -12,8 +12,8 @@ class Gravity implements ForceGenerator {
         this.gravityOverride = gravityOverride;
     }
 
-    public function updateForce(body: Body, delta: Float) {
+    public function updateForce(body: Body) {
         var grav = gravityOverride != null ? gravityOverride : gravity;
-        body.impulse(grav * body.mass * delta);
+        body.impulse(grav*body.mass);
     }
 }
