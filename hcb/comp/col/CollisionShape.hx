@@ -41,7 +41,7 @@ class CollisionShape extends Component {
     }
 
     private inline function set_offsetY(offsetY: Float): Float {
-        this.offsetX = offsetX;
+        this.offsetY = offsetY;
         offset.y = offsetY;
         updateCollisionCells();
         return offsetY;

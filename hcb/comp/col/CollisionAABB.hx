@@ -48,9 +48,9 @@ class CollisionAABB extends CollisionShape {
         
         return [
             boxBounds.min,
-            vec2(boxBounds.max.x, boxBounds.min.y),
+            vec2(boxBounds.min.x, boxBounds.max.y),
             boxBounds.max,
-            vec2(boxBounds.min.x, boxBounds.max.y)
+            vec2(boxBounds.max.x, boxBounds.min.y)
         ];
     }
 

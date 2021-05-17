@@ -1,4 +1,5 @@
 package hcb;
+import hcb.comp.col.Collisions.CollisionInfo;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.*;
 import VectorMath;
@@ -91,120 +92,103 @@ class CollisionWorld {
         return shapeLists;
     }
 
-    public function isCollisionAt(colShape: CollisionShape, position: Vec2): Bool {
-        var returnResult: Bool = false;
-
-        var prevOverride: Vec2 = colShape.overridePosition;
-        colShape.overridePosition = position;
-        var cellShapes = getShapesFromBounds(colShape.bounds);
-        for(shape in cellShapes) {
-            if(colShape != shape && Collisions.test(colShape, shape).isColliding) {
-                returnResult = true;
-                break;
-            }
-        }
-        colShape.overridePosition = prevOverride;
-        return returnResult;
-            
-    }
-
-    public function isAnyCollisionAt(colShapes: Array<CollisionShape>, position: Vec2): Bool {
-        var returnResult: Bool = false;
+    // & Returns the first collision for one shape
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, position: Vec2): CollisionInfo {
+        var result: CollisionInfo = null;
         
-        for(colShape in colShapes) {
-            var prevOverride: Vec2 = colShape.overridePosition;
-            colShape.overridePosition = position;
-            var cellShapes = getShapesFromBounds(colShape.bounds);
-            for(shape in cellShapes) {
-                if(!colShapes.contains(shape) && Collisions.test(colShape, shape).isColliding) {
-                    returnResult = true;
+        var prevOverride: Vec2 = collisionShape.overridePosition;
+        collisionShape.overridePosition = position;
+        
+        var cellShapes = getShapesFromBounds(collisionShape.bounds);
+        for(shape in cellShapes) {
+            if(collisionShape != shape) {
+                result = Collisions.test(collisionShape, shape);
+                if(result.isColliding) {
                     break;
                 }
-            }
-            colShape.overridePosition = prevOverride;
-        }
-        return returnResult;
-    }
-
-    public function getCollisionAt(colShape: CollisionShape, position: Vec2): Array<CollisionShape> {
-        var returnResult: Array<CollisionShape> = [];
-        
-        var prevOverride: Vec2 = colShape.overridePosition;
-        colShape.overridePosition = position;
-        var cellShapes = getShapesFromBounds(colShape.bounds);
-        for(shape in cellShapes) {
-            if(colShape != shape && Collisions.test(colShape, shape).isColliding) {
-                returnResult.push(shape);
-            }
-        }
-        colShape.overridePosition = prevOverride;
-
-        return returnResult;
-            
-    }
-
-    public function getAnyCollisionAt(colShapes: Array<CollisionShape>, position: Vec2): Array<CollisionShape> {
-        var returnResult: Array<CollisionShape> = [];
-        
-        for(colShape in colShapes) {
-            var prevOverride: Vec2 = colShape.overridePosition;
-            colShape.overridePosition = position;
-            var cellShapes = getShapesFromBounds(colShape.bounds);
-            for(shape in cellShapes) {
-                if(!returnResult.contains(shape) && !colShapes.contains(shape) && Collisions.test(colShape, shape).isColliding) {
-                    returnResult.push(shape);
+                else {
+                    result = null;
                 }
             }
-            colShape.overridePosition = prevOverride;
         }
-        return returnResult;
+        
+        collisionShape.overridePosition = prevOverride;
+
+        return result;
     }
 
-    public function pushOut(colShape: CollisionShape, position: Vec2, maxSteps: Int = 100): Vec2 {
-        for(i in 0...maxSteps) {
-            if(!isCollisionAt(colShape, vec2(i, 0) + position)) {
-                return vec2(i, 0);
+    // & Returns the first collision for multiple shapes
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, position: Vec2): CollisionInfo {
+        var result: CollisionInfo = null;
+        
+        for(collisionShape in collisionShapes) {
+            var prevOverride: Vec2 = collisionShape.overridePosition;
+            collisionShape.overridePosition = position;
+
+            var cellShapes = getShapesFromBounds(collisionShape.bounds);
+            for(shape in cellShapes) {
+                if(!collisionShapes.contains(shape)) {
+                    result = Collisions.test(collisionShape, shape);
+                    if(result.isColliding) {
+                        break;
+                    }
+                    else {
+                        result = null;
+                    }
+                }
             }
-            else if(!isCollisionAt(colShape, vec2(-i, 0) + position)) {
-                return vec2(-i, 0);
-            }
-            else if(!isCollisionAt(colShape, vec2(0, i) + position)) {
-                return vec2(0, i);
-            }
-            else if(!isCollisionAt(colShape, vec2(0, -i) + position)) {
-                return vec2(0, -i);
-            }
-            else if(!isCollisionAt(colShape, vec2(i, i) + position)) {
-                return vec2(i, i);
-            }
-            else if(!isCollisionAt(colShape, vec2(-i, i) + position)) {
-                return vec2(-i, i);
-            }
-            else if(!isCollisionAt(colShape, vec2(i, -i) + position)) {
-                return vec2(i, -i);
-            }
-            else if(!isCollisionAt(colShape, vec2(-i, -i) + position)) {
-                return vec2(-i, -i);
-            }
+            
+            collisionShape.overridePosition = prevOverride;
         }
-        return vec2(0, 0);
+        
+        return result;
     }
 
-    public function pushOutDirection(colShape: CollisionShape, position: Vec2, direction: Vec2, maxSteps: Int = 100): Vec2 {
-        var pushValue = vec2(0, 0);
-        var normalizedDir = normalize(pushValue);
-
-        var steps: Int = 0;
-        while(isCollisionAt(colShape, position + pushValue)) {
-            steps++;
-            if(steps >= maxSteps) {
-                return vec2(0, 0);
+    // & Returns all collisions for one shape
+    public extern overload inline function getCollisionsAt(collisionShape: CollisionShape, position: Vec2): Array<CollisionInfo> {
+        var results: Array<CollisionInfo> = [];
+        
+        var prevOverride: Vec2 = collisionShape.overridePosition;
+        collisionShape.overridePosition = position;
+        
+        var cellShapes = getShapesFromBounds(collisionShape.bounds);
+        for(shape in cellShapes) {
+            if(collisionShape != shape) {
+                var result = Collisions.test(collisionShape, shape);
+                if(result.isColliding) {
+                    results.push(result);
+                }
             }
-
-            pushValue += normalizedDir;
         }
+        
+        collisionShape.overridePosition = prevOverride;
 
-        return pushValue;
+        return results;
+    }
+
+    // & Returns all collisions for multiple shapes
+    public extern overload inline function getCollisionsAt(collisionShapes: Array<CollisionShape>, position: Vec2): Array<CollisionInfo> {
+        var results: Array<CollisionInfo> = [];
+        
+        var returnResult: Array<CollisionShape> = [];
+        
+        for(collisionShape in collisionShapes) {
+            var prevOverride: Vec2 = collisionShape.overridePosition;
+            collisionShape.overridePosition = position;
+
+            var cellShapes = getShapesFromBounds(collisionShape.bounds);
+            for(shape in cellShapes) {
+                if(!returnResult.contains(shape) && !collisionShapes.contains(shape)) {
+                    var result = Collisions.test(collisionShape, shape);
+                    if(result.isColliding) {
+                        results.push(result);
+                    }
+                }
+            }
+            
+            collisionShape.overridePosition = prevOverride;
+        }
+        return results;
     }
 
     public function representShapes(layers: h2d.Layers, layer: Int, showBonds: Bool = false) {

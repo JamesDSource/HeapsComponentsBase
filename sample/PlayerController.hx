@@ -88,7 +88,7 @@ class PlayerController extends Component {
         remainder -= remainder.floor();
 
         if(velocity.x != 0) {
-            while(room.collisionWorld.isCollisionAt(collisionShape, transformPos + vec2(moveVector.x, 0))) {
+            while(room.collisionWorld.getCollisionAt(collisionShape, transformPos + vec2(moveVector.x, 0)) != null) {
                 velocity.x = Math.max(velocity.x - 1, 0);
                 if(velocity.x == 0) {
                     break;
@@ -97,7 +97,7 @@ class PlayerController extends Component {
         }
 
         if(velocity.y != 0) {
-            while(room.collisionWorld.isCollisionAt(collisionShape, transformPos + vec2(0, moveVector.y))) {
+            while(room.collisionWorld.getCollisionAt(collisionShape, transformPos + vec2(0, moveVector.y)) != null) {
                 velocity.y = Math.max(velocity.y - 1, 0);
                 if(velocity.y == 0) {
                     break;

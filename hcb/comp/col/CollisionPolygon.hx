@@ -147,9 +147,9 @@ class CollisionPolygon extends CollisionShape {
     public static function rectangle(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft) {
         var verts: Array<Vec2> = [
             vec2(0, 0),
-            vec2(width - 1, 0),
+            vec2(0, height - 1),
             vec2(width - 1, height - 1),
-            vec2(0, height - 1)
+            vec2(width - 1, 0)
         ];
 
         if(origin != OriginPoint.TopLeft) {

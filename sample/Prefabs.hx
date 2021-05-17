@@ -35,7 +35,7 @@ class Prefabs {
 
         var circle: Array<Component> = [
             col,
-            new Body("Physics", {shape: col, mass: mass, velocity: vec2(2*(-1 + Math.random()*2), 2*(-1 + Math.random()*2)), elasticity: 0.5, angularInertia: mass, dynamicFriction: 0.5, staticFriction: 0.5})
+            new Body("Physics", {shape: col, mass: mass, velocity: vec2(2*(-1 + Math.random()*2), 2*(-1 + Math.random()*2)), elasticity: 0.1, angularInertia: mass, dynamicFriction: 0.2, staticFriction: 0.2})
         ];
         
         return circle;

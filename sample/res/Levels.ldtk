@@ -208,13 +208,13 @@
 					"entityInstances": [
 						{
 							"__identifier": "PhysicsBody",
-							"__grid": [20,3],
+							"__grid": [3,9],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
 							"width": 32,
 							"height": 32,
 							"defUid": 12,
-							"px": [656,112],
+							"px": [112,304],
 							"fieldInstances": [{
 								"__identifier": "Shape",
 								"__value": "PolySquare",
@@ -228,21 +228,141 @@
 						},
 						{
 							"__identifier": "PhysicsBody",
-							"__grid": [2,10],
+							"__grid": [6,5],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
 							"width": 32,
 							"height": 32,
 							"defUid": 12,
-							"px": [80,336],
+							"px": [208,176],
 							"fieldInstances": [{
 								"__identifier": "Shape",
-								"__value": "Circle",
+								"__value": "PolySquare",
 								"__type": "LocalEnum.Shape",
 								"defUid": 15,
 								"realEditorValues": [{
 									"id": "V_String",
-									"params": ["Circle"]
+									"params": ["PolySquare"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [7,13],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [240,432],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [17,11],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [560,368],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [9,6],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [304,208],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [21,2],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [688,80],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [12,12],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [400,400],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
+								}]
+							}]
+						},
+						{
+							"__identifier": "PhysicsBody",
+							"__grid": [25,12],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 12,
+							"px": [816,400],
+							"fieldInstances": [{
+								"__identifier": "Shape",
+								"__value": "PolySquare",
+								"__type": "LocalEnum.Shape",
+								"defUid": 15,
+								"realEditorValues": [{
+									"id": "V_String",
+									"params": ["PolySquare"]
 								}]
 							}]
 						}

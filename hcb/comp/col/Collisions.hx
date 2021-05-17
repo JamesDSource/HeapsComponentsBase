@@ -1,5 +1,6 @@
 package hcb.comp.col;
 
+import hcb.math.Vector;
 import hcb.comp.col.CollisionShape;
 import hcb.comp.col.CollisionShape.Bounds;
 import VectorMath;
@@ -88,7 +89,7 @@ class Collisions {
     }
 
     // & Tests for an intersection with a ray, and returns the point of collision
-    public static function raycastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
+    public extern overload static inline function raycastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
         switch(Type.getClass(shape)) {
             case CollisionAABB:
                 return aabbRaycast(cast shape, raycast);
@@ -99,6 +100,18 @@ class Collisions {
         }
 
         return null;
+    }
+
+    // & Tests for an intersection between two rays
+    public extern overload static inline function raycastTest(raycast1: Raycast, raycast2: Raycast): Vec2 {
+        return lineIntersection(
+            raycast1.origin, 
+            raycast1.origin + raycast1.castTo, 
+            raycast1.infinite,
+            raycast2.origin,
+            raycast2.origin + raycast2.castTo,
+            raycast2.infinite
+        );
     }
 
     // & Checks for a collision between two AABBs
@@ -453,8 +466,65 @@ class Collisions {
         return {min: min, max: max};
     }
 
+    // & Gets the contact points between two polygons
+    public static function getPolygonContactPoints(vertices1: Array<Vec2>, vertices2: Array<Vec2>, sepAxis: Vec2): Array<Vec2> {
+        var edge1 = getBestEdge(vertices1, sepAxis.normalize());
+        var edge2 = getBestEdge(vertices2, -sepAxis.normalize());
+
+        // * Getting the ref and inc edge, the ref edge is more perpendicular to the seperation normal
+        var refEdge: {max: Vec2, v1: Vec2, v2: Vec2, edge: Vec2};
+        var incEdge: {max: Vec2, v1: Vec2, v2: Vec2, edge: Vec2};
+        var flip: Bool = false;
+        // ^ Indicating that the ref and inc edge are flipped
+        
+        var edge1Dot = Math.abs(edge1.edge.dot(sepAxis));
+        var edge2Dot = Math.abs(edge2.edge.dot(sepAxis));
+        if(edge1Dot < edge2Dot || Math.abs(edge1Dot - edge2Dot) < 0.0001) {
+            refEdge = edge1;
+            incEdge = edge2;
+            flip = true;
+        }
+        else {
+            refEdge = edge2;
+            incEdge = edge1;
+        }
+
+        // * Starting to clip
+        var refV: Vec2 = refEdge.edge.normalize();
+        var o1 = refV.dot(refEdge.v1);
+        var clippedPoints = clip(incEdge.v1, incEdge.v2, refV, o1);
+
+        // * We need at least two points
+        if(clippedPoints.length < 2) return []; 
+        
+        var o2: Float = refV.dot(refEdge.v2);
+        clippedPoints = clip(clippedPoints[0], clippedPoints[1], -refV, -o2);
+        
+        // * Once more, we need at least two points
+        if(clippedPoints.length < 2) return [];
+        
+        // * Ref edge normal for final clip
+        var refNorm: Vec2 = refEdge.edge;
+        refNorm = Vector.cross(refNorm, -1);
+        //if(flip) refNorm *= -1;
+        
+        var max: Float = refNorm.dot(refEdge.max);
+        var fPoint = clippedPoints[0];
+        var sPoint = clippedPoints[1];
+        
+        if(refNorm.dot(fPoint) - max < 0) {
+            clippedPoints.remove(fPoint);
+        }
+        
+        if(refNorm.dot(sPoint) - max < 0) {
+            clippedPoints.remove(sPoint);
+        }
+        
+        return clippedPoints;
+    }
+
     // & Clips line segment points if they are past o along n
-    public static inline function clip(v1: Vec2, v2: Vec2, n: Vec2, o: Float): Array<Vec2> {
+    private static inline function clip(v1: Vec2, v2: Vec2, n: Vec2, o: Float): Array<Vec2> {
         var points: Array<Vec2> = [];
         var d1: Float = n.dot(v1) - o;
         var d2: Float = n.dot(v2) - o;
@@ -475,107 +545,43 @@ class Collisions {
         return points;
     }
 
-    // & Gets the contact points between two polygons
-    public static inline function getPolygonContactPoints(vertices1: Array<Vec2>, vertices2: Array<Vec2>, sepAxis: Vec2): Array<Vec2> {
-        var edge1: Array<Vec2> = [];
-        var edge2: Array<Vec2> = [];
-
-        for(i in 0...2) {
-            var verts: Array<Vec2> = [];
-            var normal: Vec2 = sepAxis.clone();
-            var maxProjection: Float = Math.NEGATIVE_INFINITY;
-            var index: Int = -1;
-
-            if(i == 0) {
-                verts = vertices1;
-            }
-            else {
-                verts = vertices2;
-                normal *= -1;
-            }
-
-            // * Finding the index of the furthest point along the normal
-            for(vert in verts) {
-                var projection = normal.dot(vert);
-                if(projection > maxProjection) {
-                    maxProjection = projection;
-                    index = verts.indexOf(vert);
-                }
-            }
-
-            // * Getting the edge that is the most perpendicular
-            var vert1: Vec2 = verts[index];
-            var vert2: Vec2;
-
-            var v0 = verts[(index + 1)%verts.length];
-            var l: Vec2 = (vert1 - v0).normalize();
-            var v1 = verts[index == 0 ? verts.length - 1 : index - 1];
-            var r: Vec2 = (vert1 - v1).normalize();
-            
-            vert2 = r.dot(normal) <= l.dot(normal) ? v1 : v0;
-
-            if(i == 0) {
-                edge1[0] = vert1;
-                edge1[1] = vert2;
-                edge1[2] = vert2 - vert1;
-            }  
-            else {
-                edge2[0] = vert1;
-                edge2[1] = vert2;
-                edge2[2] = vert2 - vert1;
+    // & Gets the best edge for finding collision points
+    private static inline function getBestEdge(vertices: Array<Vec2>, normal: Vec2): {max: Vec2, v1: Vec2, v2: Vec2, edge: Vec2} {
+        var maxProjection: Float = Math.NEGATIVE_INFINITY;
+        var index: Int = -1;
+        
+        // * Finding the index of the furthest point along the normal
+        for(vert in vertices) {
+            var projection = normal.dot(vert);
+            if(projection > maxProjection) {
+                maxProjection = projection;
+                index = vertices.indexOf(vert);
             }
         }
-
-        // * Getting the ref and inc edge, the ref edge is more perpendicular to the seperation normal
-        var refEdge: Array<Vec2>;
-        var incEdge: Array<Vec2>;
-        var flip: Bool = false;
-        // ^ Indicating that the ref and inc edge are flipped
         
-        var edge1Dot = Math.abs(edge1[2].dot(sepAxis));
-        var edge2Dot = Math.abs(edge2[2].dot(sepAxis));
-        if(edge1Dot < edge2Dot || edge1Dot - edge2Dot < 0.0001) {
-            refEdge = edge1;
-            incEdge = edge2;
-            flip = true;
+        // * Getting the edge that is the most perpendicular
+        var maxVert: Vec2 = vertices[index];
+        var v0 = vertices[(index + 1)%vertices.length];
+        var v1 = vertices[index == 0 ? vertices.length - 1 : index - 1];
+        var l: Vec2 = (maxVert - v1).normalize();
+        var r: Vec2 = (maxVert - v0).normalize();
+        
+        if(r.dot(normal) <= l.dot(normal)) {
+            return {
+                max: maxVert,
+                v1: v0,
+                v2: maxVert,
+                edge: maxVert - v0
+            }
         }
         else {
-            refEdge = edge2;
-            incEdge = edge1;
+            return {
+                max: maxVert,
+                v1: maxVert,
+                v2: v1,
+                edge: v1 - maxVert
+            }
         }
-
-        // * Starting to clip
-        var refV: Vec2 = refEdge[2].normalize();
-        var o1 = refV.dot(refEdge[0]);
-        var clippedPoints = clip(incEdge[0], incEdge[1], refV, o1);
-
-        // * We need at least two points
-        if(clippedPoints.length < 2) return []; 
-        
-            var o2: Float = refV.dot(refEdge[1]);
-        clippedPoints = clip(clippedPoints[0], clippedPoints[1], -refV, -o2);
-        
-        // * Once more, we need at least two points
-        if(clippedPoints.length < 2) return [];
-        
-        // * Ref edge normal
-        var refNorm: Vec2 = refEdge[2].normalize();
-        refNorm = vec2(refNorm.y, refNorm.x * -1);
-        if(flip) refNorm *= -1;
-        
-        var max: Float = refNorm.dot(refEdge[0]);
-        var fPoint = clippedPoints[0];
-        var sPoint = clippedPoints[1];
-        
-        if(refNorm.dot(fPoint) - max < 0) {
-            clippedPoints.remove(fPoint);
-        }
-        
-        if(refNorm.dot(sPoint) - max < 0) {
-            clippedPoints.remove(sPoint);
-        }
-        
-        return clippedPoints;
     }
 
     // & Checks if two radiuses intersect
@@ -620,18 +626,6 @@ class Collisions {
 
     public static inline function boundsSeperation(bounds1: Bounds, bounds2: Bounds): Vec2 {
         return null;
-    }
-
-    // & Finds the intersection point between two rays
-    public static inline function rayRaycast(ray1: Raycast, ray2: Raycast): Vec2 {
-        return lineIntersection(
-            ray1.origin, 
-            ray1.origin + ray1.castTo, 
-            ray1.infinite,
-            ray2.origin,
-            ray2.origin + ray2.castTo,
-            ray2.infinite
-        );
     }
     
     // & Finds the intersection point between a polygon and a ray

@@ -39,8 +39,10 @@ class Body extends Component {
     public var syncPolygonRotation: Bool = true;
 
     public var elasticity: Float = 1.0;
-    public var staticFriction: Float = 1.0;
-    public var dynamicFriction: Float = 1.0;
+    public var staticFriction: Float = 0;
+    public var dynamicFriction: Float = 0;
+
+    private var onRotateEventListeners: Array<Float -> Void> = [];
 
     private inline function set_shape(shape: CollisionShape): CollisionShape {
         if(shape != null) {
@@ -73,6 +75,7 @@ class Body extends Component {
             polygon.rotation = angle;
         }
         
+        onRotateEventCall(angle);
         return angle;
     }
 
@@ -152,5 +155,20 @@ class Body extends Component {
 
     public override function removedFromRoom() {
         room.physicsWorld.removeBody(this);
+    }
+
+    // & onRotate event
+    public function onRotateEventSubscribe(callBack: Float -> Void) {
+        onRotateEventListeners.push(callBack);
+    }
+
+    public function onRotateEventRemove(callBack: Float -> Void): Bool {
+        return onRotateEventListeners.remove(callBack);
+    }
+
+    private function onRotateEventCall(angle: Float) {
+        for(listener in onRotateEventListeners) {
+            listener(angle);
+        }
     }
 }
