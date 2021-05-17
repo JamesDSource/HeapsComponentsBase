@@ -93,11 +93,12 @@ class CollisionWorld {
     }
 
     // & Returns the first collision for one shape
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, position: Vec2): CollisionInfo {
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?position: Vec2): CollisionInfo {
         var result: CollisionInfo = null;
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
-        collisionShape.overridePosition = position;
+        if(position != null) 
+            collisionShape.overridePosition = position;
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
@@ -118,12 +119,13 @@ class CollisionWorld {
     }
 
     // & Returns the first collision for multiple shapes
-    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, position: Vec2): CollisionInfo {
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?position: Vec2): CollisionInfo {
         var result: CollisionInfo = null;
         
         for(collisionShape in collisionShapes) {
             var prevOverride: Vec2 = collisionShape.overridePosition;
-            collisionShape.overridePosition = position;
+            if(position != null) 
+                collisionShape.overridePosition = position;
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {
@@ -145,11 +147,12 @@ class CollisionWorld {
     }
 
     // & Returns all collisions for one shape
-    public extern overload inline function getCollisionsAt(collisionShape: CollisionShape, position: Vec2): Array<CollisionInfo> {
+    public extern overload inline function getCollisionsAt(collisionShape: CollisionShape, ?position: Vec2): Array<CollisionInfo> {
         var results: Array<CollisionInfo> = [];
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
-        collisionShape.overridePosition = position;
+        if(position != null) 
+            collisionShape.overridePosition = position;
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
@@ -167,14 +170,15 @@ class CollisionWorld {
     }
 
     // & Returns all collisions for multiple shapes
-    public extern overload inline function getCollisionsAt(collisionShapes: Array<CollisionShape>, position: Vec2): Array<CollisionInfo> {
+    public extern overload inline function getCollisionsAt(collisionShapes: Array<CollisionShape>, ?position: Vec2): Array<CollisionInfo> {
         var results: Array<CollisionInfo> = [];
         
         var returnResult: Array<CollisionShape> = [];
         
         for(collisionShape in collisionShapes) {
             var prevOverride: Vec2 = collisionShape.overridePosition;
-            collisionShape.overridePosition = position;
+            if(position != null) 
+                collisionShape.overridePosition = position;
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {

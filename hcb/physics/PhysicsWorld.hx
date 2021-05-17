@@ -15,8 +15,8 @@ class PhysicsWorld {
     private var collisions: Array<CollisionInfo> = [];
 
     public var impulseIterations: Int = 12;
-
-    public var graphics: h2d.Graphics = new h2d.Graphics();
+    public var percentCorrection: Float = 0.4;
+    public var slop: Float = 0.01;
 
     public function new(collisionWorld: CollisionWorld) {
         this.collisionWorld = collisionWorld;
@@ -27,21 +27,12 @@ class PhysicsWorld {
 
         // * Collisions
         collisions = [];
-        for(body1 in bodies) {
-            for(body2 in bodies) {
-                if(body1 == body2) continue;
-
-                // * Both cannot have infinite mass, and both must have a shape
-                if(body1.shape != null && body2.shape != null && (!body1.infiniteMass || !body2.infiniteMass)) {
-                    var result: CollisionInfo = Collisions.test(body1.shape , body2.shape);
-                    
-                    if(result.isColliding) {
-
-                        graphics.beginFill(0xFF00FF);
-                        for(point in result.contactPoints) {
-                            graphics.drawCircle(point.x, point.y, 1);
-                        }
-                        graphics.endFill();
+        for(body in bodies) {
+            // * Both cannot have infinite mass, and both must have a shape
+            if(body.shape != null) {
+                var results: Array<CollisionInfo> = collisionWorld.getCollisionsAt(body.shape);
+                for(result in results) {
+                    if(result.isColliding && result.shape1.body != null && result.shape2.body != null) {
                         collisions.push(result);
                     }
                 }
@@ -90,8 +81,8 @@ class PhysicsWorld {
         var e: Float = Math.min(body1.elasticity, body2.elasticity);
 
         for(point in pCollision.contactPoints) {
-            var arm1 = point - body1.shape.center;
-            var arm2 = point - body2.shape.center;
+            var arm1 = point - body1.shape.getAbsPosition();
+            var arm2 = point - body2.shape.getAbsPosition();
 
             var j = -(1 + e)*velocityAlongNormal;
             j /= invMass1 + invMass2 + Math.pow(Vector.cross(arm1, pCollision.normal), 2)*invAngularInertia1 + Math.pow(Vector.cross(arm2, pCollision.normal), 2)*invAngularInertia2;
@@ -134,9 +125,7 @@ class PhysicsWorld {
 
         if(invMass1 + invMass2 == 0) return;
 
-        var percent: Float = 0.4;
-        var slop: Float = 0.05;
-        var correction: Vec2 = Math.max(pCollision.depth - slop, 0)/(invMass1 + invMass2)*percent*pCollision.normal;
+        var correction: Vec2 = Math.max(pCollision.depth - slop, 0)/(invMass1 + invMass2)*percentCorrection*pCollision.normal;
         
         if(body1.parentEntity != null) {
             body1.parentEntity.move(-invMass1*correction);

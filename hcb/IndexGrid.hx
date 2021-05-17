@@ -11,6 +11,13 @@ typedef IGrid = {
     ?position: Vec2
 }
 
+enum SlopeFace {
+    TopLeft;
+    TopRight;
+    BottomLeft;
+    BottomRight;
+}
+
 class IndexGrid {
     public static function ldtkTilesConvert(tileLayer: ldtk.Layer_Tiles): IGrid {
         var indexs: Array<Int> = [];
@@ -81,5 +88,40 @@ class IndexGrid {
             }
         }
         return shapes;
+    }
+
+    public static inline function slopeBuild(slopeFace: SlopeFace, origin: Vec2, tileSize: Float): CollisionShape {
+        var verts: Array<Vec2> = [];
+
+        switch(slopeFace) {
+            case SlopeFace.TopLeft:
+                verts = [
+                    vec2(0, tileSize - 1),
+                    vec2(tileSize - 1, 0),
+                    vec2(tileSize - 1, tileSize - 1)
+                ];
+            case SlopeFace.TopRight:
+                verts = [
+                    vec2(0, 0),
+                    vec2(0, tileSize - 1),
+                    vec2(tileSize - 1, tileSize - 1)
+                ];
+            case SlopeFace.BottomLeft:
+                verts = [
+                    vec2(0, 0),
+                    vec2(tileSize - 1, tileSize - 1),
+                    vec2(tileSize - 1, 0)
+                ];
+            case SlopeFace.BottomRight:
+                verts = [
+                    vec2(0, 0),
+                    vec2(0, tileSize - 1),
+                    vec2(tileSize - 1, 0)
+                ];
+        }
+        var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
+        shape.offsetX = origin.x;
+        shape.offsetY = origin.y;
+        return shape;
     }
 }
