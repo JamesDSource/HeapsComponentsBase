@@ -122,6 +122,14 @@ class AnimationPlayer extends Component {
         return null;
     }
 
+    public function getAnimations(): Array<Animation> {
+        var result: Array<Animation> = [];
+        for(animSlot in animationSlots) {
+            result.push(animSlot.animation);
+        }
+        return result;
+    }
+
     private function onPause(paused: Bool) {
         if(autoPause) {
             for(slot in animationSlots) {

@@ -2,7 +2,7 @@ package hcb;
 
 // & Project acts as a manager for the rooms
 class Project {
-    private var app: hxd.App;
+    public var app(default, null): hxd.App;
 
     public var room(default, set): Room = null;
     public var targetFrameRate: Float = 60;
