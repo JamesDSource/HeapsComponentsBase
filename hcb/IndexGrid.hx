@@ -45,7 +45,7 @@ class IndexGrid {
     // & Returns an array of Collision shapes. By default, these will be AABBs with their offsets set to their
     // & position on the grid. This can be overriden with the custom shapes map that stores functions with indexs 
     // & that take in grid position, the cell size, and outputs a collision shape to use.
-    public static function convertToCollisionShapes(indexGrid: IGrid, ?tags: Array<String>, ?customShapes: Map<Int, Vec2->Float->CollisionShape>): Array<CollisionShape> {
+    public static function convertToCollisionShapes(indexGrid: IGrid, ?offset: Vec2, ?tags: Array<String>, ?customShapes: Map<Int, Vec2->Float->CollisionShape>): Array<CollisionShape> {
         var shapes: Array<CollisionShape> = [];
         for(i in 0...indexGrid.indexs.length) {
             // * Getting the coordinates
@@ -56,6 +56,7 @@ class IndexGrid {
             var org: Vec2 = vec2(x, y);
             var cellSize = indexGrid.cellSize == null ? 1 : indexGrid.cellSize;
             org *= cellSize;
+            org += offset;
 
             // * Getting the collision shape
             var index: Int = indexGrid.indexs[i];
