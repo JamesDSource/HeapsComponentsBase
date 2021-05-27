@@ -35,7 +35,7 @@ class PlayerController extends Component {
         super(name);
     }
 
-    public override function init() {
+    private override function init() {
         collisionShape = cast parentEntity.getComponentOfType(CollisionShape);
         animationPlayer = cast parentEntity.getComponentOfType(AnimationPlayer);
 
@@ -50,7 +50,7 @@ class PlayerController extends Component {
         animationPlayer.setAnimationSlot("Default", idleFront);
     }
 
-    public override function addedToRoom() {
+    private override function addedToRoom() {
         camera = room.scene.camera;
         camera.anchorX = 0.5;
         camera.anchorY = 0.5;
@@ -58,7 +58,7 @@ class PlayerController extends Component {
         room.scene.scaleMode = ScaleMode.Stretch(480, 270);
     }
 
-    public override function update() {
+    private override function update() {
         var transformPos = parentEntity.getPosition();
         var moveVector: Vec2 = vec2(0, 0);
 

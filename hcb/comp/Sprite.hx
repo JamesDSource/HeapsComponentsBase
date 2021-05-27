@@ -115,19 +115,19 @@ class Sprite extends Component {
         this.originOffsetY = originOffsetY;
     }
 
-    public override function addedToRoom() {
+    private override function addedToRoom() {
         if(renderParent == null) {
             renderParent = room.scene;
         }
     }
 
-    public override function removedFromRoom() {
+    private override function removedFromRoom() {
         if(renderParent == room.scene) {
             renderParent = null;
         }
     }
 
-    public override function update() {
+    private override function update() {
         var position: Vec2 = parentEntity.getPosition();
         // * Updating the position
         bitmap.x = position.x;

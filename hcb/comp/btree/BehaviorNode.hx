@@ -13,7 +13,7 @@ class BehaviorNode  {
     
     public function new() {}
 
-    public dynamic function update(delta: Float): BehaviorNodeResult {
+    public dynamic function update(): BehaviorNodeResult {
         return BehaviorNodeResult.Success;
     }
 

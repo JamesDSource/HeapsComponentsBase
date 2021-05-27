@@ -1,5 +1,6 @@
 package hcb.comp;
 
+import hcb.physics.PhysicsWorld;
 import hcb.math.Vector;
 import VectorMath;
 import hcb.comp.col.*;
@@ -151,7 +152,8 @@ class Body extends Component {
     }
 
     // & Updates position and angle
-    public function physicsUpdate() {
+    @:allow(hcb.physics.PhysicsWorld.update)
+    private function physicsUpdate() {
         if(mass == 0 || parentEntity == null) return;
 
         parentEntity.move(velocity);
@@ -174,11 +176,11 @@ class Body extends Component {
         angularVelocity += torque;
     }
 
-    public override function addedToRoom() {
+    private override function addedToRoom() {
         room.physicsWorld.addBody(this);
     }
 
-    public override function removedFromRoom() {
+    private override function removedFromRoom() {
         room.physicsWorld.removeBody(this);
     }
 

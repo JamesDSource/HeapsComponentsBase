@@ -54,7 +54,7 @@ class AnimationPlayer extends Component {
         this.autoPause = autoPause;
     }
 
-    public override function addedToRoom() {
+    private override function addedToRoom() {
         if(renderParent == null) {
             renderParent = room.scene;
         }
@@ -65,7 +65,7 @@ class AnimationPlayer extends Component {
         }
     }
 
-    public override function removedFromRoom() {
+    private override function removedFromRoom() {
         if(renderParent == room.scene) {
             renderParent = null;
         }
@@ -76,7 +76,7 @@ class AnimationPlayer extends Component {
         }
     }
 
-    public override function update() {       
+    private override function update() {       
         var position: Vec2 = parentEntity.getPosition();
         for(animationSlot in animationSlots) {
             if(animationSlot.animation != null) {

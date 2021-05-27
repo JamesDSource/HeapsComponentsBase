@@ -1,7 +1,4 @@
-import hcb.Origin.OriginPoint;
-import hxd.Key;
 import hcb.comp.Body;
-import h2d.Scene.ScaleMode;
 import hcb.LdtkEntities;
 import hcb.comp.col.*;
 import VectorMath;

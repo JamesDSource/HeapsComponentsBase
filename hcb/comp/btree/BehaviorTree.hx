@@ -9,7 +9,7 @@ class BehaviorTree extends Component {
         root.tree = this;
     }
 
-    public override function update(delta:Float) {
-        root.update(delta);
+    private override function update() {
+        root.update();
     }
 }

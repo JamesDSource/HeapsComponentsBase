@@ -105,7 +105,8 @@ class Entity {
         }
     }
 
-    public function update(paused: Bool = false): Void {
+    @:allow(hcb.Room.update)
+    private function update(paused: Bool = false): Void {
         for(updateableComponent in updatableComponents) {
             if(!paused || updateableComponent.pauseMode == PauseMode.Resume) {
                 updateableComponent.update();

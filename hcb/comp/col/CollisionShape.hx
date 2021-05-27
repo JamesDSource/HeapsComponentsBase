@@ -60,19 +60,19 @@ class CollisionShape extends Component {
         updateable = true;
     }
 
-    public override function init() {
+    private override function init() {
         parentEntity.onMoveEventSubscribe(onMove);
     }
 
-    public override function onRemoved() {
+    private override function onRemoved() {
         parentEntity.onMoveEventRemove(onMove);
     }
 
-    public override function addedToRoom() {
+    private override function addedToRoom() {
         room.collisionWorld.addShape(this);
     }
 
-    public override function removedFromRoom() {
+    private override function removedFromRoom() {
         collisionWorld.removeShape(this);
     }
 
