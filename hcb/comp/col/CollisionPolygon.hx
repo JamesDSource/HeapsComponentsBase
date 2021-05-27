@@ -136,10 +136,36 @@ class CollisionPolygon extends CollisionShape {
         updateCollisionCells();
     }
 
-    public function setVertices(vertices: Array<Vec2>) {
+    // & Sets the verticies on the polygon relative to the origin. KeepWindingCCW will make sure that the
+    // & the points are winding counter clockwise if set to true
+    public function setVertices(vertices: Array<Vec2>, keepWindingCCW: Bool = true) {
         this.vertices = [];
-        for(vert in vertices) {
-            this.vertices.push(vert.clone());
+        if(keepWindingCCW) {
+            var sum: Float = 0;
+            for(i in 0...vertices.length) {
+                var vert: Vec2 = vertices[i];
+                var nextVert: Vec2 = vertices[(i + 1)%vertices.length];
+                sum += (nextVert.x - vert.x)*(nextVert.y + vert.y);
+            }
+
+            // * Clockwise, reverse the points
+            if(sum > 0) {
+                var i: Int = vertices.length - 1;
+                while(i >= 0) {
+                    this.vertices.push(vertices[i].clone());
+                    i--;
+                }
+            }
+            else { // * Counter clockwise, add the points normally
+                for(vert in vertices) {
+                    this.vertices.push(vert.clone());
+                }
+            }
+        }
+        else {
+            for(vert in vertices) {
+                this.vertices.push(vert.clone());
+            }
         }
         updateTransformations();
     }

@@ -56,7 +56,8 @@ class IndexGrid {
             var org: Vec2 = vec2(x, y);
             var cellSize = indexGrid.cellSize == null ? 1 : indexGrid.cellSize;
             org *= cellSize;
-            org += offset;
+            if(offset != null)
+                org += offset;
 
             // * Getting the collision shape
             var index: Int = indexGrid.indexs[i];
