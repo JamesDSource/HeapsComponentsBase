@@ -1,9 +1,15 @@
 package hcb;
+import hcb.comp.col.Collisions.Raycast;
 import hcb.comp.col.Collisions.CollisionInfo;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.*;
 import VectorMath;
 import hcb.SignedArray;
+
+typedef RayResult = {
+    intersectionPoint: Vec2,
+    shape: CollisionShape
+}
 
 class CollisionWorld {
     private var shapes: Array<CollisionShape> = [];
@@ -173,8 +179,6 @@ class CollisionWorld {
     public extern overload inline function getCollisionsAt(collisionShapes: Array<CollisionShape>, ?position: Vec2): Array<CollisionInfo> {
         var results: Array<CollisionInfo> = [];
         
-        var returnResult: Array<CollisionShape> = [];
-        
         for(collisionShape in collisionShapes) {
             var prevOverride: Vec2 = collisionShape.overridePosition;
             if(position != null) 
@@ -182,7 +186,7 @@ class CollisionWorld {
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {
-                if(!returnResult.contains(shape) && !collisionShapes.contains(shape)) {
+                if(!collisionShapes.contains(shape)) {
                     var result = Collisions.test(collisionShape, shape);
                     if(result.isColliding) {
                         results.push(result);
@@ -193,6 +197,75 @@ class CollisionWorld {
             collisionShape.overridePosition = prevOverride;
         }
         return results;
+    }
+
+    // & Returns a raycast result closest to the ray origin
+    public extern overload inline function getCollisionsAt(rayCast: Raycast): RayResult {
+        var result: RayResult = {
+            intersectionPoint: null,
+            shape: null
+        };
+        
+        // * Check every shape if the raycast is infinite
+        var cellShapes: Array<CollisionShape>;
+        if(rayCast.infinite) {
+            cellShapes = shapes.copy();
+        }
+        else {
+            var bounds = {
+                min: vec2(0, 0),
+                max: vec2(0, 0)
+            };
+            bounds.min.x = Math.min(rayCast.origin.x, rayCast.origin.x + rayCast.castTo.x);
+            bounds.min.y = Math.min(rayCast.origin.y, rayCast.origin.y + rayCast.castTo.y);
+            bounds.max.x = Math.max(rayCast.origin.x, rayCast.origin.x + rayCast.castTo.x);
+            bounds.max.y = Math.max(rayCast.origin.y, rayCast.origin.y + rayCast.castTo.y);
+
+            cellShapes = getShapesFromBounds(bounds);
+        }
+        
+        for(shape in cellShapes) {
+            var rayResult: Vec2 = Collisions.raycastTest(rayCast, shape);
+            if(rayResult != null && (result.intersectionPoint == null || rayResult.distance(rayCast.origin) < result.intersectionPoint.distance(rayCast.origin))) {
+                result.intersectionPoint = rayResult;
+                result.shape = shape;
+            }
+        }
+        
+        return result;
+    }
+
+    // & Returns all raycast results
+    public extern overload inline function getCollisionsAt(rayCast: Raycast, results: Array<RayResult>): Int {
+        var count: Int = 0;
+
+        // * Check every shape if the raycast is infinite
+        var cellShapes: Array<CollisionShape>;
+        if(rayCast.infinite) {
+            cellShapes = shapes.copy();
+        }
+        else {
+            var bounds = {
+                min: vec2(0, 0),
+                max: vec2(0, 0)
+            };
+            bounds.min.x = Math.min(rayCast.origin.x, rayCast.origin.x + rayCast.castTo.x);
+            bounds.min.y = Math.min(rayCast.origin.y, rayCast.origin.y + rayCast.castTo.y);
+            bounds.max.x = Math.max(rayCast.origin.x, rayCast.origin.x + rayCast.castTo.x);
+            bounds.max.y = Math.max(rayCast.origin.y, rayCast.origin.y + rayCast.castTo.y);
+
+            cellShapes = getShapesFromBounds(bounds);
+        }
+        
+        for(shape in cellShapes) {
+            var rayResult: Vec2 = Collisions.raycastTest(rayCast, shape);
+            if(rayResult != null) {
+                results.push({intersectionPoint: rayResult, shape: shape});
+                count++;
+            }
+        }
+        
+        return count;
     }
 
     public function representShapes(layers: h2d.Layers, layer: Int, showBonds: Bool = false) {

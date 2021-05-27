@@ -90,16 +90,18 @@ class Collisions {
 
     // & Tests for an intersection with a ray, and returns the point of collision
     public extern overload static inline function raycastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
+        var result: Vec2 = null;
+        
         switch(Type.getClass(shape)) {
             case CollisionAABB:
-                return aabbRaycast(cast shape, raycast);
+                result = aabbRaycast(cast shape, raycast);
             case CollisionPolygon:
-                return polyRaycast(cast shape, raycast);
+                result = polyRaycast(cast shape, raycast);
             case CollisionCircle:
-                return circleRaycast(cast shape, raycast);
+                result = circleRaycast(cast shape, raycast);
         }
 
-        return null;
+        return result;
     }
 
     // & Tests for an intersection between two rays

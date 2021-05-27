@@ -3,9 +3,8 @@ package hcb.math;
 import VectorMath;
 
 class Interpolate {
-
     // & Interpolates between two floats
-    public static function interpolateF(start: Float, ideal:Float, offset: Float): Float {
+    public overload extern static inline function interpolateBetween(start: Float, ideal:Float, offset: Float): Float {
         if(Math.abs(ideal - start) <= Math.abs(offset)) {
             return ideal;
         }
@@ -18,8 +17,8 @@ class Interpolate {
     }
 
     // & Interpolates between two vectirs
-    public static function interpolateVector2(start: Vec2, ideal: Vec2, offset: Float): Vec2 {
+    public overload extern static inline function interpolateBetween(start: Vec2, ideal: Vec2, offset: Float): Vec2 {
         var directionVector: Vec2 = (ideal - start).normalize();
-        return vec2(interpolateF(start.x, ideal.x, directionVector.x*offset), interpolateF(start.y, ideal.y, directionVector.y*offset));
+        return vec2(interpolateBetween(start.x, ideal.x, directionVector.x*offset), interpolateBetween(start.y, ideal.y, directionVector.y*offset));
     }
 }
