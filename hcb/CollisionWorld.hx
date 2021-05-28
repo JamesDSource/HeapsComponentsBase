@@ -99,7 +99,7 @@ class CollisionWorld {
     }
 
     // & Returns the first collision for one shape
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?position: Vec2): CollisionInfo {
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?position: Vec2, ?tag: String): CollisionInfo {
         var result: CollisionInfo = null;
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
@@ -108,6 +108,9 @@ class CollisionWorld {
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
+            if(tag != null && !shape.tags.contains(tag))
+                continue;
+
             if(collisionShape != shape) {
                 result = Collisions.test(collisionShape, shape);
                 if(result.isColliding) {
@@ -125,7 +128,7 @@ class CollisionWorld {
     }
 
     // & Returns the first collision for multiple shapes
-    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?position: Vec2): CollisionInfo {
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?position: Vec2, ?tag: String): CollisionInfo {
         var result: CollisionInfo = null;
         
         for(collisionShape in collisionShapes) {
@@ -135,6 +138,9 @@ class CollisionWorld {
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {
+                if(tag != null && !shape.tags.contains(tag))
+                    continue;
+
                 if(!collisionShapes.contains(shape)) {
                     result = Collisions.test(collisionShape, shape);
                     if(result.isColliding) {
@@ -153,8 +159,8 @@ class CollisionWorld {
     }
 
     // & Returns all collisions for one shape
-    public extern overload inline function getCollisionsAt(collisionShape: CollisionShape, ?position: Vec2): Array<CollisionInfo> {
-        var results: Array<CollisionInfo> = [];
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, ?position: Vec2, ?tag: String): Int {
+        var count: Int = 0;
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
         if(position != null) 
@@ -162,22 +168,26 @@ class CollisionWorld {
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
+            if(tag != null && !shape.tags.contains(tag))
+                continue;
+
             if(collisionShape != shape) {
                 var result = Collisions.test(collisionShape, shape);
                 if(result.isColliding) {
-                    results.push(result);
+                    output.push(result);
+                    count++;
                 }
             }
         }
         
         collisionShape.overridePosition = prevOverride;
 
-        return results;
+        return count;
     }
 
     // & Returns all collisions for multiple shapes
-    public extern overload inline function getCollisionsAt(collisionShapes: Array<CollisionShape>, ?position: Vec2): Array<CollisionInfo> {
-        var results: Array<CollisionInfo> = [];
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, output: Array<CollisionInfo>, ?position: Vec2, ?tag: String): Int {
+        var count: Int = 0;
         
         for(collisionShape in collisionShapes) {
             var prevOverride: Vec2 = collisionShape.overridePosition;
@@ -186,25 +196,26 @@ class CollisionWorld {
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {
+                if(tag != null && !shape.tags.contains(tag))
+                    continue;
+
                 if(!collisionShapes.contains(shape)) {
                     var result = Collisions.test(collisionShape, shape);
                     if(result.isColliding) {
-                        results.push(result);
+                        output.push(result);
+                        count++;
                     }
                 }
             }
             
             collisionShape.overridePosition = prevOverride;
         }
-        return results;
+        return count;
     }
 
     // & Returns a raycast result closest to the ray origin
-    public extern overload inline function getCollisionsAt(rayCast: Raycast): RayResult {
-        var result: RayResult = {
-            intersectionPoint: null,
-            shape: null
-        };
+    public extern overload inline function getCollisionAt(rayCast: Raycast, ?tag: String): RayResult {
+        var result: RayResult = null;
         
         // * Check every shape if the raycast is infinite
         var cellShapes: Array<CollisionShape>;
@@ -225,10 +236,15 @@ class CollisionWorld {
         }
         
         for(shape in cellShapes) {
+            if(tag != null && !shape.tags.contains(tag))
+                continue;
+
             var rayResult: Vec2 = Collisions.raycastTest(rayCast, shape);
-            if(rayResult != null && (result.intersectionPoint == null || rayResult.distance(rayCast.origin) < result.intersectionPoint.distance(rayCast.origin))) {
-                result.intersectionPoint = rayResult;
-                result.shape = shape;
+            if(rayResult != null && (result == null || rayResult.distance(rayCast.origin) < result.intersectionPoint.distance(rayCast.origin))) {
+                result = {
+                    intersectionPoint: rayResult,
+                    shape: shape
+                }
             }
         }
         
@@ -236,9 +252,9 @@ class CollisionWorld {
     }
 
     // & Returns all raycast results
-    public extern overload inline function getCollisionsAt(rayCast: Raycast, results: Array<RayResult>): Int {
+    public extern overload inline function getCollisionAt(rayCast: Raycast, output: Array<RayResult>, ?tag:String): Int {
         var count: Int = 0;
-
+        
         // * Check every shape if the raycast is infinite
         var cellShapes: Array<CollisionShape>;
         if(rayCast.infinite) {
@@ -258,9 +274,42 @@ class CollisionWorld {
         }
         
         for(shape in cellShapes) {
+            if(tag != null && !shape.tags.contains(tag))
+                continue;
+
             var rayResult: Vec2 = Collisions.raycastTest(rayCast, shape);
             if(rayResult != null) {
-                results.push({intersectionPoint: rayResult, shape: shape});
+                output.push({intersectionPoint: rayResult, shape: shape});
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+    // & Returns first collision at a certain point
+    public extern overload inline function getCollisionAt(point: Vec2, ?tag: String): CollisionShape {
+        var result: CollisionShape = null;
+
+        var cellShapes = getShapesFromBounds({min: point, max: point});
+        for(shape in cellShapes) {
+            if((tag == null || shape.tags.contains(tag)) && Collisions.pointTest(point, shape)) {
+                result = shape;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    // & Returns all collisions at a certain point
+    public extern overload inline function getCollisionAt(point: Vec2, output: Array<CollisionShape>, ?tag: String): Int {
+        var count: Int = 0;
+        
+        var cellShapes = getShapesFromBounds({min: point, max: point});
+        for(shape in cellShapes) {
+            if((tag == null || shape.tags.contains(tag)) && Collisions.pointTest(point, shape)) {
+                output.push(shape);
                 count++;
             }
         }

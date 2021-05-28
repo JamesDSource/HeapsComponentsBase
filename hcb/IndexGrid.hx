@@ -98,27 +98,27 @@ class IndexGrid {
         switch(slopeFace) {
             case SlopeFace.TopLeft:
                 verts = [
-                    vec2(0, tileSize - 1),
-                    vec2(tileSize - 1, 0),
-                    vec2(tileSize - 1, tileSize - 1)
+                    vec2(0, tileSize),
+                    vec2(tileSize, 0),
+                    vec2(tileSize, tileSize)
                 ];
             case SlopeFace.TopRight:
                 verts = [
                     vec2(0, 0),
-                    vec2(0, tileSize - 1),
-                    vec2(tileSize - 1, tileSize - 1)
+                    vec2(0, tileSize ),
+                    vec2(tileSize, tileSize)
                 ];
             case SlopeFace.BottomLeft:
                 verts = [
                     vec2(0, 0),
-                    vec2(tileSize - 1, tileSize - 1),
-                    vec2(tileSize - 1, 0)
+                    vec2(tileSize, tileSize),
+                    vec2(tileSize, 0)
                 ];
             case SlopeFace.BottomRight:
                 verts = [
                     vec2(0, 0),
-                    vec2(0, tileSize - 1),
-                    vec2(tileSize - 1, 0)
+                    vec2(0, tileSize),
+                    vec2(tileSize, 0)
                 ];
         }
         var shape: CollisionPolygon = new CollisionPolygon("poly", verts);

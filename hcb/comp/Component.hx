@@ -6,11 +6,15 @@ import h2d.Object;
 enum PauseMode {
     Idle;
     Resume;
+    Inherit;
 }
 
 class Component {
-    // * Read only, do not change manually
+    public var name: String;
+    public var pauseMode: PauseMode = PauseMode.Idle;
+
     public var parentEntity: hcb.Entity = null;
+    // ^ Read only, should not be changed manually
     public var attached(get, null): Bool;
 
     public var room: Room = null;
@@ -44,9 +48,6 @@ class Component {
         }
         return updateable;
     }
-
-    public var name: String;
-    public var pauseMode: PauseMode = PauseMode.Idle;
 
     public function new(name: String) {
         this.name = name;

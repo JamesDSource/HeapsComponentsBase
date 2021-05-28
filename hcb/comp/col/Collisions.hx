@@ -116,6 +116,22 @@ class Collisions {
         );
     }
 
+    public static function pointTest(point: Vec2, shape: CollisionShape): Bool {
+        switch(Type.getClass(shape)) {
+            case CollisionAABB:
+                var bounds = shape.bounds;
+                return pointInAABB(point, bounds.min, bounds.max);
+            case CollisionPolygon:
+                var poly: CollisionPolygon = cast(shape, CollisionPolygon);
+                return pointInPolygon(point, poly.worldVertices);
+            case CollisionCircle:
+                var circle: CollisionCircle = cast(shape, CollisionCircle);
+                return pointInCircle(point, circle.getAbsPosition(), circle.radius);
+            default: 
+                return false;
+        }
+    }
+
     // & Checks for a collision between two AABBs
     public static inline function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): CollisionInfo {
         var verts1 = aabb1.vertices;
@@ -637,7 +653,7 @@ class Collisions {
         var rayPos = ray.origin;
         var castPoint = rayPos + ray.castTo;
 
-        if(pointInPolygon(vertices, rayPos)) {
+        if(pointInPolygon(rayPos, vertices)) {
             return rayPos;
         }
 
@@ -759,6 +775,11 @@ class Collisions {
         }
     }
 
+    // & Checks if a coordinite is inside a circle
+    public static inline function pointInCircle(point: Vec2, circlePos: Vec2, radius: Float): Bool {
+        return point.distance(circlePos) <= radius;
+    }
+
     // & Checks if a coordinite is inside an AABB
     public static inline function pointInAABB(point: Vec2, topLeft: Vec2, bottomRight: Vec2): Bool {
         return  point.x <= bottomRight.x    &&
@@ -781,13 +802,13 @@ class Collisions {
     }
 
     // & Checks if a coordinite is inside a polygon
-    public static inline function pointInPolygon(vertices: Array<Vec2>, point: Vec2): Bool {
+    public static inline function pointInPolygon(point: Vec2, vertices: Array<Vec2>): Bool {
         var isPoint: Bool = false;
 
         if(vertices.length >= 3) {
             var p1: Vec2 = vertices[0];
 
-            for(i in 2...vertices.length) {
+            for(i in 2...vertices.length - 1) {
                 var p2: Vec2 = vertices[i - 1],
                     p3: Vec2 = vertices[i];
                 

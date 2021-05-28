@@ -140,6 +140,10 @@ class CollisionPolygon extends CollisionShape {
     // & the points are winding counter clockwise if set to true
     public function setVertices(vertices: Array<Vec2>, keepWindingCCW: Bool = true) {
         this.vertices = [];
+        for(vert in vertices) {
+            this.vertices.push(vert.clone());
+        }
+        
         if(keepWindingCCW) {
             var sum: Float = 0;
             for(i in 0...vertices.length) {
@@ -148,34 +152,21 @@ class CollisionPolygon extends CollisionShape {
                 sum += (nextVert.x - vert.x)*(nextVert.y + vert.y);
             }
 
-            // * Clockwise, reverse the points
+            // * If clockwise, reverse the points
             if(sum > 0) {
-                var i: Int = vertices.length - 1;
-                while(i >= 0) {
-                    this.vertices.push(vertices[i].clone());
-                    i--;
-                }
-            }
-            else { // * Counter clockwise, add the points normally
-                for(vert in vertices) {
-                    this.vertices.push(vert.clone());
-                }
+                this.vertices.reverse();
             }
         }
-        else {
-            for(vert in vertices) {
-                this.vertices.push(vert.clone());
-            }
-        }
+        
         updateTransformations();
     }
 
     public static function rectangle(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft) {
         var verts: Array<Vec2> = [
             vec2(0, 0),
-            vec2(0, height - 1),
-            vec2(width - 1, height - 1),
-            vec2(width - 1, 0)
+            vec2(0, height),
+            vec2(width, height),
+            vec2(width, 0)
         ];
 
         if(origin != OriginPoint.TopLeft) {

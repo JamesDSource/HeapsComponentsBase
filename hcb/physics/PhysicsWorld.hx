@@ -30,7 +30,8 @@ class PhysicsWorld {
         for(body in bodies) {
             // * Both cannot have infinite mass, and both must have a shape
             if(body.shape != null) {
-                var results: Array<CollisionInfo> = collisionWorld.getCollisionsAt(body.shape);
+                var results: Array<CollisionInfo> = [];
+                collisionWorld.getCollisionAt(body.shape, results);
                 for(result in results) {
                     if(result.isColliding && result.shape1.body != null && result.shape2.body != null) {
                         collisions.push(result);

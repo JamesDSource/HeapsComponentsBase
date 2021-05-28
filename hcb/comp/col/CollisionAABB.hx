@@ -58,13 +58,13 @@ class CollisionAABB extends CollisionShape {
         var tl = getAbsPosition() + Origin.getOriginOffset(origin, vec2(transformedWidth, transformedHeight));
         return {
             min: vec2(tl.x, tl.y),
-            max: vec2(tl.x + transformedWidth - 1, tl.y + transformedHeight - 1)
+            max: vec2(tl.x + transformedWidth, tl.y + transformedHeight)
         }
     }
 
     private override function get_center(): Vec2 {
         var tl = getAbsPosition() + Origin.getOriginOffset(origin, vec2(transformedWidth, transformedHeight));
-        return tl + vec2(transformedWidth - 1, transformedHeight - 1)/2;
+        return tl + vec2(transformedWidth, transformedHeight)/2;
     }
 
     public function new(name: String, width: Float, height: Float, ?origin: OriginPoint, ?offset: Vec2) {

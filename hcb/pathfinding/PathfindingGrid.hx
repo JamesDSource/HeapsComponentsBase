@@ -16,9 +16,6 @@ typedef GridNode = {
 }
 
 class PathfindingGrid {
-    public static var navigationGrids(default, null): Map<String, hcb.pathfinding.PathfindingGrid> = [];
-    // ^ For storing pathfinding grids that can be used globally
-    
     private var cellSize: Float;
     private var gridSize: Vec2;
     private var originPoint: Vec2;
@@ -29,7 +26,7 @@ class PathfindingGrid {
     
     public function new(cellSize: Float, gridSize: Vec2, ?originPoint: Vec2) {
         this.cellSize = cellSize;
-        this.gridSize = gridSize;
+        this.gridSize = gridSize.clone();
         
         if(originPoint == null) {
             this.originPoint = vec2(0, 0);
@@ -186,26 +183,12 @@ class PathfindingGrid {
     }
 
     // & Adds collision shapes with certain tags as obsticles
-    public function addCollisionShapesTag(collisionWorld: CollisionWorld, tag: String) {
-        for(shape in collisionWorld.getShapes()) {
-            if(shape.tags.contains(tag)) {
-                var bounds: Bounds = shape.bounds,
-                    tl = positionToCoord(bounds.min),
-                    br = positionToCoord(bounds.max);
-
-                for(i in cast(tl.x, Int)...cast br.x + 1) {
-                    for(j in cast(tl.y, Int)...cast br.y + 1) {
-                        var node = get(vec2(i, j));
-
-                        if(!node.isObsticle) {
-                            collisionShape.offsetX  = i*cellSize;
-                            collisionShape.offsetY  = j*cellSize;  
-                            
-                            if(Collisions.test(collisionShape, shape)) {
-                                node.isObsticle = true;
-                            }
-                        }
-                    }
+    public function addCollisionShapes(collisionWorld: CollisionWorld, ?tag: Null<String>) {
+        for(i in 0...Std.int(gridSize.x)) {
+            for(j in 0...Std.int(gridSize.y)) {
+                var node = get(vec2(i, j));
+                if(!node.isObsticle && collisionWorld.getCollisionAt(collisionShape, vec2(i*cellSize, j*cellSize), tag) != null) {
+                    node.isObsticle = true;
                 }
             }
         }

@@ -9,12 +9,16 @@ class Room {
     public var collisionWorld(default, null): CollisionWorld;
     public var physicsWorld(default, null): hcb.physics.PhysicsWorld;
     public var usesPhysics: Bool;
+    public var physicsPauseOnPause: Bool = true;
 
     public var paused(default, set): Bool = false;
     private var onPauseListeners: Array<(Bool) -> Void> = [];
 
     private var accumulator: Float = 0;
     private var physicsAccumulator: Float = 0;
+
+    private var timers: Array<Timer> = [];
+
 
     public function set_paused(paused: Bool) {
         if(this.paused != paused) {
@@ -43,6 +47,7 @@ class Room {
 
         collisionWorld.clear();
         physicsWorld.clear();
+        timers = [];
 
         scene.dispose();
         scene = new h2d.Scene();
@@ -77,6 +82,11 @@ class Room {
         else if(Math.abs(delta - 1/120) < threshold) {
             delta = 1/120;
         }
+        
+        // * Timers
+        for(timer in timers) {
+            timer.countDown(delta, paused);
+        }
 
         // * Normal update loop
         accumulator += delta;
@@ -92,8 +102,10 @@ class Room {
         if(usesPhysics) {
             physicsAccumulator += delta;
             while(physicsAccumulator >= 1/targetPhysicsFrameRate) {
-                onPhysicsUpdate();
-                physicsWorld.update();
+                if(!paused || !physicsPauseOnPause) {
+                    onPhysicsUpdate();
+                    physicsWorld.update();
+                }
                 physicsAccumulator -= 1/targetPhysicsFrameRate;
             }
         }
@@ -106,16 +118,18 @@ class Room {
     }
 
     // & Event called when a normal update is called
-    public dynamic function onUpdate() {}
+    private dynamic function onUpdate() {}
 
     // & Event called when a physics update is called
-    public dynamic function onPhysicsUpdate() {}
+    private dynamic function onPhysicsUpdate() {}
 
     // & Event called when the room is added to a project
-    public dynamic function roomSet() {}
+    @:allow(hcb.Project.set_room)
+    private dynamic function roomSet() {}
 
     // & Event called when the room is removed from the project
-    public dynamic function roomRemoved() {}
+    @:allow(hcb.Project.set_room)
+    private dynamic function roomRemoved() {}
 
     // & Adding an entity to the room
     public function addEntity(entity: Entity) {
@@ -152,6 +166,14 @@ class Room {
     // & Returns all the entities in the room
     public function getEntities(): Array<Entity> {
         return entities.copy();
+    }
+
+    public function addTimer(timer: Timer) {
+        timers.push(timer);
+    }
+
+    public function removeTimer(timer: Timer): Bool {
+        return timers.remove(timer);
     }
 
     // & Functions for the onPause event
