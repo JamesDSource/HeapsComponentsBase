@@ -16,8 +16,6 @@ class Sprite extends Component {
     public var originOffsetY(default, set): Float = 0;
 
     private var bitmap: Bitmap = new Bitmap();
-
-    public var renderParent(default, set): Object;
     public var layer(default, set): Int;
 
     public var rotation(get, set): Float;
@@ -69,29 +67,12 @@ class Sprite extends Component {
         return tile;
     }
 
-    private function set_renderParent(renderParent: Object): Object {
-        this.renderParent = renderParent;
-        if(bitmap.parent != null) {
-            bitmap.parent.removeChild(bitmap);
-        }
-
-        if(renderParent != null) {
-            if(Std.isOfType(renderParent, h2d.Layers)) {
-                var layerParent: h2d.Layers = cast renderParent;
-                layerParent.add(bitmap, layer);
-            }
-            else {
-                renderParent.addChild(bitmap);
-            }
-        }
-        return renderParent;
-    }
-
     private function set_layer(layer: Int): Int {
-        if(this.layer != layer && renderParent != null && Std.isOfType(renderParent, h2d.Layers)) {
-            var layerParent: h2d.Layers = cast renderParent;
-            layerParent.add(bitmap, layer);
+        if(parentEntity != null) {
+            parentEntity.layers.removeChild(bitmap);
+            parentEntity.layers.add(bitmap, layer);
         }
+        
         this.layer = layer;
         return layer;
     }
@@ -105,26 +86,21 @@ class Sprite extends Component {
         return rotation;
     }
 
-    public function new(name: String, ?tile: Tile, ?renderParent: Object, layer: Int = 0, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+    public function new(name: String, ?tile: Tile, layer: Int = 0, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
         super(name);
         this.tile = tile;
-        this.renderParent = renderParent;
         this.layer = layer;
         this.originPoint = originPoint;
         this.originOffsetX = originOffsetX;
         this.originOffsetY = originOffsetY;
     }
 
-    private override function addedToRoom() {
-        if(renderParent == null) {
-            renderParent = room.scene;
-        }
+    private override function init() {
+        parentEntity.layers.add(bitmap, layer);
     }
 
-    private override function removedFromRoom() {
-        if(renderParent == room.scene) {
-            renderParent = null;
-        }
+    private override function onRemoved() {
+        parentEntity.layers.removeChild(bitmap);
     }
 
     private override function update() {

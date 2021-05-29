@@ -16,18 +16,22 @@ class Entity {
     private var position: Vec2 = vec2(0, 0);
     private var onMoveEventListeners: Array<(Vec2, Vec2) -> Void> = new Array<(Vec2, Vec2) -> Void>();
 
+    public var layers(default, null): h2d.Layers = new h2d.Layers();
+    public var layer: Int;
+
     private function set_room(room: Room): Room {
         for(comp in components) {
             comp.room = room;
         }
 
         this.room = room;
-        
         return room;
     }
 
-    public function new(?components: Array<Component>, ?position: Vec2) {
+    public function new(?components: Array<Component>, ?position: Vec2, layer: Int = 0) {
         if(components != null) {
+            this.layer = layer;
+
             // * If a position was defined, set any Transform2D component positions to position
             if(position != null) {
                 this.position = position.clone();

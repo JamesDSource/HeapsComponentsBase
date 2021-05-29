@@ -310,4 +310,19 @@ class PathfindingGrid {
         path.reverse();
         return path;
     }
+
+    // & Returns an h2d.Graphics that draws a representation of the grid
+    public function represent(a: Float = 0.6): h2d.Graphics {
+        var g: h2d.Graphics = new h2d.Graphics();
+        g.lineStyle(1, 0xFFFFFF, a);
+        g.x = originPoint.x;
+        g.y = originPoint.y;
+        for(i in 0...Std.int(gridSize.x)) {
+            for(j in 0...Std.int(gridSize.y)) {
+                g.beginFill(get(vec2(i, j)).isObsticle ? 0xFF0000 : 0x00FF00, a);
+                g.drawRect(i*cellSize, j*cellSize, cellSize, cellSize);
+            }
+        }
+        return g;
+    }
 }

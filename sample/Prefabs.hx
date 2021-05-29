@@ -11,7 +11,7 @@ class Prefabs {
         var player: Array<Component> = [
             new PlayerController("Controller"),
             new CollisionAABB("AABB", 10, 20, OriginPoint.BottomCenter),
-            new AnimationPlayer("Animations", null, 1)
+            new AnimationPlayer("Animations")
         ];
         
         return player;

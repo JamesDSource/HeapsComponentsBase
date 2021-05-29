@@ -5,6 +5,8 @@ class Room {
     // ^ Do not set this manually, should only be accessed by Project class
 
     public var scene(default, null): h2d.Scene;
+    public var drawTo: h2d.Layers;
+    // ^ The layers that parent the entity layers. Defaults to the scene
     private var entities: Array<Entity> = [];
     public var collisionWorld(default, null): CollisionWorld;
     public var physicsWorld(default, null): hcb.physics.PhysicsWorld;
@@ -34,6 +36,7 @@ class Room {
 
     public function new(usesPhysics: Bool = false, collisionCellSize: Float = 256) {
         scene = new h2d.Scene();
+        drawTo = scene;
         collisionWorld = new CollisionWorld(collisionCellSize);
         physicsWorld = new hcb.physics.PhysicsWorld(collisionWorld);
         this.usesPhysics = usesPhysics;
@@ -51,6 +54,7 @@ class Room {
 
         scene.dispose();
         scene = new h2d.Scene();
+        drawTo = scene;
         if(project != null) {
             project.updateRoomScene();
         }
@@ -141,6 +145,7 @@ class Room {
         if(!entities.contains(entity)) {
             entities.push(entity);
             entity.room = this;
+            drawTo.add(entity.layers, entity.layer);
 
             for(comp in entity.getComponents()) {
                 comp.addedToRoom();
@@ -155,6 +160,7 @@ class Room {
         }
         
         entity.room = null;
+        drawTo.removeChild(entity.layers);
         return entities.remove(entity);
     }
 

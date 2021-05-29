@@ -10,7 +10,7 @@ class Navigation extends Component {
 
     public function getPathFrom(grid: hcb.pathfinding.PathfindingGrid, startPosition: Vec2, endPosition: Vec2, addEnd: Bool = true): Array<Vec2> {
         var path: Array<Vec2> = grid.getPath(grid.getClosestPoint(startPosition), grid.getClosestPoint(endPosition));
-        if(path.length > 0 && !path[path.length - 1].equals(endPosition) && addEnd) {
+        if(path.length > 0 && path[path.length - 1] != endPosition && addEnd) {
             path[path.length - 1] = endPosition;
         }
         return path;
