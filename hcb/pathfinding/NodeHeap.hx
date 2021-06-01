@@ -6,9 +6,7 @@ class NodeHeap {
     private var items: Array<GridNode> = [];
     public var length: Int = 0;
 
-    public function new() {
-
-    }
+    public function new() {}
 
     public function add(item: GridNode) {
         item.heapIndex = length;

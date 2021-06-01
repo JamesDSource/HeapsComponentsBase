@@ -50,12 +50,12 @@ class PathfindingGrid {
 
     // & Gets a node from a vector
     function get(index: Vec2): GridNode {
-        return grid[cast index.x][cast index.y];
+        return grid[Std.int(index.x)][Std.int(index.y)];
     }
 
     // & Checks if an index is in range
     function inRange(index: Vec2): Bool {
-        return index.x > 0 && index.x < grid.length && index.y > 0 && index.y < grid[0].length;
+        return index.x >= 0 && index.x < grid.length && index.y >= 0 && index.y < grid[0].length;
     }
 
     // & Gets all the nodes connecting to the index. The diagCheck argument determins if the function
@@ -114,20 +114,20 @@ class PathfindingGrid {
 
     // & Gets the distance between two node positions with an abstract unit (not in pixels) 
     private function getDistance(node1: GridNode, node2: GridNode): Int {
-        var distX: Int = cast Math.abs(node1.xPos - node2.xPos),
-            distY: Int = cast Math.abs(node1.yPos - node2.yPos);
+        var distX: Int = Std.int(Math.abs(node1.xPos - node2.xPos)),
+            distY: Int = Std.int(Math.abs(node1.yPos - node2.yPos));
         
         if(distX < distY) {
-            return cast 14*distX + 10*(distY - distX);
+            return Std.int(14*distX + 10*(distY - distX));
         }
         else {
-            return cast 14*distY + 10*(distX - distY);
+            return Std.int(14*distY + 10*(distX - distY));
         }
     }
 
     // & Gets the coordinates on the grid from a certain position
     public function positionToCoord(position: Vec2): Vec2 {
-        var coords = position/cellSize;
+        var coords = (position - originPoint)/cellSize;
         coords.x = hxd.Math.clamp(Math.floor(coords.x), 0, gridSize.x - 1);
         coords.y = hxd.Math.clamp(Math.floor(coords.y), 0, gridSize.y - 1);
         return coords;
@@ -136,14 +136,14 @@ class PathfindingGrid {
     // & Gets the position of the center of a grid coordinate
     public function coordToPosition(coord: Vec2): Vec2 {
         var pos = coord*cellSize;
-        pos += cellSize/2 - 1;
-        return pos;
+        pos += cellSize/2;
+        return pos + originPoint;
     }
 
     // & Gets the closest grid point that isn't an obsticle
     public function getClosestCoord(position: Vec2): Vec2 {
         var coords = positionToCoord(position);
-        if(grid[cast coords.x][cast coords.y].isObsticle = false) {
+        if(!get(coords).isObsticle) {
             return coords;
         }
         else {
@@ -169,12 +169,6 @@ class PathfindingGrid {
             }
             return null;
         }
-    }
-
-    // & Gets the closest point that isn't an obsticle on the grid
-    public function getClosestPoint(position: Vec2): Vec2 {
-        var closestCoord: Vec2 = getClosestCoord(position);
-        return coordToPosition(closestCoord);
     }
 
     // & Sets the obsticle value of a single grid node 
@@ -228,14 +222,16 @@ class PathfindingGrid {
     }
 
     // & Gets the path in grid coordinates
-    public function getPathGrid(startCoord: Vec2, endCoord: Vec2): Array<Vec2> {
+    public function getPath(startCoord: Vec2, endCoord: Vec2, convertToPixels: Bool = false): Array<Vec2> {
         if(get(endCoord).isObsticle) {
             return [];
         }
-
-        var openSet: hcb.pathfinding.NodeHeap = new hcb.pathfinding.NodeHeap();
+        var nodesChanged: Array<GridNode> = [];
+        
+        var startNode = get(startCoord);
+        var openSet: NodeHeap = new NodeHeap();
         var closedSet: Array<GridNode> = [];
-        openSet.add(get(startCoord));
+        openSet.add(startNode);
         
         while(openSet.length > 0) {
             // * Find the position with the lowest F-cost
@@ -245,7 +241,8 @@ class PathfindingGrid {
             closedSet.push(currentNode);
 
             if(currentNode == get(endCoord)) {
-                return retracePath(startCoord, endCoord);
+                var path = retracePath(startCoord, endCoord, convertToPixels);
+                return path;
             }
 
             for(node in getConnecting(currentNode)) {
@@ -258,6 +255,7 @@ class PathfindingGrid {
                     node.gCost = newMovementCost;
                     node.hCost = getDistance(node, get(endCoord));
                     node.parent = currentNode;
+                    nodesChanged.push(node);
 
                     if(!openSet.contains(node)) {
                         openSet.add(node);
@@ -269,44 +267,37 @@ class PathfindingGrid {
         return [];
     }
 
-    // & Gets the path in pixel coordinates
-    public function getPath(startPos: Vec2, endPos: Vec2): Array<Vec2> {
-        var gridPath = getPathGrid(positionToCoord(startPos), positionToCoord(endPos));
-        var returnPath: Array<Vec2> = [];
-        for(coord in gridPath) {
-            var newCoord = coordToPosition(coord);
-            returnPath.push(newCoord);
-        }
-        return returnPath;
-    }
-
     // & For the A* to trace back the nodes and create a path
-    private function retracePath(startNodePos: Vec2, endNodePos: Vec2): Array<Vec2> {
+    private function retracePath(startNodePos: Vec2, endNodePos: Vec2, convertToPixelS: Bool): Array<Vec2> {
         var path: Array<Vec2> = [];
 
         var startNode = get(startNodePos),
             endNode = get(endNodePos);
 
-        var dist = Math.ceil(distance(startNodePos, endNodePos));
+        var maxIterations = gridSize.x*gridSize.y*2;
 
         var currentNode: GridNode = endNode;
         var iteration: Int = 0;
         while(currentNode != startNode) {
-            path.push(vec2(currentNode.xPos, currentNode.yPos));
-            if(currentNode.parent != null) {
+            if(convertToPixelS)
+                path.push(coordToPosition(vec2(currentNode.xPos, currentNode.yPos)));
+            else
+                path.push(vec2(currentNode.xPos, currentNode.yPos));
+
+            if(currentNode.parent != null)  {
                 currentNode = currentNode.parent;
             }
-            else {
+            else 
                 break;
-            }
 
-            if(iteration > dist*2) {
+            if(iteration > maxIterations) {
+                trace("Warning: Max iterations in retracePath exceeded. Something's wrong with your pathfinding");
                 break;
             }
-            else {
+            else
                 iteration++;
-            }
         }
+
         path.reverse();
         return path;
     }
