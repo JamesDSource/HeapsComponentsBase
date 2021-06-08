@@ -62,13 +62,18 @@ class AnimationPlayer extends Component {
                 // * Updating the position
                 animationSlot.animation.x = position.x;
                 animationSlot.animation.y = position.y;
+
+                // * Calling the on frame event
+                animationSlot.animation.onFrameEventCall(Std.int(animationSlot.animation.currentFrame));
             }
         }
     }
 
-    public function addAnimationSlot(name: String, layer: Int) {
+    public function addAnimationSlot(name: String, layer: Int, ?animation: Animation) {
         removeAnimationSlot(name);
         animationSlots[name] = {animation: null, layer: layer};
+        if(animation != null)
+            setAnimationSlot(name, animation);
     }
 
     public function removeAnimationSlot(name: String) {

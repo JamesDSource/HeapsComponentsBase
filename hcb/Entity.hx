@@ -16,6 +16,8 @@ class Entity {
     private var position: Vec2 = vec2(0, 0);
     private var onMoveEventListeners: Array<(Vec2, Vec2) -> Void> = new Array<(Vec2, Vec2) -> Void>();
 
+    public var unparentOverrideOnRoomRemove: Bool = true;
+    public var parentOverride(default, set): h2d.Object = null;
     public var layers(default, null): h2d.Layers = new h2d.Layers();
     public var layer: Int;
 
@@ -26,6 +28,31 @@ class Entity {
 
         this.room = room;
         return room;
+    }
+
+    private function set_parentOverride(parentOverride: h2d.Object): h2d.Object {
+        // * Remove from previous parent
+        layers.remove();
+
+        this.parentOverride = parentOverride;
+
+        // * If null, add to the rooms drawTo
+        if(parentOverride == null && room != null) {
+            room.drawTo.add(layers, layer);
+            return parentOverride;
+        }
+
+        // * If not null, add like normal
+        if(parentOverride != null) {
+            if(Std.isOfType(parentOverride, h2d.Layers)) {
+                var layerParent: h2d.Layers = cast parentOverride;
+                layerParent.add(layers, layer); 
+            }  
+            else
+                parentOverride.addChild(layers);
+        }
+        
+        return parentOverride;
     }
 
     public function new(?components: Array<Component>, ?position: Vec2, layer: Int = 0) {

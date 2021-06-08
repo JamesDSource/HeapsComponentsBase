@@ -55,21 +55,21 @@ class Component {
 
     // & called when the component is added to an entity
     @:allow(hcb.Entity.addComponent, hcb.Entity.addComponents)
-    private dynamic function init() {}
+    private function init() {}
 
     // & Called automatically by the Project class every frame if updateable
     @:allow(hcb.Entity.update)
-    private dynamic function update() {}
+    private function update() {}
 
     // & Called when the component is removed from an entity
     @:allow(hcb.Entity.removeComponent)
-    private dynamic function onRemoved() {}
+    private function onRemoved() {}
 
     // & Called when the parent entity is added to a room
     @:allow(hcb.Room.addEntity)
-    private dynamic function addedToRoom() {}
+    private function addedToRoom() {}
     
     // & Called when the parent entity is removed from a room
     @:allow(hcb.Room.removeEntity, hcb.Entity.removeComponent)
-    private dynamic function removedFromRoom() {}
+    private function removedFromRoom() {}
 }

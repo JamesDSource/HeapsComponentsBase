@@ -145,7 +145,8 @@ class Room {
         if(!entities.contains(entity)) {
             entities.push(entity);
             entity.room = this;
-            drawTo.add(entity.layers, entity.layer);
+            if(entity.parentOverride == null)
+                drawTo.add(entity.layers, entity.layer);
 
             for(comp in entity.getComponents()) {
                 comp.addedToRoom();
@@ -160,7 +161,10 @@ class Room {
         }
         
         entity.room = null;
-        drawTo.removeChild(entity.layers);
+        if(entity.parentOverride != null && entity.unparentOverrideOnRoomRemove)
+            entity.layers.remove();
+        else 
+            drawTo.removeChild(entity.layers);
         return entities.remove(entity);
     }
 

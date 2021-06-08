@@ -13,6 +13,9 @@ class Animation extends Anim {
     public var originOffsetX(default, set): Float = 0;
     public var originOffsetY(default, set): Float = 0;
 
+    private var onFrameEventListeners: Map<Int, Array<() -> Void>> = [];
+    // ^ Only works when in an animation player
+
     private function set_flipX(flipX: Bool): Bool {
         if(this.flipX != flipX) {
             for(frame in frames) {
@@ -74,6 +77,35 @@ class Animation extends Anim {
             var offset: Vec2 = Origin.getOriginOffset(originPoint, vec2(w, h));
             animFrame.dx = offset.x + originOffsetX;
             animFrame.dy = offset.y + originOffsetY;
+        }
+    }
+     
+    // & On frame event functions
+    public function onFrameEventSubscribe(frame: Int, callBack: () -> Void) {
+        if(onFrameEventListeners.exists(frame))
+            onFrameEventListeners[frame].push(callBack);
+        else 
+            onFrameEventListeners[frame] = [callBack];
+    }
+
+    public function onFrameEventRemove(frame: Int, callBack: () -> Void): Bool {
+        if(onFrameEventListeners.exists(frame)) {
+            var result: Bool = onFrameEventListeners[frame].remove(callBack);
+            
+            if(onFrameEventListeners[frame].length == 0)
+                onFrameEventListeners.remove(frame);
+            
+            return result;
+        }
+        
+        return false;
+    }
+
+    @:allow(hcb.comp.anim.AnimationPlayer.update)
+    private function onFrameEventCall(frame: Int) { 
+        if(onFrameEventListeners.exists(frame)) {
+            for(listener in onFrameEventListeners[frame])
+                listener();
         }
     }
 }
