@@ -24,8 +24,8 @@ class Timer {
         if(active && timeRemaining > 0 && (!paused || !stopOnPause)) {
             timeRemaining -= dt*timeMultiplier;
             if(timeRemaining <= 0) {
-                callBack(name);
                 timeRemaining = 0;
+                callBack(name);
             }
 
             if(onTick != null)

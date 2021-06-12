@@ -64,7 +64,11 @@ class AnimationPlayer extends Component {
                 animationSlot.animation.y = position.y;
 
                 // * Calling the on frame event
-                animationSlot.animation.onFrameEventCall(Std.int(animationSlot.animation.currentFrame));
+                var frame: Int = Std.int(animationSlot.animation.currentFrame);
+                if(animationSlot.animation.previousFrame != frame) {
+                    animationSlot.animation.onFrameEventCall(frame);
+                    animationSlot.animation.previousFrame = frame;
+                }
             }
         }
     }
@@ -96,12 +100,14 @@ class AnimationPlayer extends Component {
 
             animationSlots[name].animation = animation;
             animationLayers.add(animation, animationSlots[name].layer);
+
+            animation.previousFrame = Std.int(animation.currentFrame);
         }
     }
 
     public function getAnimation(slot: String): Animation {
-        if(animationSlots.exists(name)) {
-            return animationSlots[name].animation;
+        if(animationSlots.exists(slot)) {
+            return animationSlots[slot].animation;
         }
         return null;
     }
@@ -109,6 +115,9 @@ class AnimationPlayer extends Component {
     public function getAnimations(): Array<Animation> {
         var result: Array<Animation> = [];
         for(animSlot in animationSlots) {
+            if(animSlot.animation == null)
+                continue;
+
             result.push(animSlot.animation);
         }
         return result;
@@ -117,6 +126,9 @@ class AnimationPlayer extends Component {
     private function onPause(paused: Bool) {
         if(autoPause) {
             for(slot in animationSlots) {
+                if(slot.animation == null)
+                    continue;
+
                 slot.animation.pause = paused;
             }
         }

@@ -1,11 +1,6 @@
 import hcb.physics.Gravity;
-import hcb.comp.col.Collisions;
-import hcb.comp.col.Collisions.CollisionInfo;
-import hcb.comp.col.CollisionCircle;
-import hcb.comp.col.CollisionAABB;
 import hxd.Key;
 import hcb.Project;
-import hcb.LdtkEntities;
 
 class Main extends hxd.App {
     private var proj: hcb.Project;
@@ -19,9 +14,6 @@ class Main extends hxd.App {
         // * Project init
         proj = new Project(this);
         room = new Room(levels.all_levels.Test);
-
-        LdtkEntities.ldtkEntityPrefabs["Player"] = Prefabs.player;
-        LdtkEntities.ldtkEntityPrefabs["PhysicsBody"] = Prefabs.physicsBody;
 
         room.build();
 

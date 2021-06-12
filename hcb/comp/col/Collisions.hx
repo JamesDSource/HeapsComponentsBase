@@ -803,21 +803,22 @@ class Collisions {
 
     // & Checks if a coordinite is inside a polygon
     public static inline function pointInPolygon(point: Vec2, vertices: Array<Vec2>): Bool {
-        var isPoint: Bool = false;
-
-        if(vertices.length >= 3) {
-            var p1: Vec2 = vertices[0];
-
-            for(i in 2...vertices.length - 1) {
-                var p2: Vec2 = vertices[i - 1],
-                    p3: Vec2 = vertices[i];
+        var point2 = point + vec2(10000, 0);
+        var result: Bool = false;
+        
+        if(vertices.length > 1) {
+            var intersectionCount: Int = 0;
+            for(i in 0...vertices.length) {
+                var p1: Vec2 = vertices[i],
+                    p2: Vec2 = vertices[(i + 1)%vertices.length];
                 
-                if(pointInTriangle(p1, p2, p3, point)) {
-                    isPoint = true;
-                    break;
+                if(lineIntersection(p1, p2, false, point, point2, false) != null) {
+                    intersectionCount++;
                 }
             }
+            result = intersectionCount%2 == 1;
         }
-        return isPoint;
+
+        return result;
     }
 }

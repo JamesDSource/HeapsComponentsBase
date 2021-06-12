@@ -15,6 +15,8 @@ class Animation extends Anim {
 
     private var onFrameEventListeners: Map<Int, Array<() -> Void>> = [];
     // ^ Only works when in an animation player
+    @:allow(hcb.comp.anim.AnimationPlayer)
+    private var previousFrame: Int = 0;
 
     private function set_flipX(flipX: Bool): Bool {
         if(this.flipX != flipX) {
@@ -102,7 +104,7 @@ class Animation extends Anim {
     }
 
     @:allow(hcb.comp.anim.AnimationPlayer.update)
-    private function onFrameEventCall(frame: Int) { 
+    private function onFrameEventCall(frame: Int) {
         if(onFrameEventListeners.exists(frame)) {
             for(listener in onFrameEventListeners[frame])
                 listener();

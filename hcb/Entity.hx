@@ -19,7 +19,7 @@ class Entity {
     public var unparentOverrideOnRoomRemove: Bool = true;
     public var parentOverride(default, set): h2d.Object = null;
     public var layers(default, null): h2d.Layers = new h2d.Layers();
-    public var layer: Int;
+    public var layer(default, set): Int;
 
     private function set_room(room: Room): Room {
         for(comp in components) {
@@ -55,17 +55,26 @@ class Entity {
         return parentOverride;
     }
 
-    public function new(?components: Array<Component>, ?position: Vec2, layer: Int = 0) {
-        if(components != null) {
-            this.layer = layer;
-
-            // * If a position was defined, set any Transform2D component positions to position
-            if(position != null) {
-                this.position = position.clone();
-            }
-
-            addComponents(components);
+    private function set_layer(layer: Int): Int {
+        this.layer = layer;
+        var parent = layers.parent;
+        if(parent != null && Std.isOfType(parent, h2d.Layers)) {
+            var layerParent: h2d.Layers = cast parent;
+            layers.remove();
+            layerParent.add(layers, layer);
         }
+
+        return layer;
+    }
+
+    public function new(?components: Array<Component>, ?position: Vec2, layer: Int = 0) {
+        if(components != null)
+            addComponents(components);
+
+        if(position != null)
+            this.position = position.clone();    
+
+        this.layer = layer;
     }
 
     public function addComponent(component: Component): Void {

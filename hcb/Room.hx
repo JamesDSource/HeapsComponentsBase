@@ -22,7 +22,7 @@ class Room {
     private var timers: Array<Timer> = [];
 
 
-    public function set_paused(paused: Bool) {
+    private function set_paused(paused: Bool) {
         if(this.paused != paused) {
             this.paused = paused;
 
@@ -93,14 +93,19 @@ class Room {
         }
 
         // * Normal update loop
+        InputManager.get().catchInputs();
         accumulator += delta;
+        var frames: Int = 0;
         while(accumulator >= 1/targetFrameRate) {
             onUpdate();
             for(entity in entities) {
                 entity.update(paused);
             }
             accumulator -= 1/targetFrameRate;
+            frames++;
         }
+        if(frames > 0)
+            InputManager.get().clearInputs();
 
         // * Physics loop
         if(usesPhysics) {
@@ -122,18 +127,24 @@ class Room {
     }
 
     // & Event called when a normal update is called
-    private dynamic function onUpdate() {}
+    private function onUpdate() {}
 
     // & Event called when a physics update is called
-    private dynamic function onPhysicsUpdate() {}
+    private function onPhysicsUpdate() {}
 
     // & Event called when the room is added to a project
     @:allow(hcb.Project.set_room)
-    private dynamic function roomSet() {}
+    private function roomSet() {}
 
     // & Event called when the room is removed from the project
     @:allow(hcb.Project.set_room)
-    private dynamic function roomRemoved() {}
+    private function roomRemoved() {}
+
+    // & Event called when entity is added to room
+    private function entityAdded(entity: Entity) {}
+
+    // & Event called when entity is removed from room
+    private function entityremoved(entity: Entity) {}
 
     // & Adding an entity to the room
     public function addEntity(entity: Entity) {
@@ -151,6 +162,8 @@ class Room {
             for(comp in entity.getComponents()) {
                 comp.addedToRoom();
             }
+
+            entityAdded(entity);
         }
     }
 
@@ -165,7 +178,11 @@ class Room {
             entity.layers.remove();
         else 
             drawTo.removeChild(entity.layers);
-        return entities.remove(entity);
+        
+        var result: Bool = entities.remove(entity);
+        if(result)
+            entityremoved(entity);
+        return result; 
     }
 
     // & Checks if a specified entity is in this room

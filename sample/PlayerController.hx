@@ -1,3 +1,4 @@
+import hcb.InputManager;
 import VectorMath.normalize;
 import haxe.display.Display.Package;
 import h2d.Scene.ScaleModeAlign;
@@ -31,6 +32,8 @@ class PlayerController extends Component {
 
     private var animationDirection: Vec2 = vec2(0, 0);
 
+    private var inputs: InputManager;
+
     public function new(name: String) {
         super(name);
     }
@@ -48,6 +51,13 @@ class PlayerController extends Component {
 
         animationPlayer.addAnimationSlot("Default", 0);
         animationPlayer.setAnimationSlot("Default", idleFront);
+
+        inputs = InputManager.get();
+        inputs.addAction("Left", [Down(Key.LEFT), Down(Key.A)]);
+        inputs.addAction("Right", [Down(Key.RIGHT), Down(Key.D)]);
+        inputs.addAction("Up", [Down(Key.UP), Down(Key.W)]);
+        inputs.addAction("Down", [Down(Key.DOWN), Down(Key.S)]);
+
     }
 
     private override function addedToRoom() {
@@ -62,19 +72,19 @@ class PlayerController extends Component {
         var transformPos = parentEntity.getPosition();
         var moveVector: Vec2 = vec2(0, 0);
 
-        if(Key.isDown(Key.UP)) {
+        if(inputs.getActionResult("Up")) {
             moveVector.y -= 1;
             animationDirection = vec2(0, -1);
         }
-        if(Key.isDown(Key.DOWN)) {
+        if(inputs.getActionResult("Down")) {
             moveVector.y += 1;
             animationDirection = vec2(0, 1);
         }
-        if(Key.isDown(Key.LEFT)) {
+        if(inputs.getActionResult("Left")) {
             moveVector.x -= 1;
             animationDirection = vec2(-1, 0);
         }
-        else if(Key.isDown(Key.RIGHT)) {
+        if(inputs.getActionResult("Right")) {
             moveVector.x += 1;
             animationDirection = vec2(1, 0);
         }

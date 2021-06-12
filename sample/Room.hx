@@ -1,5 +1,4 @@
 import hcb.comp.Body;
-import hcb.LdtkEntities;
 import hcb.comp.col.*;
 import VectorMath;
 import hcb.IndexGrid;
@@ -15,7 +14,7 @@ class Room extends hcb.Room {
     }
 
     public override function build() {
-        LdtkEntities.ldtkAddEntities(this, cast level.l_Entities.getAllUntyped());
+        createEntites();
         
         var rend = level.l_Collisions.render();
         scene.add(rend, 0);
@@ -37,5 +36,17 @@ class Room extends hcb.Room {
         }
 
         scene.scaleMode = ScaleMode.Stretch(cast 1920/2, cast 1080/2);
+    }
+
+    public function createEntites() {
+        for(physicsEntity in level.l_Entities.all_PhysicsBody) {
+            var ent = PhysicsBody.ldtkConvert(physicsEntity);
+            addEntity(ent);   
+        }
+
+        for(playerEntity in level.l_Entities.all_Player) {
+            var ent = PlayerEntity.ldtkConvert(playerEntity);
+            addEntity(ent);   
+        }
     }
 }

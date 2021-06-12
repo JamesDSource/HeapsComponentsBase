@@ -228,66 +228,6 @@
 						},
 						{
 							"__identifier": "PhysicsBody",
-							"__grid": [6,5],
-							"__pivot": [0.5,0.5],
-							"__tile": null,
-							"width": 32,
-							"height": 32,
-							"defUid": 12,
-							"px": [208,176],
-							"fieldInstances": [{
-								"__identifier": "Shape",
-								"__value": "PolySquare",
-								"__type": "LocalEnum.Shape",
-								"defUid": 15,
-								"realEditorValues": [{
-									"id": "V_String",
-									"params": ["PolySquare"]
-								}]
-							}]
-						},
-						{
-							"__identifier": "PhysicsBody",
-							"__grid": [7,13],
-							"__pivot": [0.5,0.5],
-							"__tile": null,
-							"width": 32,
-							"height": 32,
-							"defUid": 12,
-							"px": [240,432],
-							"fieldInstances": [{
-								"__identifier": "Shape",
-								"__value": "PolySquare",
-								"__type": "LocalEnum.Shape",
-								"defUid": 15,
-								"realEditorValues": [{
-									"id": "V_String",
-									"params": ["PolySquare"]
-								}]
-							}]
-						},
-						{
-							"__identifier": "PhysicsBody",
-							"__grid": [17,11],
-							"__pivot": [0.5,0.5],
-							"__tile": null,
-							"width": 32,
-							"height": 32,
-							"defUid": 12,
-							"px": [560,368],
-							"fieldInstances": [{
-								"__identifier": "Shape",
-								"__value": "PolySquare",
-								"__type": "LocalEnum.Shape",
-								"defUid": 15,
-								"realEditorValues": [{
-									"id": "V_String",
-									"params": ["PolySquare"]
-								}]
-							}]
-						},
-						{
-							"__identifier": "PhysicsBody",
 							"__grid": [9,6],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
@@ -328,26 +268,6 @@
 						},
 						{
 							"__identifier": "PhysicsBody",
-							"__grid": [12,12],
-							"__pivot": [0.5,0.5],
-							"__tile": null,
-							"width": 32,
-							"height": 32,
-							"defUid": 12,
-							"px": [400,400],
-							"fieldInstances": [{
-								"__identifier": "Shape",
-								"__value": "PolySquare",
-								"__type": "LocalEnum.Shape",
-								"defUid": 15,
-								"realEditorValues": [{
-									"id": "V_String",
-									"params": ["PolySquare"]
-								}]
-							}]
-						},
-						{
-							"__identifier": "PhysicsBody",
 							"__grid": [25,12],
 							"__pivot": [0.5,0.5],
 							"__tile": null,
@@ -365,6 +285,17 @@
 									"params": ["PolySquare"]
 								}]
 							}]
+						},
+						{
+							"__identifier": "Player",
+							"__grid": [13,9],
+							"__pivot": [0.5,0.5],
+							"__tile": null,
+							"width": 32,
+							"height": 32,
+							"defUid": 4,
+							"px": [432,304],
+							"fieldInstances": []
 						}
 					]
 				},
