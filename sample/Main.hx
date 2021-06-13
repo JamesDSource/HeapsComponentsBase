@@ -22,16 +22,6 @@ class Main extends hxd.App {
 
     override function update(delta: Float) {
         proj.update(delta);
-
-        if(Key.isPressed(Key.ESCAPE)) {
-            proj.room.paused = !proj.room.paused;
-        }
-
-        if(Key.isPressed(Key.R)) {
-            room.rebuild();
-        }
-
-        room.collisionWorld.representShapes(room.scene, 3);
     }
 
     static function main() {

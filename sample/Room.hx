@@ -1,3 +1,4 @@
+import hxd.Key;
 import hcb.comp.Body;
 import hcb.comp.col.*;
 import VectorMath;
@@ -7,10 +8,13 @@ class Room extends hcb.Room {
     private var level: Levels.Levels_Level;
 
     private var collisionGridMap: Map<Int, Vec2 -> Float -> CollisionShape> = [];
+    private var shapeG: h2d.Graphics;
 
     public function new(level: Levels.Levels_Level, usesPhysics: Bool = true, collisionCellSize: Float = 256) {
         super(usesPhysics, collisionCellSize);
         this.level = level;
+        shapeG = new h2d.Graphics();
+        shapeG.alpha = 0.5;
     }
 
     public override function build() {
@@ -36,6 +40,21 @@ class Room extends hcb.Room {
         }
 
         scene.scaleMode = ScaleMode.Stretch(cast 1920/2, cast 1080/2);
+
+        scene.add(shapeG, 3);
+    }
+
+    private override function onUpdate() {
+        if(Key.isPressed(Key.ESCAPE)) 
+            paused = !paused;
+
+        if(Key.isPressed(Key.R)) 
+            rebuild();
+
+        if(Key.isPressed(Key.Q))
+            Sys.exit(0);
+
+        collisionWorld.representShapes(shapeG, true);
     }
 
     public function createEntites() {

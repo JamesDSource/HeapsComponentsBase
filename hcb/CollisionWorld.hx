@@ -13,7 +13,6 @@ typedef RayResult = {
 
 class CollisionWorld {
     private var shapes: Array<CollisionShape> = [];
-    private var shapeRender = new h2d.Graphics();
 
     private var collisionCellSize: Float = 128;
     public var collisionCells = new SignedArray<SignedArray<Array<CollisionShape>>>();
@@ -317,32 +316,37 @@ class CollisionWorld {
         return count;
     }
 
-    public function representShapes(layers: h2d.Layers, layer: Int, showBonds: Bool = false) {
-        shapeRender.clear();
+    public function representShapes(graphics: h2d.Graphics, showBonds: Bool = false, color: Int = 0x00FF00, boundsColor: Int = 0xFFFFFF) {
+        graphics.clear();
 
         for(shape in shapes) {
-            shapeRender.lineStyle(1, 0x00FF00);
+            graphics.lineStyle(1, color);
 
             switch(Type.getClass(shape)) {
                 case CollisionAABB:
                     var bounds: Bounds = shape.bounds;
-                    shapeRender.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
+                    graphics.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
                 case CollisionPolygon:
                     var poly: CollisionPolygon = cast shape;
                     var vertices: Array<Vec2> = poly.worldVertices;
                     for(i in 0...vertices.length) {
                         var vert = vertices[i];
                         var nextVert = vertices[(i + 1)%vertices.length];
-                        shapeRender.moveTo(vert.x, vert.y);
-                        shapeRender.lineTo(nextVert.x, nextVert.y);
+                        graphics.moveTo(vert.x, vert.y);
+                        graphics.lineTo(nextVert.x, nextVert.y);
                     }
                 case CollisionCircle:
                     var circle: CollisionCircle = cast shape;
                     var pos = shape.getAbsPosition();
-                    shapeRender.drawCircle(pos.x, pos.y, circle.radius);
+                    graphics.drawCircle(pos.x, pos.y, circle.radius);
+            }
+
+            if(showBonds) {
+                graphics.lineStyle(1, boundsColor);
+                var bbox = shape.bounds;
+                graphics.drawRect(bbox.min.x, bbox.min.y, bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y);
             }
         }
-        
-        layers.add(shapeRender, layer);
+
     }
 }
