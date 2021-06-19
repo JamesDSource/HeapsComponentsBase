@@ -1,4 +1,4 @@
-package hcb;
+package hcb.struct;
 
 import h3d.scene.Scene;
 

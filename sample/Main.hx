@@ -1,9 +1,9 @@
 import hcb.physics.Gravity;
 import hxd.Key;
-import hcb.Project;
+import hcb.struct.Project;
 
 class Main extends hxd.App {
-    private var proj: hcb.Project;
+    private var proj: Project;
     private var room: Room;
     
     override function init() {

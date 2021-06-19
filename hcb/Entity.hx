@@ -3,10 +3,15 @@ package hcb;
 import VectorMath;
 import hcb.comp.Component.PauseMode;
 import hcb.comp.*;
+import hcb.struct.*;
 
 class Entity {
-    public var room(default, set): Room = null;
-    // ^ Should not be set directly outside the Room class
+    @:allow(hcb.struct.Room)
+    private var roomIn(default, set): Room = null;
+    public var room(get, null): Room;
+    public var room2d(default, null): Room2D;
+    public var room3d(default, null): Room3D;
+
     private var components: Array<Component> = [];
     public var updatableComponents: Array<Component> = [];
 
@@ -25,13 +30,25 @@ class Entity {
     // ^ Makes sure that the position remains an integer value
     private var positionRemainder: Vec2 = vec2(0, 0);
 
-    private function set_room(room: Room): Room {
+    private function set_roomIn(roomIn: Room): Room {
+        room2d = null;
+        room3d = null;
+        
+        if(Std.isOfType(roomIn, Room2D))
+            room2d = cast roomIn;
+        else if(Std.isOfType(roomIn, Room3D))
+            room3d = cast roomIn;
+        
         for(comp in components) {
-            comp.room = room;
+            comp.roomIn = roomIn;
         }
 
-        this.room = room;
-        return room;
+        this.roomIn = roomIn;
+        return roomIn;
+    }
+
+    private function get_room(): Room {
+        return roomIn;
     }
 
     private function set_parentOverride(parentOverride: h2d.Object): h2d.Object {
@@ -41,8 +58,8 @@ class Entity {
         this.parentOverride = parentOverride;
 
         // * If null, add to the rooms drawTo
-        if(parentOverride == null && room != null) {
-            room.drawTo.add(layers, layer);
+        if(parentOverride == null && room2d != null) {
+            room2d.drawTo.add(layers, layer);
             return parentOverride;
         }
 
@@ -106,7 +123,7 @@ class Entity {
             updatableComponents.push(component);
         }
         component.parentEntity = this;
-        component.room = room;
+        component.roomIn = roomIn;
         
         component.init();
         componentAddedEventCall(component);
@@ -123,7 +140,7 @@ class Entity {
                 updatableComponents.push(component);
             }
             component.parentEntity = this;
-            component.room = room;
+            component.roomIn = roomIn;
             componentAddedEventCall(component);
         }
 
@@ -143,7 +160,7 @@ class Entity {
             componentRemovedEventCall(component);
             if(component.room != null) {
                 component.removedFromRoom();
-                component.room = null;
+                component.roomIn = null;
             }
             component.parentEntity = null;
         }
@@ -164,7 +181,7 @@ class Entity {
         }
     }
 
-    @:allow(hcb.Room.update)
+    @:allow(hcb.struct.Room.update)
     private function update(paused: Bool = false): Void {
         for(updateableComponent in updatableComponents) {
             if(!paused || updateableComponent.pauseMode == PauseMode.Resume) {

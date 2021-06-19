@@ -14,7 +14,6 @@ import VectorMath;
 import hxd.Res;
 
 class PlayerController extends Component {
-
     private var collisionShape: CollisionShape;
     private var animationPlayer: AnimationPlayer;
     
@@ -61,11 +60,11 @@ class PlayerController extends Component {
     }
 
     private override function addedToRoom() {
-        camera = room.scene.camera;
+        camera = room2d.scene.camera;
         camera.anchorX = 0.5;
         camera.anchorY = 0.5;
 
-        room.scene.scaleMode = ScaleMode.Stretch(480, 270);
+        room2d.scene.scaleMode = ScaleMode.Stretch(480, 270);
     }
 
     private override function update() {
@@ -98,7 +97,7 @@ class PlayerController extends Component {
         remainder -= remainder.floor();
 
         if(velocity.x != 0) {
-            while(room.collisionWorld.getCollisionAt(collisionShape, transformPos + vec2(moveVector.x, 0)) != null) {
+            while(room2d.collisionWorld.getCollisionAt(collisionShape, transformPos + vec2(moveVector.x, 0)) != null) {
                 velocity.x = Math.max(velocity.x - 1, 0);
                 if(velocity.x == 0) {
                     break;
@@ -107,7 +106,7 @@ class PlayerController extends Component {
         }
 
         if(velocity.y != 0) {
-            while(room.collisionWorld.getCollisionAt(collisionShape, transformPos + vec2(0, moveVector.y)) != null) {
+            while(room2d.collisionWorld.getCollisionAt(collisionShape, transformPos + vec2(0, moveVector.y)) != null) {
                 velocity.y = Math.max(velocity.y - 1, 0);
                 if(velocity.y == 0) {
                     break;

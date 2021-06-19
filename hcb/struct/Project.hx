@@ -1,4 +1,4 @@
-package hcb;
+package hcb.struct;
 
 // & Project acts as a manager for the rooms
 class Project {
@@ -29,6 +29,8 @@ class Project {
                 room2d = cast room;
             else if(Std.isOfType(room, Room3D))
                 room3d = cast room;
+
+            updateRoomScene();
         }
         return room;
     }
@@ -45,14 +47,12 @@ class Project {
 
     public function updateRoomScene() {
         if(room == null)
-            return
+            return;
 
-        if(room2d != null && app.s2d != room2d.scene) {
+        if(room2d != null && app.s2d != room2d.scene) 
             app.setScene(room2d.scene);
-        }
         
-        if(room3d != null && app.s3d != room3d.scene) {
-            app.setScene(room2d.scene);
-        }
+        if(room3d != null && app.s3d != room3d.scene)
+            app.setScene(room3d.scene);
     }
 }

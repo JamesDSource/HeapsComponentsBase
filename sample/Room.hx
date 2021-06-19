@@ -4,7 +4,7 @@ import hcb.comp.col.*;
 import VectorMath;
 import hcb.IndexGrid;
 
-class Room extends hcb.Room {
+class Room extends hcb.struct.Room2D {
     private var level: Levels.Levels_Level;
 
     private var collisionGridMap: Map<Int, Vec2 -> Float -> CollisionShape> = [];

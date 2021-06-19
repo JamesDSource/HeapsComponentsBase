@@ -1,8 +1,8 @@
-package hcb;
+package hcb.struct;
 
 class Room {
-    @:allow(hcb.Project)
-    private var project: Project;
+    @:allow(hcb.struct.Project)
+    public var project(default, null): Project;
     // ^ Do not set this manually, should only be accessed by Project class
 
     private var entities: Array<Entity> = [];
@@ -47,7 +47,7 @@ class Room {
         resync();
     }
 
-    @:allow(hcb.Project.update)
+    @:allow(hcb.struct.Project.update)
     private function update(delta: Float, targetFrameRate: Float, targetPhysicsFrameRate: Float): Float {
         // * Frame snapping
         var threshold: Float  = 0.0002;
@@ -98,11 +98,11 @@ class Room {
     private function onUpdate() {}
 
     // & Event called when the room is added to a project
-    @:allow(hcb.Project.set_room)
+    @:allow(hcb.struct.Project.set_room)
     private function roomSet() {}
 
     // & Event called when the room is removed from the project
-    @:allow(hcb.Project.set_room)
+    @:allow(hcb.struct.Project.set_room)
     private function roomRemoved() {}
 
     // & Event called when entity is added to room
@@ -120,7 +120,7 @@ class Room {
 
         if(!entities.contains(entity)) {
             entities.push(entity);
-            entity.room = this;
+            entity.roomIn = this;
 
             for(comp in entity.getComponents()) {
                 comp.addedToRoom();
@@ -140,7 +140,7 @@ class Room {
             comp.removedFromRoom();
         }
         
-        entity.room = null;
+        entity.roomIn = null;
         
         var result: Bool = entities.remove(entity);
         if(result)

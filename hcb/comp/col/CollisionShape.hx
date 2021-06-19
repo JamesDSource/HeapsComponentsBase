@@ -1,5 +1,6 @@
 package hcb.comp.col;
 
+import hcb.col.*;
 import VectorMath.vec2;
 import VectorMath;
 
@@ -69,60 +70,55 @@ class CollisionShape extends Component {
     }
 
     private override function addedToRoom() {
-        room.collisionWorld.addShape(this);
+        var r2d = room2d;
+        if(r2d != null)
+            r2d.collisionWorld.addShape(this);
     }
 
     private override function removedFromRoom() {
-        collisionWorld.removeShape(this);
+        if(collisionWorld != null)
+            collisionWorld.removeShape(this);
     }
 
     public inline function getAbsPosition(acceptOverride: Bool = true): Vec2 {
-        if(acceptOverride && overridePosition != null) {
+        if(acceptOverride && overridePosition != null) 
             return overridePosition + offset;
-        }
         
-        if(parentEntity == null) {
+        if(parentEntity == null) 
             return offset.clone();
-        }
-        else {
+        else 
             return parentEntity.getPosition() + offset;
-        }
     }
 
     // & Checks if it can interact with another collision shape
     public function canInteractWith(shape: CollisionShape): Bool {
         // * Checking for tags
         for(tag in shape.tags) {
-            if(ignoreTags.contains(tag)) {
+            if(ignoreTags.contains(tag))
                 return false;
-            }
         }
 
         var absPos1 = getAbsPosition();
         var absPos2 = shape.getAbsPosition();
 
         // * Checking if both have positions
-        if(absPos1 == null || absPos2 == null) {
+        if(absPos1 == null || absPos2 == null)
             return false;
-        }
 
         // * Checking if the bounds intersect
-        if(!Collisions.boundsIntersection(bounds, shape.bounds)) {
+        if(!Collisions.boundsIntersection(bounds, shape.bounds))
             return false;
-        }
 
         return true;
     }
 
     // & Updates the position in the collision cell grid
     public function updateCollisionCells() {
-        for(cell in cellsIn) {
+        for(cell in cellsIn)
             cell.remove(this);
-        }
 
-        if(collisionWorld != null) {
+        if(collisionWorld != null)
             cellsIn = collisionWorld.setShapeFromBounds(bounds, this);
-        }
     }
 
     // & Event listener for when the Transform2D moves

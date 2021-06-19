@@ -1,7 +1,7 @@
-package hcb.comp.col;
+package hcb.col;
 
 import hcb.math.Vector;
-import hcb.comp.col.CollisionShape;
+import hcb.comp.col.*;
 import hcb.comp.col.CollisionShape.Bounds;
 import VectorMath;
 

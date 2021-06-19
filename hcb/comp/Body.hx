@@ -177,11 +177,13 @@ class Body extends Component {
     }
 
     private override function addedToRoom() {
-        room.physicsWorld.addBody(this);
+        if(room2d != null)
+            room2d.physicsWorld.addBody(this);
     }
 
     private override function removedFromRoom() {
-        room.physicsWorld.removeBody(this);
+        if(room2d != null)
+            room2d.physicsWorld.removeBody(this);
     }
 
     // & onRotate event

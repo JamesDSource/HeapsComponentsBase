@@ -1,6 +1,7 @@
-package hcb;
-import hcb.comp.col.Collisions.Raycast;
-import hcb.comp.col.Collisions.CollisionInfo;
+package hcb.col;
+
+import hcb.col.Collisions.Raycast;
+import hcb.col.Collisions.CollisionInfo;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.*;
 import VectorMath;

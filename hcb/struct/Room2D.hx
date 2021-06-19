@@ -1,11 +1,11 @@
-package hcb;
+package hcb.struct;
 
 class Room2D extends Room {
     public var scene(default, null): h2d.Scene;
     public var drawTo: h2d.Layers;
     // ^ The layers that parent the entity layers. Defaults to the scene
     
-    public var collisionWorld(default, null): CollisionWorld;
+    public var collisionWorld(default, null): hcb.col.CollisionWorld;
     public var physicsWorld(default, null): hcb.physics.PhysicsWorld;
     public var usesPhysics: Bool;
     public var physicsPauseOnPause: Bool = true;
@@ -15,7 +15,7 @@ class Room2D extends Room {
         super();
         scene = new h2d.Scene();
         drawTo = scene;
-        collisionWorld = new CollisionWorld(collisionCellSize);
+        collisionWorld = new hcb.col.CollisionWorld(collisionCellSize);
         physicsWorld = new hcb.physics.PhysicsWorld(collisionWorld);
         this.usesPhysics = usesPhysics;
     }
@@ -39,15 +39,16 @@ class Room2D extends Room {
         delta = super.update(delta, targetFrameRate, targetPhysicsFrameRate);
 
         // * Physics loop
-        if(usesPhysics) {
-            physicsAccumulator += delta;
-            while(physicsAccumulator >= 1/targetPhysicsFrameRate) {
-                if(!paused || !physicsPauseOnPause) {
-                    onPhysicsUpdate();
-                    physicsWorld.update();
-                }
-                physicsAccumulator -= 1/targetPhysicsFrameRate;
+        if(!usesPhysics) 
+            return delta;
+
+        physicsAccumulator += delta;
+        while(physicsAccumulator >= 1/targetPhysicsFrameRate) {
+            if(!paused || !physicsPauseOnPause) {
+                onPhysicsUpdate();
+                physicsWorld.update();
             }
+            physicsAccumulator -= 1/targetPhysicsFrameRate;
         }
 
         return delta;

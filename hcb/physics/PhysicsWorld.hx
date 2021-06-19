@@ -2,8 +2,8 @@ package hcb.physics;
 
 import hcb.math.Vector;
 import haxe.ds.ReadOnlyArray;
-import hcb.comp.col.Collisions;
-import hcb.comp.col.Collisions.CollisionInfo;
+import hcb.col.*;
+import hcb.col.Collisions.CollisionInfo;
 import hcb.comp.Body;
 import VectorMath;
 

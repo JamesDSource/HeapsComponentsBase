@@ -1,7 +1,7 @@
 package hcb.comp;
 
 import h2d.Object;
-
+import hcb.struct.*;
 
 enum PauseMode {
     Idle;
@@ -17,13 +17,34 @@ class Component {
     // ^ Read only, should not be changed manually
     public var attached(get, null): Bool;
 
-    public var room: Room = null;
+    @:allow(hcb.Entity)
+    private var roomIn(default, set): Room = null;
+    public var room(get, null): Room;
+    public var room2d(default, null): Room2D;
+    public var room3d(default, null): Room3D;
     public var project(get, null): Project;
 
     public var updateable(default, set): Bool = true;
 
     private function get_attached(): Bool {
         return parentEntity != null;
+    }
+
+    private function set_roomIn(roomIn: Room): Room {
+        room2d = null;
+        room3d = null;
+
+        if(Std.isOfType(roomIn, Room2D))
+            room2d = cast roomIn;
+        else if(Std.isOfType(roomIn, Room3D))
+            room3d = cast roomIn;
+
+        this.roomIn = roomIn;
+        return roomIn;
+    }
+
+    private function get_room(): Room {
+        return roomIn;
     }
     
     private function get_project(): Project {
@@ -66,10 +87,10 @@ class Component {
     private function onRemoved() {}
 
     // & Called when the parent entity is added to a room
-    @:allow(hcb.Room.addEntity)
+    @:allow(hcb.struct.Room.addEntity)
     private function addedToRoom() {}
     
     // & Called when the parent entity is removed from a room
-    @:allow(hcb.Room.removeEntity, hcb.Entity.removeComponent)
+    @:allow(hcb.struct.Room.removeEntity, hcb.Entity.removeComponent)
     private function removedFromRoom() {}
 }

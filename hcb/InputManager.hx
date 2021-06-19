@@ -59,7 +59,7 @@ class InputManager {
         return false; 
     }
 
-    @:allow(hcb.Room.update)
+    @:allow(hcb.struct.Room.update)
     private function catchInputs() {
         for(action in actions) {
             if(action.result)
@@ -87,7 +87,7 @@ class InputManager {
         }
     }
 
-    @:allow(hcb.Room.update)
+    @:allow(hcb.struct.Room.update)
     private function clearInputs() {
         for(action in actions)
             action.result = false;
