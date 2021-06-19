@@ -19,6 +19,7 @@ enum SlopeFace {
 }
 
 class IndexGrid {
+    #if ldtk_haxe_api
     public static function ldtkTilesConvert(tileLayer: ldtk.Layer_Tiles): IGrid {
         var indexs: Array<Int> = [];
 
@@ -41,6 +42,7 @@ class IndexGrid {
             cellSize: tileLayer.gridSize
         };
     }
+    #end
 
     // & Returns an array of Collision shapes. By default, these will be AABBs with their offsets set to their
     // & position on the grid. This can be overriden with the custom shapes map that stores functions with indexs 

@@ -87,7 +87,7 @@ class CollisionShape extends Component {
         if(parentEntity == null) 
             return offset.clone();
         else 
-            return parentEntity.getPosition() + offset;
+            return parentEntity.getPosition2d() + offset;
     }
 
     // & Checks if it can interact with another collision shape
@@ -122,7 +122,7 @@ class CollisionShape extends Component {
     }
 
     // & Event listener for when the Transform2D moves
-    private function onMove(to: Vec2, from: Vec2) {
+    private function onMove(to: Vec3, from: Vec3) {
         updateCollisionCells();
     }
 }

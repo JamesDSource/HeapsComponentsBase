@@ -12,7 +12,7 @@ class PhysicsBody extends Entity {
             new Body("Physics", options)
         ];
         
-        super(components, position, layer);
+        super(components, vec3(position, 0), layer);
     }
 
     public static function ldtkConvert(entity: Levels.Entity_PhysicsBody): Entity {

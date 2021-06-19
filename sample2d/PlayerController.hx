@@ -68,7 +68,7 @@ class PlayerController extends Component {
     }
 
     private override function update() {
-        var transformPos = parentEntity.getPosition();
+        var transformPos = parentEntity.getPosition2d();
         var moveVector: Vec2 = vec2(0, 0);
 
         if(inputs.getActionResult("Up")) {

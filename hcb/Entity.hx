@@ -18,8 +18,8 @@ class Entity {
     private var componentAddedEventListeners = new Array<Component -> Void>();
     private var componentRemovedEventListeners = new Array<Component -> Void>();
 
-    private var position: Vec2 = vec2(0, 0);
-    private var onMoveEventListeners: Array<(Vec2, Vec2) -> Void> = new Array<(Vec2, Vec2) -> Void>();
+    private var position: Vec3 = vec3(0, 0, 0);
+    private var onMoveEventListeners: Array<(Vec3, Vec3) -> Void> = new Array<(Vec3, Vec3) -> Void>();
 
     public var unparentOverrideOnRoomRemove: Bool = true;
     public var parentOverride(default, set): h2d.Object = null;
@@ -28,7 +28,7 @@ class Entity {
 
     public var positionSnap(default, set): Bool = true;
     // ^ Makes sure that the position remains an integer value
-    private var positionRemainder: Vec2 = vec2(0, 0);
+    private var positionRemainder: Vec3 = vec3(0, 0, 0);
 
     private function set_roomIn(roomIn: Room): Room {
         room2d = null;
@@ -103,7 +103,7 @@ class Entity {
         return positionSnap;
     }
 
-    public function new(?components: Array<Component>, ?position: Vec2, layer: Int = 0) {
+    public function new(?components: Array<Component>, ?position: Vec3, layer: Int = 0) {
         if(components != null)
             addComponents(components);
 
@@ -228,12 +228,21 @@ class Entity {
     }
 
     // & Gets the entities position
-    public function getPosition(): Vec2 {
+    public function getPosition3d(): Vec3 {
         return position.clone();
     }
 
+    public function getPosition2d(): Vec2 {
+        return vec2(position);
+    }
+
     // & Moves the position by a vector
-    public function move(moveVector: Vec2) {
+    public function move(?moveVector3: Vec3, ?moveVector2: Vec2) {
+        if(moveVector2 == null && moveVector3 == null)
+            return;
+
+        var moveVector: Vec3 = moveVector3 != null ? moveVector3 : vec3(moveVector2, 0);
+
         var ev = onMoveEventCall.bind(_, position.clone());
         position += moveVector;
 
@@ -247,7 +256,11 @@ class Entity {
     }
 
     // & Moves the position to a specific location vector
-    public function moveTo(position: Vec2, resetRemainder: Bool = true) {
+    public function moveTo(?position3d: Vec3, ?position2d: Vec2, resetRemainder: Bool = true) {
+        if(position2d == null && position3d == null)
+            return;
+
+        var position: Vec3 = position3d != null ? position3d.clone() : vec3(position2d, 0);
         var ev = onMoveEventCall.bind(_, this.position.clone());
         
         if(positionSnap) {
@@ -256,19 +269,19 @@ class Entity {
 
             position = position.floor();
         }
-        this.position = position.clone();
+        this.position = position;
         ev(position.clone());
     }
 
     // & Sets the position remainder
-    public function setPosRemainder(remainder: Vec2) {
+    public function setPosRemainder(remainder: Vec3) {
         positionRemainder = remainder.clone();
-        if(Math.abs(positionRemainder.x) >= 1 || Math.abs(positionRemainder.y) >= 1)
-            move(vec2(0, 0));
+        if(Math.abs(positionRemainder.x) >= 1 || Math.abs(positionRemainder.y) >= 1 || Math.abs(positionRemainder.z) >= 1)
+            move(vec3(0, 0, 0));
     }
 
     // & gets the position remainder
-    public function getPosRemainder(): Vec2 { 
+    public function getPosRemainder(): Vec3 { 
         return positionRemainder.clone();
     }
 
@@ -303,15 +316,15 @@ class Entity {
     }
 
     // & on move event
-    public function onMoveEventSubscribe(callBack: (Vec2, Vec2) -> Void) {
+    public function onMoveEventSubscribe(callBack: (Vec3, Vec3) -> Void) {
         onMoveEventListeners.push(callBack);
     }
 
-    public function onMoveEventRemove(callBack: (Vec2, Vec2) -> Void) {
+    public function onMoveEventRemove(callBack: (Vec3, Vec3) -> Void) {
         onMoveEventListeners.remove(callBack);
     }
 
-    private function onMoveEventCall(to: Vec2, from: Vec2) {
+    private function onMoveEventCall(to: Vec3, from: Vec3) {
         for(listener in onMoveEventListeners) {
             listener(to, from);
         }

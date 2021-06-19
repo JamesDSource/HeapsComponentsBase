@@ -13,7 +13,7 @@ class PlayerEntity extends Entity {
             new AnimationPlayer("Animations")
         ];
 
-        super(components, position, layer);
+        super(components, vec3(position, 0), layer);
     }
 
     public static function ldtkConvert(entity: Levels.Entity_Player): Entity {
