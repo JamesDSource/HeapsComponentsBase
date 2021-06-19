@@ -28,6 +28,16 @@ class Animation extends Anim {
         return flipX;
     }
 
+    private function set_flipY(flipY: Bool): Bool {
+        if(this.flipY != flipY) {
+            for(frame in frames) {
+                frame.flipY();
+            }
+            this.flipY = flipY;
+        }
+        return flipY;
+    }
+
     private function set_originPoint(originPoint: OriginPoint): OriginPoint {
         if(this.originPoint != originPoint) {
             this.originPoint = originPoint;
@@ -50,16 +60,6 @@ class Animation extends Anim {
             setOrigin();
         }
         return originOffsetY;
-    }
-
-    private function set_flipY(flipY: Bool): Bool {
-        if(this.flipY != flipY) {
-            for(frame in frames) {
-                frame.flipY();
-            }
-            this.flipY = flipY;
-        }
-        return flipY;
     }
 
     public function new(strip: Tile, frames: Int, speed: Float = 15, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {

@@ -3,7 +3,7 @@ package hcb.comp;
 import VectorMath;
 
 class Navigation extends Component {
-    public function new(name: String) {
+    public function new(name: String = "Navigation") {
         super(name);
         updateable = false;
     }

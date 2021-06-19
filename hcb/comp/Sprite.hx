@@ -114,7 +114,7 @@ class Sprite extends Component {
         return parentOverride;
     }
 
-    public function new(name: String, ?tile: Tile, layer: Int = 0, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+    public function new(name: String = "Sprite", ?tile: Tile, layer: Int = 0, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
         super(name);
         this.tile = tile;
         this.layer = layer;

@@ -21,6 +21,10 @@ class Entity {
     public var layers(default, null): h2d.Layers = new h2d.Layers();
     public var layer(default, set): Int;
 
+    public var positionSnap(default, set): Bool = true;
+    // ^ Makes sure that the position remains an integer value
+    private var positionRemainder: Vec2 = vec2(0, 0);
+
     private function set_room(room: Room): Room {
         for(comp in components) {
             comp.room = room;
@@ -65,6 +69,21 @@ class Entity {
         }
 
         return layer;
+    }
+
+    private function set_positionSnap(positionSnap: Bool): Bool {
+        if(this.positionSnap != positionSnap) {
+            this.positionSnap = positionSnap;
+
+            if(positionSnap)
+                moveTo(position);
+                // ^ Calling this will reset the remainder to whatever the current position is 
+            else {
+                move(positionRemainder);
+                positionRemainder.x = positionRemainder.y = 0;
+            }
+        }
+        return positionSnap;
     }
 
     public function new(?components: Array<Component>, ?position: Vec2, layer: Int = 0) {
@@ -200,14 +219,40 @@ class Entity {
     public function move(moveVector: Vec2) {
         var ev = onMoveEventCall.bind(_, position.clone());
         position += moveVector;
+
+        if(positionSnap) {
+            position += positionRemainder;
+            positionRemainder = position - position.floor();
+            position -= positionRemainder;
+        }
+        
         ev(position.clone());
     }
 
     // & Moves the position to a specific location vector
-    public function moveTo(position: Vec2) {
+    public function moveTo(position: Vec2, resetRemainder: Bool = true) {
         var ev = onMoveEventCall.bind(_, this.position.clone());
+        
+        if(positionSnap) {
+            if(resetRemainder)
+                positionRemainder = position - position.floor();
+
+            position = position.floor();
+        }
         this.position = position.clone();
         ev(position.clone());
+    }
+
+    // & Sets the position remainder
+    public function setPosRemainder(remainder: Vec2) {
+        positionRemainder = remainder.clone();
+        if(Math.abs(positionRemainder.x) >= 1 || Math.abs(positionRemainder.y) >= 1)
+            move(vec2(0, 0));
+    }
+
+    // & gets the position remainder
+    public function getPosRemainder(): Vec2 { 
+        return positionRemainder.clone();
     }
 
     // & Component added event

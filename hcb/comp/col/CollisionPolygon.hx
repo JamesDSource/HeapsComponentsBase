@@ -120,7 +120,7 @@ class CollisionPolygon extends CollisionShape {
         return center;
     }
 
-    public function new(name: String, vertices: Array<Vec2>, ?offset: Vec2) {
+    public function new(name: String = "Collision Polygon", vertices: Array<Vec2>, ?offset: Vec2) {
         super(name, offset);
         setVertices(vertices);
     }

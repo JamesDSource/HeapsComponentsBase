@@ -98,7 +98,7 @@ class Body extends Component {
         return this.angularDrag;
     }
 
-    public function new(name: String, options: BodyOptions) {
+    public function new(name: String = "Body", options: BodyOptions) {
         super(name);
         setOptions(options);
         updateable = false;

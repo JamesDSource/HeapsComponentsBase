@@ -67,7 +67,7 @@ class CollisionAABB extends CollisionShape {
         return tl + vec2(transformedWidth, transformedHeight)/2;
     }
 
-    public function new(name: String, width: Float, height: Float, ?origin: OriginPoint, ?offset: Vec2) {
+    public function new(name: String = "Collision AABB", width: Float, height: Float, ?origin: OriginPoint, ?offset: Vec2) {
         super(name, offset);
 
         this.width = width;

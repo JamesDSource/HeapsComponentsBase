@@ -5,6 +5,9 @@ class Project {
     public var app(default, null): hxd.App;
 
     public var room(default, set): Room = null;
+    private var room2d: Room2D = null;
+    private var room3d: Room3D = null;
+
     public var targetFrameRate: Float = 60;
     public var targetPhysicsFrameRate: Float = 60;
 
@@ -17,8 +20,15 @@ class Project {
 
             this.room = room;
             room.project = this;
-            app.setScene(room.scene);
             room.roomSet();
+
+            room2d = null;
+            room3d = null;
+
+            if(Std.isOfType(room, Room2D))
+                room2d = cast room;
+            else if(Std.isOfType(room, Room3D))
+                room3d = cast room;
         }
         return room;
     }
@@ -34,8 +44,15 @@ class Project {
     }
 
     public function updateRoomScene() {
-        if(app.s2d != room.scene) {
-            app.setScene(room.scene);
+        if(room == null)
+            return
+
+        if(room2d != null && app.s2d != room2d.scene) {
+            app.setScene(room2d.scene);
+        }
+        
+        if(room3d != null && app.s3d != room3d.scene) {
+            app.setScene(room2d.scene);
         }
     }
 }

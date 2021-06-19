@@ -51,7 +51,7 @@ class CollisionShape extends Component {
         return getAbsPosition();
     }
 
-    public function new(name: String, ?offset: Vec2) {
+    public function new(name: String = "Collision Shape", ?offset: Vec2) {
         super(name);
         if(offset != null) {
             offsetX = offset.x;

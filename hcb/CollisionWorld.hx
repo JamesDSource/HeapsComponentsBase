@@ -97,7 +97,7 @@ class CollisionWorld {
         return shapeLists;
     }
 
-    // & Returns the first collision for one shape
+    // & Returns the largest depth collision for one shape
     public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?position: Vec2, ?tag: String): CollisionInfo {
         var result: CollisionInfo = null;
         
@@ -106,17 +106,16 @@ class CollisionWorld {
             collisionShape.overridePosition = position;
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
+        var largestDepth: Float = Math.NEGATIVE_INFINITY;
         for(shape in cellShapes) {
             if(tag != null && !shape.tags.contains(tag))
                 continue;
 
             if(collisionShape != shape) {
-                result = Collisions.test(collisionShape, shape);
-                if(result.isColliding) {
-                    break;
-                }
-                else {
-                    result = null;
+                var colResult = Collisions.test(collisionShape, shape);
+                if(colResult.isColliding && colResult.depth > largestDepth) {
+                    result = colResult;
+                    largestDepth = colResult.depth;
                 }
             }
         }
@@ -126,7 +125,7 @@ class CollisionWorld {
         return result;
     }
 
-    // & Returns the first collision for multiple shapes
+    // & Returns the largest depth collision for multiple shapes
     public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?position: Vec2, ?tag: String): CollisionInfo {
         var result: CollisionInfo = null;
         
@@ -136,17 +135,16 @@ class CollisionWorld {
                 collisionShape.overridePosition = position;
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
+            var largestDepth: Float = Math.NEGATIVE_INFINITY;
             for(shape in cellShapes) {
                 if(tag != null && !shape.tags.contains(tag))
                     continue;
 
                 if(!collisionShapes.contains(shape)) {
-                    result = Collisions.test(collisionShape, shape);
-                    if(result.isColliding) {
-                        break;
-                    }
-                    else {
-                        result = null;
+                    var colResult = Collisions.test(collisionShape, shape);
+                    if(colResult.isColliding && colResult.depth > largestDepth) {
+                        result = colResult;
+                        largestDepth = colResult.depth;
                     }
                 }
             }

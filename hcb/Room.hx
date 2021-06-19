@@ -1,26 +1,18 @@
 package hcb;
 
 class Room {
-    public var project: Project;
+    @:allow(hcb.Project)
+    private var project: Project;
     // ^ Do not set this manually, should only be accessed by Project class
 
-    public var scene(default, null): h2d.Scene;
-    public var drawTo: h2d.Layers;
-    // ^ The layers that parent the entity layers. Defaults to the scene
     private var entities: Array<Entity> = [];
-    public var collisionWorld(default, null): CollisionWorld;
-    public var physicsWorld(default, null): hcb.physics.PhysicsWorld;
-    public var usesPhysics: Bool;
-    public var physicsPauseOnPause: Bool = true;
 
     public var paused(default, set): Bool = false;
     private var onPauseListeners: Array<(Bool) -> Void> = [];
 
     private var accumulator: Float = 0;
-    private var physicsAccumulator: Float = 0;
 
     private var timers: Array<Timer> = [];
-
 
     private function set_paused(paused: Bool) {
         if(this.paused != paused) {
@@ -34,12 +26,8 @@ class Room {
         return paused;
     }
 
-    public function new(usesPhysics: Bool = false, collisionCellSize: Float = 256) {
-        scene = new h2d.Scene();
-        drawTo = scene;
-        collisionWorld = new CollisionWorld(collisionCellSize);
-        physicsWorld = new hcb.physics.PhysicsWorld(collisionWorld);
-        this.usesPhysics = usesPhysics;
+    public function new() {
+        
     }
 
     // & Completely clears out the room
@@ -48,16 +36,7 @@ class Room {
             removeEntity(entity);
         }
 
-        collisionWorld.clear();
-        physicsWorld.clear();
         timers = [];
-
-        scene.dispose();
-        scene = new h2d.Scene();
-        drawTo = scene;
-        if(project != null) {
-            project.updateRoomScene();
-        }
     }
 
     public dynamic function build() {}
@@ -68,7 +47,8 @@ class Room {
         resync();
     }
 
-    public function update(delta: Float, targetFrameRate: Float, targetPhysicsFrameRate: Float) {
+    @:allow(hcb.Project.update)
+    private function update(delta: Float, targetFrameRate: Float, targetPhysicsFrameRate: Float): Float {
         // * Frame snapping
         var threshold: Float  = 0.0002;
         if(Math.abs(delta - 1/targetFrameRate) < threshold) {
@@ -107,30 +87,15 @@ class Room {
         if(frames > 0)
             InputManager.get().clearInputs();
 
-        // * Physics loop
-        if(usesPhysics) {
-            physicsAccumulator += delta;
-            while(physicsAccumulator >= 1/targetPhysicsFrameRate) {
-                if(!paused || !physicsPauseOnPause) {
-                    onPhysicsUpdate();
-                    physicsWorld.update();
-                }
-                physicsAccumulator -= 1/targetPhysicsFrameRate;
-            }
-        }
-
+        return delta;
     }
 
     public function resync() {
         accumulator = 0;
-        physicsAccumulator = 0;
     }
 
     // & Event called when a normal update is called
     private function onUpdate() {}
-
-    // & Event called when a physics update is called
-    private function onPhysicsUpdate() {}
 
     // & Event called when the room is added to a project
     @:allow(hcb.Project.set_room)
@@ -147,7 +112,7 @@ class Room {
     private function entityremoved(entity: Entity) {}
 
     // & Adding an entity to the room
-    public function addEntity(entity: Entity) {
+    public function addEntity(entity: Entity): Bool {
         // * Check if the entity is already in another room
         if(entity.room != null) {
             entity.room.removeEntity(entity);
@@ -156,15 +121,17 @@ class Room {
         if(!entities.contains(entity)) {
             entities.push(entity);
             entity.room = this;
-            if(entity.parentOverride == null)
-                drawTo.add(entity.layers, entity.layer);
 
             for(comp in entity.getComponents()) {
                 comp.addedToRoom();
             }
 
             entityAdded(entity);
+
+            return true;
         }
+
+        return false;
     }
 
     // & Removing an entity from a room
@@ -174,10 +141,6 @@ class Room {
         }
         
         entity.room = null;
-        if(entity.parentOverride != null && entity.unparentOverrideOnRoomRemove)
-            entity.layers.remove();
-        else 
-            drawTo.removeChild(entity.layers);
         
         var result: Bool = entities.remove(entity);
         if(result)
