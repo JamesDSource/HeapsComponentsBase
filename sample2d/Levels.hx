@@ -1,1 +1,0 @@
-private typedef _Tmp = haxe.macro.MacroType<[ldtk.Project.build("sample2d/res/Levels.ldtk")]>;

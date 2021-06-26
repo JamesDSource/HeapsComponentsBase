@@ -94,38 +94,42 @@ class IndexGrid {
         return shapes;
     }
 
-    public static inline function slopeBuild(slopeFace: SlopeFace, origin: Vec2, tileSize: Float): CollisionShape {
-        var verts: Array<Vec2> = [];
-
+    public static inline function slopeBuild(slopeFace: SlopeFace, widthPercent: Float = 1.0, heightPercent: Float = 1.0, origin: Vec2, tileSize: Float): CollisionShape {
+        var supportingPoint: Vec2;
+        var hDir: Int = 0, vDir: Int = 0;
         switch(slopeFace) {
             case SlopeFace.TopLeft:
-                verts = [
-                    vec2(0, tileSize),
-                    vec2(tileSize, 0),
-                    vec2(tileSize, tileSize)
-                ];
+                supportingPoint = vec2(tileSize, tileSize);
+                hDir = vDir = -1;
             case SlopeFace.TopRight:
-                verts = [
-                    vec2(0, 0),
-                    vec2(0, tileSize ),
-                    vec2(tileSize, tileSize)
-                ];
+                supportingPoint = vec2(0, tileSize);
+                hDir = 1;
+                vDir = -1;
             case SlopeFace.BottomLeft:
-                verts = [
-                    vec2(0, 0),
-                    vec2(tileSize, tileSize),
-                    vec2(tileSize, 0)
-                ];
+                supportingPoint = vec2(tileSize, 0);
+                hDir = -1;
+                vDir = 1;
             case SlopeFace.BottomRight:
-                verts = [
-                    vec2(0, 0),
-                    vec2(0, tileSize),
-                    vec2(tileSize, 0)
-                ];
+                supportingPoint = vec2(0, 0);
+                hDir = vDir = 1;
         }
+        
+        var verts: Array<Vec2> = [
+            supportingPoint,
+            vec2(supportingPoint.x + hDir*widthPercent*tileSize, supportingPoint.y),
+            vec2(supportingPoint.x, supportingPoint.y + vDir*heightPercent*tileSize)
+        ];
+        
         var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
         shape.offsetX = origin.x;
         shape.offsetY = origin.y;
+        return shape;
+    }
+
+    public static inline function bboxBuild(widthPercent: Float, heightPercent: Float, offsetPercent: Vec2, origin: Vec2, tileSize: Float): CollisionShape {
+        var shape: CollisionAABB = new CollisionAABB(widthPercent*tileSize, heightPercent*tileSize);
+        shape.offsetX = origin.x + offsetPercent.x*tileSize;
+        shape.offsetY = origin.y + offsetPercent.y*tileSize;
         return shape;
     }
 }

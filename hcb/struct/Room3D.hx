@@ -12,6 +12,8 @@ class Room3D extends Room {
 
     public override function clear() {
         super.clear();
+
+        scene.dispose();
         scene = new Scene();
     }
 }
