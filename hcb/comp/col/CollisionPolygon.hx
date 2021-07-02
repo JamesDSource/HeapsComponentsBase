@@ -120,9 +120,9 @@ class CollisionPolygon extends CollisionShape {
         return center;
     }
 
-    public function new(name: String = "Collision Polygon", vertices: Array<Vec2>, ?offset: Vec2) {
+    public function new(name: String = "Collision Polygon", vertices: Array<Vec2>, ?offset: Vec2, keepWindingCCW: Bool = true) {
         super(name, offset);
-        setVertices(vertices);
+        setVertices(vertices, keepWindingCCW);
     }
 
     private function updateTransformations(): Void {
@@ -161,7 +161,7 @@ class CollisionPolygon extends CollisionShape {
         updateTransformations();
     }
 
-    public static function rectangle(name: String, width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft) {
+    public static function rectangle(name: String = "Collision Polygon", width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft, offset: Vec2) {
         var verts: Array<Vec2> = [
             vec2(0, 0),
             vec2(0, height),
@@ -176,6 +176,6 @@ class CollisionPolygon extends CollisionShape {
             }
         }
 
-        return new CollisionPolygon(name, verts);
+        return new CollisionPolygon(name, verts, offset);
     }
 }

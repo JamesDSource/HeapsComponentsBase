@@ -26,9 +26,7 @@ class Room {
         return paused;
     }
 
-    public function new() {
-        
-    }
+    public function new() {}
 
     // & Completely clears out the room
     public function clear() {
@@ -39,7 +37,7 @@ class Room {
         timers = [];
     }
 
-    public dynamic function build() {}
+    public function build() {}
 
     public function rebuild() {
         clear();
@@ -118,20 +116,17 @@ class Room {
             entity.room.removeEntity(entity);
         }
 
-        if(!entities.contains(entity)) {
-            entities.push(entity);
-            entity.roomIn = this;
+        if(entities.contains(entity))
+            return false;
+        
+        entities.push(entity);
+        entity.roomIn = this;
 
-            for(comp in entity.getComponents()) {
-                comp.addedToRoom();
-            }
+        for(comp in entity.getComponents())
+            comp.addedToRoom();
 
-            entityAdded(entity);
-
-            return true;
-        }
-
-        return false;
+        entityAdded(entity);
+        return true;
     }
 
     // & Removing an entity from a room

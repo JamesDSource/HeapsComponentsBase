@@ -134,7 +134,7 @@ class Sprite extends Component {
     }
 
     private override function update() {
-        var position: Vec2 = parentEntity.getPosition();
+        var position: Vec2 = parentEntity.getPosition2d();
         // * Updating the position
         bitmap.x = position.x;
         bitmap.y = position.y;

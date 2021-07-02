@@ -103,12 +103,14 @@ class Entity {
         return positionSnap;
     }
 
-    public function new(?components: Array<Component>, ?position: Vec3, layer: Int = 0) {
+    public function new(?components: Array<Component>, ?position3d: Vec3, ?position2d: Vec2, layer: Int = 0) {
         if(components != null)
             addComponents(components);
 
-        if(position != null)
-            this.position = position.clone();    
+        if(position3d != null)
+            this.position = position.clone();
+        else if(position2d != null)
+            this.position = vec3(position2d, 0);  
 
         this.layer = layer;
     }
@@ -206,22 +208,22 @@ class Entity {
     }
 
     // & Gets all components of the type you pass though, but you must cast it manually to an array of the type you want
-    public function getAllComponentsOfType(t: Dynamic): Array<Component> {
-        var returnList: Array<Component> = [];
+    public function getAllComponentsOfType<T>(t: Class<T>): Array<T> {
+        var returnList: Array<T> = [];
         
         for(component in components) {
             if(Std.isOfType(component, t)) {
-                returnList.push(component);
+                returnList.push(cast component);
             }
         }
         return returnList;
     }
 
     // & Gets the first component of a particular type
-    public function getComponentOfType(t: Dynamic): Component {
+    public function getComponentOfType<T>(t: Class<T>): T {
         for(component in components) {
             if(Std.isOfType(component, t)) {
-                return component;
+                return cast component;
             }
         }
         return null;

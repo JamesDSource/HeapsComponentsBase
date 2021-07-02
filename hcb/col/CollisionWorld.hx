@@ -319,7 +319,10 @@ class CollisionWorld {
         graphics.clear();
 
         for(shape in shapes) {
-            graphics.lineStyle(1, color);
+            if(shape.debugColor == null)
+                graphics.lineStyle(1, color);
+            else
+                graphics.lineStyle(1, shape.debugColor);
 
             switch(Type.getClass(shape)) {
                 case CollisionAABB:

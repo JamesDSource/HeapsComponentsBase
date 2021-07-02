@@ -33,9 +33,8 @@ class Collisions {
             contactPoints: []
         }
         
-        if(!shape1.canInteractWith(shape2)) {
+        if(!shape1.canInteractWith(shape2))
             return result;
-        }
 
         var flipped: Bool = false;
         switch(Type.getClass(shape1)) {
@@ -92,6 +91,16 @@ class Collisions {
     public extern overload static inline function raycastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
         var result: Vec2 = null;
         
+        var p1 = raycast.origin;
+        var p2 = p1 + raycast.castTo;
+        var bounds: Bounds = {
+            min: vec2(Math.min(p2.x, p1.x) - 1, Math.min(p1.y, p2.y) - 1),
+            max: vec2(Math.max(p2.x, p1.x) + 1, Math.max(p1.y, p2.y) + 1)
+        };
+
+        if(!boundsIntersection(bounds, shape.bounds))
+            return result;
+
         switch(Type.getClass(shape)) {
             case CollisionAABB:
                 result = aabbRaycast(cast shape, raycast);

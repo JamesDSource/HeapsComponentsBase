@@ -13,6 +13,8 @@ class CollisionShape extends Component {
     public var active: Bool = true;
     public var bounds(get, null): Bounds;
 
+    public var debugColor: Null<Int> = null;
+
     public var tags: Array<String> = [];
     public var ignoreTags: Array<String> = [];
 
