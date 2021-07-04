@@ -13,12 +13,4 @@ class Random {
     public extern overload static inline function randomRange(min: Int, max: Int): Int {
         return min + generator.random(max - min);
     }
-
-    public static inline function color(): Int {
-        var red: Int = randomRange(0, 256);
-        var green: Int = randomRange(0, 256);
-        var blue: Int = randomRange(0, 256);
-
-        return dn.Color.rgbToInt({r: red, g: green, b: blue});
-    }
 }

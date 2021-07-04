@@ -13,6 +13,7 @@ class Room {
     private var accumulator: Float = 0;
 
     private var timers: Array<Timer> = [];
+    public var tweens(default, null): hcb.math.TweenManager = new hcb.math.TweenManager();
 
     private function set_paused(paused: Bool) {
         if(this.paused != paused) {
@@ -35,6 +36,7 @@ class Room {
         }
 
         timers = [];
+        tweens = new hcb.math.TweenManager();
     }
 
     public function build() {}
@@ -64,6 +66,9 @@ class Room {
         else if(Math.abs(delta - 1/120) < threshold) {
             delta = 1/120;
         }
+
+        // * Tweening
+        tweens.step(delta, paused);
         
         // * Timers
         for(timer in timers) {

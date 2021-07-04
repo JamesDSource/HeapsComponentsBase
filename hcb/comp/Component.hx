@@ -3,15 +3,9 @@ package hcb.comp;
 import h2d.Object;
 import hcb.struct.*;
 
-enum PauseMode {
-    Idle;
-    Resume;
-    Inherit;
-}
-
 class Component {
     public var name: String;
-    public var pauseMode: PauseMode = PauseMode.Idle;
+    public var pauseState: hcb.Pause.PauseState = Idle;
 
     public var parentEntity: hcb.Entity = null;
     // ^ Read only, should not be changed manually

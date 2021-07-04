@@ -5,13 +5,24 @@ import VectorMath;
 
 class Grid {
     private var cellSize: Float;
-    private var cWidth: Int;
-    private var cHeight: Int;
+    public var cWidth(default, null): Int;
+    public var cHeight(default, null): Int;
     public var grid: Array<GridNode> = [];
+
+    public var width(get, null): Float;
+    public var height(get, null): Float;
 
     public var originPoint: Vec2;
     public var collisionShape: CollisionAABB;
     
+    private inline function get_width(): Float {
+        return cWidth*cellSize;
+    }
+
+    private inline function get_height(): Float {
+        return cHeight*cellSize;
+    }
+
     public function new(cellSize: Float, cWidth: Int, cHeight: Int, ?originPoint: Vec2) {
         this.cellSize = cellSize;
         this.cWidth = cWidth;
@@ -126,20 +137,24 @@ class Grid {
         return positions;
     }
     
-    /*
-    // & Returns an h2d.Graphics that draws a representation of the grid
-    public function represent(a: Float = 0.6): h2d.Graphics {
-        var g: h2d.Graphics = new h2d.Graphics();
-        g.lineStyle(1, 0xFFFFFF, a);
-        g.x = originPoint.x;
-        g.y = originPoint.y;
-        for(i in 0...Std.int(gridSize.x)) {
-            for(j in 0...Std.int(gridSize.y)) {
-                g.beginFill(get(vec2(i, j)).isObsticle ? 0xFF0000 : 0x00FF00, a);
-                g.drawRect(i*cellSize, j*cellSize, cellSize, cellSize);
+    // & Draws a representation of the grid
+    public function represent(g: h2d.Graphics, ?path: Array<Vec2>) {
+        g.lineStyle(1, 0xFFFFFF);
+        for(node in grid) {
+            var inPath: Bool = false;
+            if(path != null) {
+                for(point in path) {
+                    if(point.x == node.x && point.y == node.y) {
+                        inPath = true;
+                        break;
+                    }
+                }
             }
+
+            var position: Vec2 = vec2(node.x, node.y)*cellSize + originPoint;
+            g.beginFill(node.obsticle ? 0xFF0000 : inPath ? 0xFFFF00 : 0x00FF00);
+            g.drawRect(position.x, position.y, cellSize, cellSize);
+            g.endFill();
         }
-        return g;
     }
-    */
 }

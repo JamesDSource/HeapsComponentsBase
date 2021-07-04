@@ -2,7 +2,7 @@ package hcb;
 
 class Timer {
     public var name: String;
-    public var stopOnPause: Bool;
+    public var pauseState: hcb.Pause.PauseState;
 
     public var timeRemaining: Float = 0;
     public var timeMultiplier: Float = 1;
@@ -12,16 +12,16 @@ class Timer {
 
     public var active: Bool = true;
     
-    public function new(name: String, initialTime: Float, callBack: (String) -> Void, stopOnPause: Bool = true) {
+    public function new(name: String, initialTime: Float, callBack: (String) -> Void, pauseState: hcb.Pause.PauseState = Idle) {
         this.name = name;
         this.initialTime = initialTime;
         timeRemaining = initialTime;
         this.callBack = callBack;
-        this.stopOnPause = stopOnPause;
+        this.pauseState = pauseState;
     }
 
     public function countDown(dt: Float, paused: Bool = false) {
-        if(active && timeRemaining > 0 && (!paused || !stopOnPause)) {
+        if(active && timeRemaining > 0 && (!paused || hcb.Pause.updateOnPause(this))) {
             timeRemaining -= dt*timeMultiplier;
             if(timeRemaining <= 0) {
                 timeRemaining = 0;

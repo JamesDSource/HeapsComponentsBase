@@ -1,7 +1,7 @@
 package hcb;
 
 import VectorMath;
-import hcb.comp.Component.PauseMode;
+import hcb.Pause.PauseState;
 import hcb.comp.*;
 import hcb.struct.*;
 
@@ -29,6 +29,8 @@ class Entity {
     public var positionSnap(default, set): Bool = true;
     // ^ Makes sure that the position remains an integer value
     private var positionRemainder: Vec3 = vec3(0, 0, 0);
+
+    public var pauseState: PauseState = Idle;
 
     private function set_roomIn(roomIn: Room): Room {
         room2d = null;
@@ -186,7 +188,7 @@ class Entity {
     @:allow(hcb.struct.Room.update)
     private function update(paused: Bool = false): Void {
         for(updateableComponent in updatableComponents) {
-            if(!paused || updateableComponent.pauseMode == PauseMode.Resume) {
+            if(!paused || Pause.updateOnPause(updateableComponent)) {
                 updateableComponent.update();
             }
         }
