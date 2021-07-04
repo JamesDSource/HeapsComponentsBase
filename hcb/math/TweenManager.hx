@@ -129,7 +129,7 @@ class TweenManager {
             case EaseOutSine:
                 tween.ease = easeOutSine;
             case EaseInOutSine:
-                tweem.ease = easeInOutSine;
+                tween.ease = easeInOutSine;
             case EaseInQuad:
                 tween.ease = easeInQuad;
             case EaseOutQuad:
@@ -210,11 +210,11 @@ class TweenManager {
 
     // & Ease sine functions
     public static inline function easeInSine(t: Float, initial: Float, target: Float): Float {     
-        return initial + Math.cos((t*Math.PI)/2)*(target - initial);
+        return initial + (1 - Math.cos((t*Math.PI)/2))*(target - initial);
     }
 
     public static inline function easeOutSine(t: Float, initial: Float, target: Float): Float {     
-        return initial + Math.sin((x*Math.PI)/2)*(target - initial);
+        return initial + Math.sin((t*Math.PI)/2)*(target - initial);
     }
 
     public static inline function easeInOutSine(t: Float, initial: Float, target: Float): Float {     
@@ -231,7 +231,7 @@ class TweenManager {
     }
 
     public static inline function easeInOutQuad(t: Float, initial: Float, target: Float): Float {     
-        return initial + (x < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2)*(target - initial);
+        return initial + (t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2)*(target - initial);
     }
 
     // & Ease cubic functions
@@ -253,7 +253,7 @@ class TweenManager {
     }
 
     public static inline function easeOutQuart(t: Float, initial: Float, target: Float): Float {
-        return initial + (1 - Math.pow(1 - 4, 4))*(target - initial);
+        return initial + (1 - Math.pow(1 - t, 4))*(target - initial);
     }
 
     public static inline function easeInOutQuart(t: Float, initial: Float, target: Float): Float {
@@ -270,7 +270,7 @@ class TweenManager {
     }
 
     public static inline function easeInOutQuint(t: Float, initial: Float, target: Float): Float {
-        return initial + (x < 0.5 ? 16*Math.pow(t, 5) : 1 - Math.pow(-2*t + 2, 5)/2)*(target - initial);
+        return initial + (t < 0.5 ? 16*Math.pow(t, 5) : 1 - Math.pow(-2*t + 2, 5)/2)*(target - initial);
     }
 
     // & Ease expo functions
@@ -287,7 +287,7 @@ class TweenManager {
             return initial;
         if(t == 1)
             return target;
-        return initial + (t < 0.5 ? Math.pow(2, 20*t - 10)/2 : (2 - Math.pow(2, -20*t + 10)/2))*(target - initial);
+        return initial + (t < 0.5 ? Math.pow(2, 20*t - 10)/2 : (2 - Math.pow(2, -20*t + 10))/2)*(target - initial);
     }
 
     // & Ease circ functions
@@ -314,12 +314,15 @@ class TweenManager {
 
     public static inline function easeOutBack(t: Float, initial: Float, target: Float): Float {
         final C1 = 1.70158;
-        final C3 = C1*1.525;
+        final C3 = C1 + 1;
 
         return initial + (1 + C3*Math.pow(t - 1, 3) + C1*Math.pow(t - 1, 2))*(target - initial);
     }
 
     public static inline function easeInOutBack(t: Float, initial: Float, target: Float): Float {
+        final C1 = 1.70158;
+        final C2 = C1*1.525;
+
         return initial + (t < 0.5   ? (Math.pow(2*t, 2)*((C2 + 1)*2*t - C2))/2
                                     : (Math.pow(2*t - 2, 2)*((C2 + 1)*(t*2 - 2) + C2) + 2)/2)*(target - initial);
     }
@@ -369,22 +372,21 @@ class TweenManager {
         return initial + (t < 0.5   ? (1 - bounceOut(1 - 2*t))/2 : (1 + bounceOut(2*t - 1))/2)*(target - initial);
     }
 
-    private static inline function bounceOut(t: Float) {
+    private static function bounceOut(t: Float) {
         final N1 = 7.5625;
         final D1 = 2.75;
 
-        var scaler = 0;
         if(t < 1/D1) {
             return N1*t*t;
         }
         else if(t < 2/D1) {
-            return N1*(t - 1.5/D1)*t + .75;
+            return N1*(t -= 1.5/D1)*t + .75;
         }
         else if(t < 2.5/D1) {
-            return N1*(t - 2.25/D1)*t + .9375;
+            return N1*(t -= 2.25/D1)*t + .9375;
         }
 
-        return N1*(x - 2.625/D1)*t + .984375; 
+        return N1*(t -= 2.625/D1)*t + .984375; 
     }
 }
 
