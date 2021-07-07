@@ -261,10 +261,18 @@ class Collisions {
 
     // & Checks for a collision between a polygon and a circle
     public static inline function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle): CollisionInfo {
+        
         var polyV = poly.worldVertices;
+        var polyCenter = poly.center;
         var circleCenter = circle.getAbsPosition();
         var circleRadius = circle.radius;
+        
+        var closestVertexDistance: Float = Math.POSITIVE_INFINITY;
         var closestVertex: Vec2 = null;
+
+        var closestEdge: {v1: Vec2, v2: Vec2, n: Vec2} = null;
+        var closestEdgeSeperation: Float = Math.NEGATIVE_INFINITY;
+        
         var isCollision: Bool = true;
 
         var minOverlap: Float = Math.POSITIVE_INFINITY;
@@ -274,12 +282,26 @@ class Collisions {
         for(i in 0...polyV.length) {
             var vert = polyV[i];
             var nextVert = polyV[(i + 1)%polyV.length];
-            var axisProj: Vec2 =  vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
+            var axisProj: Vec2 =  (nextVert - vert).crossRight().normalize();
+
+            // * Getting the closest edge
+            var s = axisProj.dot(circleCenter - polyCenter);
+            if(s > closestEdgeSeperation) {
+                closestEdgeSeperation = s;
+                closestEdge = {
+                    v1: vert,
+                    v2: nextVert,
+                    n: axisProj
+                }
+            }
             
             // * Getting the vetex closest to the center of the circle
-            if(closestVertex == null || distance(closestVertex, circleCenter) > distance(vert, circleCenter)) {
+            var vDistance = distance(vert, circleCenter);
+            if(closestVertex == null || closestVertexDistance > vDistance) {
+                closestVertexDistance = vDistance;
                 closestVertex = vert;
             }
+
             var polyInterval = getInterval(polyV, axisProj);
             var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
             var overlap: Float = overlapOnAxis(polyInterval, circleInterval);
@@ -287,34 +309,48 @@ class Collisions {
                 isCollision = false;
                 break;
             }
+
             // * Getting the depth and seperation normal
             if(overlap < minOverlap) {
                 minOverlap = overlap;
                 smallestAxis = axisProj.normalize();
-                if((poly.center - circleCenter).dot(smallestAxis) > 0) {
+                if((polyCenter - circleCenter).dot(smallestAxis) > 0)
                     smallestAxis *= -1;
-                }
             }
         }
+        
+        
         // * Checking the axis between the closest vertex and the circle center
+        var contactPoint: Vec2 = null;
         if(closestVertex == null) {
             isCollision = false;
         }
         else if(isCollision) { 
-            var axisProj: Vec2 = vec2(-(closestVertex.y - circleCenter.y), closestVertex.x - circleCenter.x).normalize();
+            var axisProj: Vec2 = (closestVertex - circleCenter).crossRight().normalize();
             var polyInterval = getInterval(polyV, axisProj);
             var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
             var overlap: Float = overlapOnAxis(polyInterval, circleInterval);
-            if(overlap < 0) {
+            if(overlap < 0)
                 isCollision = false;
-            }
+
             // * Getting the depth and seperation normal
             if(overlap < minOverlap) {
                 minOverlap = overlap;
                 smallestAxis = axisProj.normalize();
-                if((poly.center - circleCenter).dot(smallestAxis) > 0) {
+                
+                if((polyCenter - circleCenter).dot(smallestAxis) > 0) 
                     smallestAxis *= -1;
-                }
+            }
+
+            if(closestEdge != null) {
+                var edge = closestEdge.v2 - closestEdge.v1;
+
+                var d1 = edge.dot(closestEdge.v1);
+                var d2 = edge.dot(closestEdge.v2);
+                var c = edge.dot(circleCenter);
+
+                c = hxd.Math.clamp((c - d1)/(d2 - d1), 0, 1);
+                contactPoint = closestEdge.v1 + edge*c - smallestAxis*minOverlap/2;
             }
         }
 
@@ -324,7 +360,7 @@ class Collisions {
             shape2: circle,
             normal: smallestAxis,
             depth: minOverlap,
-            contactPoints: [circleCenter - smallestAxis*(minOverlap/2 + circleRadius)]
+            contactPoints: contactPoint == null ? [closestEdge.v1, closestEdge.v2] : [contactPoint]
         };
     }
 
@@ -377,9 +413,8 @@ class Collisions {
         }
 
         var contactPoints: Array<Vec2> = [];
-        if(isCollision && smallestAxis != null) {
+        if(isCollision && smallestAxis != null)
             contactPoints = getPolygonContactPoints(aabbVerts, polyVerts, smallestAxis);
-        }
 
         return {
             isColliding: isCollision,
@@ -455,7 +490,7 @@ class Collisions {
             isColliding: isCollision,
             shape1: aabb,
             shape2: circle,
-            normal: smallestAxis,
+            normal: -smallestAxis,
             depth: minOverlap,
             contactPoints: [circleCenter - smallestAxis*(minOverlap/2 + circleRadius)]
         };
