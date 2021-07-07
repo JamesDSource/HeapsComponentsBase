@@ -26,7 +26,7 @@ class AnimationPlayer extends Component {
         return layer;
     }
 
-    public function new(name: String = "Animation Player", layer: Int = 0, autoPause: Bool = true) {
+    public function new(layer: Int = 0, autoPause: Bool = true, name: String = "Animation Player") {
         // * renderParent should be null if you want it to just be added to the scene
         super(name);
         this.layer = layer;

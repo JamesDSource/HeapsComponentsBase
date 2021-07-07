@@ -1,5 +1,6 @@
 package hcb.comp.col;
 
+import h2d.Graphics;
 import hcb.comp.col.CollisionShape.Bounds;
 import VectorMath;
 
@@ -12,6 +13,11 @@ class CollisionCircle extends CollisionShape {
         return radius;
     }
 
+    public function new(radius: Float = 10, ?offset: Vec2, name: String = "Collision Circle") {
+        super(offset, name);
+        this.radius = radius;
+    }
+
     private override function get_bounds(): Bounds {
         var pos = getAbsPosition();
         return {
@@ -20,8 +26,13 @@ class CollisionCircle extends CollisionShape {
         }
     }
 
-    public function new(name: String = "Collision Circle", radius: Float = 10, ?offset: Vec2) {
-        super(name, offset);
-        this.radius = radius;
+    public override function getSupportPoint(d:Vec2):Vec2 {
+        return getAbsPosition() + d*radius;
     }
-}
+
+    public override function represent(g:Graphics, ?color: Int, alpha: Float = 1.) {
+        super.represent(g, color, alpha);
+        var pos = getAbsPosition();
+        g.drawCircle(pos.x, pos.y, radius);
+    }
+} 

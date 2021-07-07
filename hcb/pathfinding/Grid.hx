@@ -39,7 +39,7 @@ class Grid {
 
 
         // * Collision box
-        collisionShape = new CollisionAABB("Checker", cellSize, cellSize);
+        collisionShape = new CollisionAABB(cellSize, cellSize);
     }
 
     // & Gets a node from a vector

@@ -315,38 +315,15 @@ class CollisionWorld {
         return count;
     }
 
-    public function representShapes(graphics: h2d.Graphics, showBonds: Bool = false, color: Int = 0x00FF00, boundsColor: Int = 0xFFFFFF) {
-        graphics.clear();
-
+    public function representShapes(g: h2d.Graphics, showBounds: Bool = false, boundsColor: Int = 0xFFFFFF) {
         for(shape in shapes) {
-            if(shape.debugColor == null)
-                graphics.lineStyle(1, color);
-            else
-                graphics.lineStyle(1, shape.debugColor);
 
-            switch(Type.getClass(shape)) {
-                case CollisionAABB:
-                    var bounds: Bounds = shape.bounds;
-                    graphics.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
-                case CollisionPolygon:
-                    var poly: CollisionPolygon = cast shape;
-                    var vertices: Array<Vec2> = poly.worldVertices;
-                    for(i in 0...vertices.length) {
-                        var vert = vertices[i];
-                        var nextVert = vertices[(i + 1)%vertices.length];
-                        graphics.moveTo(vert.x, vert.y);
-                        graphics.lineTo(nextVert.x, nextVert.y);
-                    }
-                case CollisionCircle:
-                    var circle: CollisionCircle = cast shape;
-                    var pos = shape.getAbsPosition();
-                    graphics.drawCircle(pos.x, pos.y, circle.radius);
-            }
+            shape.represent(g);
 
-            if(showBonds) {
-                graphics.lineStyle(1, boundsColor);
+            if(showBounds) {
+                g.lineStyle(1, boundsColor);
                 var bbox = shape.bounds;
-                graphics.drawRect(bbox.min.x, bbox.min.y, bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y);
+                g.drawRect(bbox.min.x, bbox.min.y, bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y);
             }
         }
 

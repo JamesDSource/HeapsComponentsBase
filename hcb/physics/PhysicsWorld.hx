@@ -1,11 +1,11 @@
 package hcb.physics;
 
-import hcb.math.Vector;
-import haxe.ds.ReadOnlyArray;
 import hcb.col.*;
 import hcb.col.Collisions.CollisionInfo;
 import hcb.comp.Body;
 import VectorMath;
+
+using hcb.math.Vector;
 
 class PhysicsWorld {
     private var collisionWorld: CollisionWorld;
@@ -86,7 +86,7 @@ class PhysicsWorld {
             var arm2 = point - body2.shape.getAbsPosition();
 
             var j = -(1 + e)*velocityAlongNormal;
-            j /= invMass1 + invMass2 + Math.pow(Vector.cross(arm1, pCollision.normal), 2)*invAngularInertia1 + Math.pow(Vector.cross(arm2, pCollision.normal), 2)*invAngularInertia2;
+            j /= invMass1 + invMass2 + Math.pow(arm1.cross(pCollision.normal), 2)*invAngularInertia1 + Math.pow(arm2.cross(pCollision.normal), 2)*invAngularInertia2;
             
             var impulseForce: Vec2 = j*pCollision.normal;
             body1.impulse(-impulseForce/pCollision.contactPoints.length, arm1);

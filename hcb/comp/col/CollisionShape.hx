@@ -13,7 +13,7 @@ class CollisionShape extends Component {
     public var active: Bool = true;
     public var bounds(get, null): Bounds;
 
-    public var debugColor: Null<Int> = null;
+    public var debugColor: Null<Int> = 0xFFFFFF;
 
     public var tags: Array<String> = [];
     public var ignoreTags: Array<String> = [];
@@ -54,7 +54,7 @@ class CollisionShape extends Component {
         return getAbsPosition();
     }
 
-    public function new(name: String = "Collision Shape", ?offset: Vec2) {
+    public function new(?offset: Vec2, name: String = "Collision Shape") {
         super(name);
         if(offset != null) {
             offsetX = offset.x;
@@ -84,12 +84,16 @@ class CollisionShape extends Component {
 
     public inline function getAbsPosition(acceptOverride: Bool = true): Vec2 {
         if(acceptOverride && overridePosition != null) 
-            return overridePosition + offset;
+            return overridePosition.clone();
         
         if(parentEntity == null) 
             return offset.clone();
         else 
             return parentEntity.getPosition2d() + offset;
+    }
+
+    public function getSupportPoint(d: Vec2): Vec2 {
+        return vec2(0, 0);
     }
 
     // & Checks if it can interact with another collision shape
@@ -126,5 +130,10 @@ class CollisionShape extends Component {
     // & Event listener for when the Transform2D moves
     private function onMove(to: Vec3, from: Vec3) {
         updateCollisionCells();
+    }
+
+    // & Draws the shape
+    public function represent(g: h2d.Graphics, ?color: Int, alpha = 1.0) {
+        g.lineStyle(1, color == null ? debugColor : color, alpha);
     }
 }

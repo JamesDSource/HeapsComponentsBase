@@ -1,10 +1,10 @@
 package hcb.col;
 
-import hcb.math.Vector;
 import hcb.comp.col.*;
 import hcb.comp.col.CollisionShape.Bounds;
 import VectorMath;
 
+using hcb.math.Vector;
 
 typedef CollisionInfo = {
     isColliding: Bool,
@@ -19,7 +19,7 @@ typedef Raycast = {
     origin: Vec2,
     castTo: Vec2,
     // ^ Relative to the origin
-    infinite: Bool
+    ?infinite: Bool
 }
 
 class Collisions {
@@ -91,14 +91,7 @@ class Collisions {
     public extern overload static inline function raycastTest(raycast: Raycast, shape: CollisionShape): Vec2 {
         var result: Vec2 = null;
         
-        var p1 = raycast.origin;
-        var p2 = p1 + raycast.castTo;
-        var bounds: Bounds = {
-            min: vec2(Math.min(p2.x, p1.x) - 1, Math.min(p1.y, p2.y) - 1),
-            max: vec2(Math.max(p2.x, p1.x) + 1, Math.max(p1.y, p2.y) + 1)
-        };
-
-        if(!boundsIntersection(bounds, shape.bounds))
+        if((raycast.infinite == null || !raycast.infinite) && !boundsIntersection(raycastBounds(raycast), shape.bounds))
             return result;
 
         switch(Type.getClass(shape)) {
@@ -107,7 +100,8 @@ class Collisions {
             case CollisionPolygon:
                 result = polyRaycast(cast shape, raycast);
             case CollisionCircle:
-                result = circleRaycast(cast shape, raycast);
+                var crCast = circleRaycast(cast shape, raycast);
+                result = crCast != null ? crCast.closer : null;
         }
 
         return result;
@@ -115,14 +109,7 @@ class Collisions {
 
     // & Tests for an intersection between two rays
     public extern overload static inline function raycastTest(raycast1: Raycast, raycast2: Raycast): Vec2 {
-        return lineIntersection(
-            raycast1.origin, 
-            raycast1.origin + raycast1.castTo, 
-            raycast1.infinite,
-            raycast2.origin,
-            raycast2.origin + raycast2.castTo,
-            raycast2.infinite
-        );
+        return lineIntersection(raycast1, raycast2);
     }
 
     public static function pointTest(point: Vec2, shape: CollisionShape): Bool {
@@ -216,7 +203,7 @@ class Collisions {
             for(j in 0...poly1V.length) {
                 var vert: Vec2 = poly1V[j];
                 var nextVert: Vec2 = poly1V[(j + 1)%poly1V.length];
-                var axisProj: Vec2 = new Vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
+                var axisProj: Vec2 = (nextVert - vert).crossRight().normalize();
 
                 var interval1 = getInterval(poly1V, axisProj);
                 var interval2 = getInterval(poly2V, axisProj);
@@ -229,7 +216,7 @@ class Collisions {
                 // * Getting the depth and seperation normal
                 if(overlap < minOverlap) {
                     minOverlap = overlap;
-                    smallestAxis = axisProj.normalize();
+                    smallestAxis = axisProj;
                     if((polygon1.center - polygon2.center).dot(smallestAxis) > 0) {
                         smallestAxis *= -1;
                     }
@@ -260,7 +247,7 @@ class Collisions {
             absPos2 = circle2.getAbsPosition();
 
         var depth: Float = radiusIntersectionDepth(absPos1, absPos2, circle1.radius, circle2.radius),
-            normal: Vec2 = (absPos2 - absPos1).normalize();
+            normal: Vec2 = (absPos1 - absPos2).normalize();
 
         return {
             isColliding: depth < 0,
@@ -268,7 +255,7 @@ class Collisions {
             shape2: circle2,
             normal: normal,
             depth: depth,
-            contactPoints:  [absPos1 + normal*(circle1.radius - depth/2)]
+            contactPoints:  [absPos1 - normal*(circle1.radius + depth/2)]
         }
     }
 
@@ -476,7 +463,7 @@ class Collisions {
 
     // & Checks if two polygons overlap on a certain axis
     public static inline function overlapOnAxis(interval1: {max: Float, min: Float}, interval2: {max: Float, min: Float}): Float {
-        return Math.min(interval1.max, interval2.max) - Math.max(interval1.min, interval2.min);
+        return interval1.max < interval2.max ? interval1.max - interval2.min : interval2.max - interval1.min;
     }
 
     // & Gets the interval of a polygon with a certain axis
@@ -509,7 +496,6 @@ class Collisions {
         if(edge1Dot < edge2Dot || Math.abs(edge1Dot - edge2Dot) < 0.0001) {
             refEdge = edge1;
             incEdge = edge2;
-            flip = true;
         }
         else {
             refEdge = edge2;
@@ -532,20 +518,17 @@ class Collisions {
         
         // * Ref edge normal for final clip
         var refNorm: Vec2 = refEdge.edge;
-        refNorm = Vector.cross(refNorm, -1);
-        //if(flip) refNorm *= -1;
+        refNorm = refNorm.crossRight();
         
         var max: Float = refNorm.dot(refEdge.max);
         var fPoint = clippedPoints[0];
         var sPoint = clippedPoints[1];
         
-        if(refNorm.dot(fPoint) - max < 0) {
+        if(refNorm.dot(fPoint) - max < 0)
             clippedPoints.remove(fPoint);
-        }
         
-        if(refNorm.dot(sPoint) - max < 0) {
+        if(refNorm.dot(sPoint) - max < 0)
             clippedPoints.remove(sPoint);
-        }
         
         return clippedPoints;
     }
@@ -556,8 +539,10 @@ class Collisions {
         var d1: Float = n.dot(v1) - o;
         var d2: Float = n.dot(v2) - o;
 
-        if(d1 >= 0.0) points.push(v1);
-        if(d2 >= 0.0) points.push(v2);
+        if(d1 >= 0.0) 
+            points.push(v1);
+        if(d2 >= 0.0) 
+            points.push(v2);
 
         // * Checking if they are on opposing sides
         if(d1*d2 < 0.0) {
@@ -617,31 +602,31 @@ class Collisions {
         return distance - (radius1 + radius2);
     }
 
-    public static inline function lineIntersection(l1P1: Vec2, l1P2: Vec2, l1Infinite: Bool, l2P1: Vec2, l2P2: Vec2, l2Infinite: Bool): Vec2 {
+    public static inline function lineIntersection(ray1: Raycast, ray2: Raycast): Vec2 {
         // * Calculating standard form of the lines
-        var a1 = l1P2.y - l1P1.y,
-            b1 = l1P1.x - l1P2.x,
-            c1 = a1*l1P1.x + b1*l1P1.y,
-            a2 = l2P2.y - l2P1.y,
-            b2 = l2P1.x - l2P2.x,
-            c2 = a2*l2P1.x + b2*l2P1.y;
+        var l1p1 = ray1.origin,
+            l1p2 = l1p1 + ray1.castTo,
+            l2p1 = ray2.origin,
+            l2p2 = l2p1 + ray2.castTo,
+            a1 = l1p2.y - l1p1.y,
+            b1 = l1p1.x - l1p2.x,
+            c1 = a1*l1p1.x + b1*l1p1.y,
+            a2 = l2p2.y - l2p1.y,
+            b2 = l2p1.x - l2p2.x,
+            c2 = a2*l2p1.x + b2*l2p1.y;
         
         // * Using the standard form to find the intersection point
         var denominator = a1*b2 - a2*b1;
 
-        if(denominator == 0) {
+        if(denominator == 0)
             return null;
-        }
 
         var x = (b2*c1 - b1*c2)/denominator,
             y = (a1*c2 - a2*c1)/denominator,
-            rx0 = (x - l1P1.x) / (l1P2.x - l1P1.x),
-            ry0 = (y - l1P1.y) / (l1P2.y - l1P1.y),
-            rx1 = (x - l2P1.x) / (l2P2.x - l2P1.x),
-            ry1 = (y - l2P1.y) / (l2P2.y - l2P1.y);
+            p = vec2(x, y);
         
-        var valid: Bool = ((rx0 >= 0 && rx0 <= 1) || (ry0 >= 0 && ry0 <=1) || l1Infinite) && ((rx1 >= 0 && rx1 <= 1) || (ry1 >= 0 && ry1 <=1)) || l2Infinite;
-        return valid ? vec2(x, y) : null;
+        var valid: Bool = pointInRayRange(p, ray1) && pointInRayRange(p, ray2);
+        return valid ? p : null;
     }
 
     public static inline function boundsIntersection(bounds1: Bounds, bounds2: Bounds): Bool {
@@ -650,17 +635,12 @@ class Collisions {
                  bounds1.min.y < bounds2.max.y &&
                  bounds1.max.y > bounds2.min.y );
     }
-
-    public static inline function boundsSeperation(bounds1: Bounds, bounds2: Bounds): Vec2 {
-        return null;
-    }
     
     // & Finds the intersection point between a polygon and a ray
     public static inline function polyRaycast(poly: CollisionPolygon, ray: Raycast): Vec2 {    
         var vertices: Array<Vec2> = poly.worldVertices;
         var closestIntersection: Vec2 = null;
         var rayPos = ray.origin;
-        var castPoint = rayPos + ray.castTo;
 
         if(pointInPolygon(rayPos, vertices)) {
             return rayPos;
@@ -670,9 +650,8 @@ class Collisions {
             var vertex1: Vec2 = vertices[i];
             var vertex2: Vec2 = vertices[(i + 1)%vertices.length];
 
-            var intersection = lineIntersection(vertex1, vertex2, false, rayPos, castPoint, ray.infinite);
+            var intersection = lineIntersection({origin: vertex1, castTo: vertex2 - vertex1}, ray);
             if(intersection != null && ( closestIntersection == null || (intersection - rayPos).length() < (closestIntersection - rayPos).length())) {
-                
                 closestIntersection = intersection;
             }
         }
@@ -688,46 +667,35 @@ class Collisions {
         var intersectionPoint: Vec2 = null;
 
         // * Checking if the ray origin is inside the AABB
-        if(pointInAABB(rayPos, boxBounds.min, boxBounds.max)) {
+        if(pointInAABB(rayPos, boxBounds.min, boxBounds.max))
             intersectionPoint = rayPos;
-        }
         else {
-            var intersections: Array<Vec2> = [];
-
             // * Get every vertex of the AABB to make lines with them
-            var vertices: Array<Vec2> = [
-                boxBounds.min,
-                vec2(boxBounds.max.x, boxBounds.min.y),
-                boxBounds.max,
-                vec2(boxBounds.min.x, boxBounds.max.y)
-            ];
+            var vertices: Array<Vec2> = aabb.vertices;
             
-            // * Find all line intersection with the edges of the AABB
+            // * Find all line intersection with the edges of the AABB and keep track of the closest
+            var minDistance: Float = Math.POSITIVE_INFINITY;
+
             for(i in 0...vertices.length) {
                 var vertex = vertices[i];
                 var nextVertex = vertices[(i + 1)%vertices.length];
 
-                var intersection = lineIntersection(vertex, nextVertex, false, rayPos, castPoint, ray.infinite);
+                var intersection = lineIntersection({origin: vertex, castTo: nextVertex - vertex}, ray);
                 if(intersection != null) {
-                    intersections.push(intersection);
+                    var d: Float = intersection.distance(ray.origin);
+                    if(d < minDistance) {
+                        minDistance = d;
+                        intersectionPoint = intersection;
+                    }
                 }
             }
-
-            // * Find the intersection with the closest distance to the ray origin
-            var closestIntersection: Vec2 = null;
-            for(intersection in intersections) {
-                if(closestIntersection == null || distance(closestIntersection, rayPos) > distance(intersection, rayPos)) {
-                    closestIntersection = intersection;
-                }
-            }
-
-            intersectionPoint = closestIntersection;
         }
+
         return intersectionPoint;
     }
 
     // & Finds the intersection point between a circle and a ray
-    public static inline function circleRaycast(circle: CollisionCircle, ray: Raycast): Vec2 {
+    public static inline function circleRaycast(circle: CollisionCircle, ray: Raycast): {closer: Vec2, ?further: Vec2} {
         // * Feilds
         var circlePos = circle.getAbsPosition(),
             radius = circle.radius,
@@ -743,7 +711,7 @@ class Collisions {
 
             det = b*b -4*a*c;
         
-        var intersectionPoint: Vec2 = null;
+        var intersectionPoints: {closer: Vec2, ?further: Vec2} = null;
         var realSolution: Bool = true;
         
         if(a <= 0.0000001 || det < 0) {
@@ -753,7 +721,7 @@ class Collisions {
         else if(det == 0) {
             // * There is one solution
             var t = -b/(2*a);
-            intersectionPoint = vec2(rayPos.x + t*dx, rayPos.y + t*dy);
+            intersectionPoints = {closer: vec2(rayPos.x + t*dx, rayPos.y + t*dy)};
         }
         else {
             // * There are two solutions, we will return the solution closest to the
@@ -763,25 +731,39 @@ class Collisions {
 
             t = (-b - Math.sqrt(det))/(2*a);
             var intersection2 = vec2(rayPos.x + t*dx, rayPos.y + t*dy);
-            intersectionPoint = distance(intersection1, rayPos) < distance(intersection2, rayPos)
-                                ? intersection1 : intersection2;
+            
+            intersectionPoints = distance(intersection1, rayPos) < distance(intersection2, rayPos)
+                                ? {closer: intersection1, further: intersection2} : {closer: intersection2, further: intersection1};
+            
+            if(!pointInRayRange(intersectionPoints.further, ray))
+                intersectionPoints.further = null;
         }
 
-        if(realSolution) {
-            // * Checking if the intersection point is within the line
-            var rx = (intersectionPoint.x - rayPos.x) / (castPoint.x - rayPos.x),
-                ry = (intersectionPoint.y - rayPos.y) / (castPoint.y - rayPos.y);
+        return (realSolution && pointInRayRange(intersectionPoints.closer, ray)) ? intersectionPoints : null;
+    }
 
-            if((rx >= 0 && rx <= 1) || (ry >= 0 && ry <=1) || ray.infinite) {
-                return intersectionPoint;
-            }
-            else {
-                return null;
-            }
-        }
-        else {
-            return null;
-        }
+    // & Checks if an intersection point is in the range of a raycast
+    private static inline function pointInRayRange(point: Vec2, ray: Raycast): Bool {
+        if(ray.infinite != null && ray.infinite)
+            return (point - ray.origin).dot(ray.castTo) >= 0;
+        
+        var castPoint = ray.origin + ray.castTo,
+            rx = (point.x - ray.origin.x) / (castPoint.x - ray.origin.x),
+            ry = (point.y - ray.origin.y) / (castPoint.y - ray.origin.y);
+
+        return (rx >= 0 && rx <= 1) || (ry >= 0 && ry <= 1);
+    }
+
+    // & Gets the bounds of a raycast
+    private static inline function raycastBounds(ray: Raycast): Bounds {
+        var p1 = ray.origin;
+        var p2 = p1 + ray.castTo;
+        var bounds: Bounds = {
+            min: vec2(Math.min(p2.x, p1.x) - 1, Math.min(p1.y, p2.y) - 1),
+            max: vec2(Math.max(p2.x, p1.x) + 1, Math.max(p1.y, p2.y) + 1)
+        };
+
+        return bounds;
     }
 
     // & Checks if a coordinite is inside a circle
@@ -797,6 +779,26 @@ class Collisions {
                 point.y >= topLeft.y;
     }
 
+    // & Checks if a coordinite is inside a polygon
+    public static inline function pointInPolygon(point: Vec2, vertices: Array<Vec2>): Bool {
+        var result: Bool = false;
+        
+        if(vertices.length > 1) {
+            var intersectionCount: Int = 0;
+            for(i in 0...vertices.length) {
+                var p1: Vec2 = vertices[i],
+                    p2: Vec2 = vertices[(i + 1)%vertices.length];
+                
+                if(lineIntersection({origin: p1, castTo: p2 - p1}, {origin: point, castTo: vec2(1, 0), infinite: true}) != null)
+                    intersectionCount++;
+            }
+            result = intersectionCount%2 == 1;
+        }
+
+        return result;
+    }
+
+    /*
     // & Checks if a coordinite is inside a triangle
     public static inline function pointInTriangle(a: Vec2, b: Vec2, c: Vec2, point: Vec2): Bool {
         var w1: Float = a.x*(c.y - a.y) + (point.y - a.y)*(c.x - a.x) - point.x*(c.y - a.y);
@@ -809,25 +811,5 @@ class Collisions {
                 w2 >= 0 && 
                 (w1 + w2) <= 1;
     }
-
-    // & Checks if a coordinite is inside a polygon
-    public static inline function pointInPolygon(point: Vec2, vertices: Array<Vec2>): Bool {
-        var point2 = point + vec2(10000, 0);
-        var result: Bool = false;
-        
-        if(vertices.length > 1) {
-            var intersectionCount: Int = 0;
-            for(i in 0...vertices.length) {
-                var p1: Vec2 = vertices[i],
-                    p2: Vec2 = vertices[(i + 1)%vertices.length];
-                
-                if(lineIntersection(p1, p2, false, point, point2, false) != null) {
-                    intersectionCount++;
-                }
-            }
-            result = intersectionCount%2 == 1;
-        }
-
-        return result;
-    }
+    */
 }

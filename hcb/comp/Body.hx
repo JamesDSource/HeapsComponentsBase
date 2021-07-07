@@ -1,9 +1,10 @@
 package hcb.comp;
 
 import hcb.physics.PhysicsWorld;
-import hcb.math.Vector;
 import VectorMath;
 import hcb.comp.col.*;
+
+using hcb.math.Vector;
 
 typedef BodyOptions = {
     ?shape: CollisionShape,
@@ -98,7 +99,7 @@ class Body extends Component {
         return this.angularDrag;
     }
 
-    public function new(name: String = "Body", options: BodyOptions) {
+    public function new(options: BodyOptions, name: String = "Body") {
         super(name);
         setOptions(options);
         updateable = false;
@@ -172,7 +173,7 @@ class Body extends Component {
             contactArm = vec2(0, 0);
         }
 
-        var torque = inverseAngularInertia*Vector.cross(contactArm, force);
+        var torque = inverseAngularInertia*contactArm.cross(force);
         angularVelocity += torque;
     }
 

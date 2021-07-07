@@ -1,8 +1,11 @@
 package hcb.comp.col;
 
+import h2d.Graphics;
 import hcb.Origin.OriginPoint;
 import hcb.comp.col.CollisionShape;
 import VectorMath;
+
+using hcb.math.Vector;
 
 // TODO: Make rotation work
 class CollisionPolygon extends CollisionShape {
@@ -120,16 +123,16 @@ class CollisionPolygon extends CollisionShape {
         return center;
     }
 
-    public function new(name: String = "Collision Polygon", vertices: Array<Vec2>, ?offset: Vec2, keepWindingCCW: Bool = true) {
-        super(name, offset);
-        setVertices(vertices, keepWindingCCW);
+    public function new(vertices: Array<Vec2>, ?offset: Vec2, name: String = "Collision Polygon") {
+        super(offset, name);
+        setVertices(vertices);
     }
 
     private function updateTransformations(): Void {
         transformedVertices = [];
         for(vertex in vertices) {
             var tVertex = vertex*polyScale;
-            tVertex = hcb.math.Vector.angleToVec2(rotation + hcb.math.Vector.getAngle(tVertex), tVertex.length());
+            tVertex.setAngle(rotation + tVertex.getAngle());
             transformedVertices.push(tVertex);
         }
         shapeChanged = true;
@@ -138,30 +141,52 @@ class CollisionPolygon extends CollisionShape {
 
     // & Sets the verticies on the polygon relative to the origin. KeepWindingCCW will make sure that the
     // & the points are winding counter clockwise if set to true
-    public function setVertices(vertices: Array<Vec2>, keepWindingCCW: Bool = true) {
+    public function setVertices(vertices: Array<Vec2>) {
+        if(vertices.length < 2)
+            throw "Need at least two vertices in a CollisionPolygon";
+        
         this.vertices = [];
-        for(vert in vertices) {
+        var signedAreaSum: Float = 0;
+        for(i in 0...vertices.length) {
+            var vert = vertices[i];
+            var nextVert = vertices[(i + 1)%vertices.length];
+
+            signedAreaSum += vert.x*nextVert.y - nextVert.x*vert.y;
             this.vertices.push(vert.clone());
         }
-        
-        if(keepWindingCCW) {
-            var sum: Float = 0;
-            for(i in 0...vertices.length) {
-                var vert: Vec2 = vertices[i];
-                var nextVert: Vec2 = vertices[(i + 1)%vertices.length];
-                sum += (nextVert.x - vert.x)*(nextVert.y + vert.y);
-            }
 
-            // * If clockwise, reverse the points
-            if(sum > 0) {
-                this.vertices.reverse();
-            }
-        }
+        if(signedAreaSum > 0)
+            this.vertices.reverse();
         
         updateTransformations();
     }
 
-    public static function rectangle(name: String = "Collision Polygon", width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft, offset: Vec2) {
+    public override function getSupportPoint(d:Vec2):Vec2 {
+        var max: Float = Math.NEGATIVE_INFINITY;
+        var point: Vec2 = null;
+        for(vertex in worldVertices) {
+            var dot = d.dot(vertex);
+            if(dot > max) {
+                max = dot;
+                point = vertex;
+            }
+        }
+
+        return point;
+    }
+
+    public override function represent(g:Graphics, ?color: Int, alpha: Float = 1.) {
+        super.represent(g, color, alpha);
+        var vertices: Array<Vec2> = worldVertices;
+        for(i in 0...vertices.length) {
+            var vert = vertices[i];
+            var nextVert = vertices[(i + 1)%vertices.length];
+            g.moveTo(vert.x, vert.y);
+            g.lineTo(nextVert.x, nextVert.y);
+        }
+    }
+
+    public static function rectangle(width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft, ?offset: Vec2, name: String = "Collision Polygon") {
         var verts: Array<Vec2> = [
             vec2(0, 0),
             vec2(0, height),
@@ -176,6 +201,6 @@ class CollisionPolygon extends CollisionShape {
             }
         }
 
-        return new CollisionPolygon(name, verts, offset);
+        return new CollisionPolygon(verts, offset, name);
     }
 }

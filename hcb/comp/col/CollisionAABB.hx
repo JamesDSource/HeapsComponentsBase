@@ -1,4 +1,5 @@
 package hcb.comp.col;
+import h2d.Graphics;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.Origin;
 import VectorMath;
@@ -67,8 +68,8 @@ class CollisionAABB extends CollisionShape {
         return tl + vec2(transformedWidth, transformedHeight)/2;
     }
 
-    public function new(name: String = "Collision AABB", width: Float, height: Float, ?origin: OriginPoint, ?offset: Vec2) {
-        super(name, offset);
+    public function new(width: Float, height: Float, ?origin: OriginPoint, ?offset: Vec2, name: String = "Collision AABB") {
+        super(offset, name);
 
         this.width = width;
         this.height = height;
@@ -82,5 +83,11 @@ class CollisionAABB extends CollisionShape {
         transformedWidth = width * scale.x;
         transformedHeight = height * scale.y;
         updateCollisionCells();
+    }
+
+    public override function represent(g:Graphics, ?color: Int, alpha: Float = 1.) {
+        super.represent(g, color, alpha);
+        var bounds: Bounds = bounds;
+        g.drawRect(bounds.min.x, bounds.min.y, bounds.max.x - bounds.min.x, bounds.max.y - bounds.min.y);
     }
 }
