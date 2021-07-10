@@ -123,8 +123,8 @@ class CollisionPolygon extends CollisionShape {
         return center;
     }
 
-    public function new(vertices: Array<Vec2>, ?offset: Vec2, name: String = "Collision Polygon") {
-        super(offset, name);
+    public function new(vertices: Array<Vec2>, name: String = "Collision Polygon") {
+        super(name);
         setVertices(vertices);
     }
 
@@ -132,7 +132,7 @@ class CollisionPolygon extends CollisionShape {
         transformedVertices = [];
         for(vertex in vertices) {
             var tVertex = vertex*polyScale;
-            tVertex.setAngle(rotation + tVertex.getAngle());
+            tVertex.setAngle(hxd.Math.degToRad(rotation + tVertex.getAngle()));
             transformedVertices.push(tVertex);
         }
         shapeChanged = true;
@@ -186,7 +186,7 @@ class CollisionPolygon extends CollisionShape {
         }
     }
 
-    public static function rectangle(width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft, ?offset: Vec2, name: String = "Collision Polygon") {
+    public static function rectangle(width: Float, height: Float, origin: OriginPoint = OriginPoint.TopLeft, name: String = "Collision Polygon") {
         var verts: Array<Vec2> = [
             vec2(0, 0),
             vec2(0, height),
@@ -201,6 +201,6 @@ class CollisionPolygon extends CollisionShape {
             }
         }
 
-        return new CollisionPolygon(verts, offset, name);
+        return new CollisionPolygon(verts, name);
     }
 }

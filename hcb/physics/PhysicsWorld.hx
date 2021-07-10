@@ -14,7 +14,7 @@ class PhysicsWorld {
     private var bodies: Array<Body> = [];
     private var collisions: Array<CollisionInfo> = [];
 
-    public var impulseIterations: Int = 12;
+    public var impulseIterations: Int = 20;
     public var percentCorrection: Float = 0.4;
     public var slop: Float = 0.01;
 
@@ -29,15 +29,8 @@ class PhysicsWorld {
         collisions = [];
         for(body in bodies) {
             // * Both cannot have infinite mass, and both must have a shape
-            if(body.shape != null) {
-                var results: Array<CollisionInfo> = [];
-                collisionWorld.getCollisionAt(body.shape, results);
-                for(result in results) {
-                    if(result.isColliding && result.shape1.body != null && result.shape2.body != null) {
-                        collisions.push(result);
-                    }
-                }
-            }
+            if(body.shape != null)
+                collisionWorld.getCollisionAt(body.shape, collisions, true);
         }
 
         // * Update the forces
@@ -51,14 +44,11 @@ class PhysicsWorld {
             }
         }
 
-        for(body in bodies) {
+        for(body in bodies)
             body.physicsUpdate();
-        }
 
-        for(collision in collisions) {
+        for(collision in collisions)
             positionalCorrection(collision);
-        }
-
     }
 
     private function resolveCollision(pCollision: CollisionInfo) {
@@ -66,52 +56,72 @@ class PhysicsWorld {
         var body2 = pCollision.shape2.body;
 
         if(body1 == null || body2 == null || body1.shape == null || body2.shape == null) return;
+
+        var invMass1: Float = body1.inverseMass;
+        var invMass2: Float = body2.inverseMass;
+        var invAngularInertia1: Float = body1.inverseAngularInertia;
+        var invAngularInertia2: Float = body2.inverseAngularInertia;
         
-        var invMass1: Float = body1.inverseMass,
-            invMass2: Float = body2.inverseMass,
-            invAngularInertia1: Float = body1.inverseAngularInertia,
-            invAngularInertia2: Float = body2.inverseAngularInertia;
-        
-        if(invMass1 + invMass2 + invAngularInertia1 + invAngularInertia2 == 0) return;
+        if(invMass1 + invMass2 + invAngularInertia1 + invAngularInertia2 < hxd.Math.EPSILON) return;
 
-        var relativeVelocity: Vec2 = body2.velocity - body1.velocity;
-        var velocityAlongNormal: Float = relativeVelocity.dot(pCollision.normal);        
+        var center1: Vec2 = pCollision.shape1.center;
+        var center2: Vec2 = pCollision.shape2.center;
 
-        if(velocityAlongNormal > 0) return;
-
+        // * The coefficient of restitution should be the lower elasticity
         var e: Float = Math.min(body1.elasticity, body2.elasticity);
 
+        var mu: Float = length(vec2(body1.staticFriction, body2.staticFriction));
+
         for(point in pCollision.contactPoints) {
-            var arm1 = point - body1.shape.getAbsPosition();
-            var arm2 = point - body2.shape.getAbsPosition();
-
-            var j = -(1 + e)*velocityAlongNormal;
-            j /= invMass1 + invMass2 + Math.pow(arm1.cross(pCollision.normal), 2)*invAngularInertia1 + Math.pow(arm2.cross(pCollision.normal), 2)*invAngularInertia2;
+            // * Get the arms
+            var ra: Vec2 = point - center1;
+            var rb: Vec2 = point - center2;
             
-            var impulseForce: Vec2 = j*pCollision.normal;
-            body1.impulse(-impulseForce/pCollision.contactPoints.length, arm1);
-            body2.impulse(impulseForce/pCollision.contactPoints.length, arm2);
-        
-            // * Friction
-            // * Recalculate relative velocity because it has changed
-            relativeVelocity = body2.velocity - body1.velocity;
+            // * Get the relative velocity and compare it to the normal
+            var relativeVelocity: Vec2 =    body2.velocity + rb.crossRight(body2.angularVelocity) - 
+                                            body1.velocity - ra.crossRight(body1.angularVelocity);
+            var velocityAlongNormal: Float = relativeVelocity.dot(pCollision.normal);
 
-            var tangent: Vec2 = (relativeVelocity - relativeVelocity.dot(pCollision.normal)*pCollision.normal).normalize();
-            var jt = -dot(relativeVelocity, tangent);
-            jt /= invMass1 + invMass2;
+            // * Do not resolve if velocities are seperating
+            if(velocityAlongNormal > 0)
+                return;
 
-            var mu: Float = vec2(body1.staticFriction, body2.staticFriction).length();
+
+            var raCN = ra.cross(pCollision.normal);
+            var rbCN = rb.cross(pCollision.normal);
+            var invMassSum = invMass1 + invMass2 + raCN*raCN*invAngularInertia1 + rbCN*rbCN*invAngularInertia2;
+
+            // * Calculate the impulse scaler
+            var j: Float = -(1 + e)*velocityAlongNormal;
+            j /= invMassSum;
+            j /= pCollision.contactPoints.length;
+
+            var impulse: Vec2 = j*pCollision.normal;
+            body1.impulse(-impulse, ra);
+            body2.impulse(impulse, rb);
+
+            // * Getting friction
+            var relativeVelocity: Vec2 =    (body2.velocity + rb.crossRight(body2.angularVelocity)) - 
+                                            (body1.velocity - ra.crossRight(body1.angularVelocity));
+            var tangent: Vec2 = normalize(relativeVelocity - relativeVelocity.dot(pCollision.normal)*pCollision.normal);
+
+            // * Calculate the friction magnitude
+            var jt: Float = -relativeVelocity.dot(tangent)/invMassSum;
+            jt /= pCollision.contactPoints.length;
+
+            if(jt < hxd.Math.EPSILON)
+                continue;
+            
             var frictionImpulse: Vec2;
-            if(Math.abs(jt) < j*mu) {
+            if(Math.abs(jt) < j*mu)
                 frictionImpulse = jt*tangent;
-            }
             else {
-                var dynamicFriction: Float = vec2(body1.dynamicFriction, body2.dynamicFriction).length();
+                var dynamicFriction = length(vec2(body1.dynamicFriction, body2.dynamicFriction));
                 frictionImpulse = -j*tangent*dynamicFriction;
             }
 
-            body1.impulse(-frictionImpulse);
-            body2.impulse(frictionImpulse);
+            body1.impulse(-frictionImpulse, ra);
+            body2.impulse(frictionImpulse, rb);
         }
     }
 
@@ -126,15 +136,13 @@ class PhysicsWorld {
 
         if(invMass1 + invMass2 == 0) return;
 
-        var correction: Vec2 = Math.max(pCollision.depth - slop, 0)/(invMass1 + invMass2)*percentCorrection*pCollision.normal;
+        var correction: Vec2 = (Math.max(pCollision.depth - slop, 0)/(invMass1 + invMass2))*percentCorrection*pCollision.normal;
         
-        if(body1.parentEntity != null) {
+        if(body1.parentEntity != null)
             body1.parentEntity.move(-invMass1*correction);
-        }
 
-        if(body2.parentEntity != null) {
+        if(body2.parentEntity != null)
             body2.parentEntity.move(invMass2*correction);
-        }
     }
 
     public function addBody(body: Body) {

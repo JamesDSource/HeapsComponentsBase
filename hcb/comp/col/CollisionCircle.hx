@@ -13,8 +13,8 @@ class CollisionCircle extends CollisionShape {
         return radius;
     }
 
-    public function new(radius: Float = 10, ?offset: Vec2, name: String = "Collision Circle") {
-        super(offset, name);
+    public function new(radius: Float = 10, name: String = "Collision Circle") {
+        super(name);
         this.radius = radius;
     }
 

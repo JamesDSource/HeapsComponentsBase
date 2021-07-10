@@ -9,7 +9,7 @@ typedef Bounds = {
     max: Vec2
 }
 
-class CollisionShape extends Component {
+class CollisionShape extends TransformComponent2D {
     public var active: Bool = true;
     public var bounds(get, null): Bounds;
 
@@ -17,10 +17,6 @@ class CollisionShape extends Component {
 
     public var tags: Array<String> = [];
     public var ignoreTags: Array<String> = [];
-
-    private var offset: Vec2 = vec2(0, 0);
-    public var offsetX(default, set): Float = 0;
-    public var offsetY(default, set): Float = 0;
 
     public var overridePosition: Vec2 = null;
 
@@ -36,39 +32,21 @@ class CollisionShape extends Component {
         return {min: vec2(0, 0), max: vec2(0, 0)};
     }
 
-    private inline function set_offsetX(offsetX: Float): Float {
-        this.offsetX = offsetX;
-        offset.x = offsetX;
-        updateCollisionCells();
-        return offsetX;
-    }
-
-    private inline function set_offsetY(offsetY: Float): Float {
-        this.offsetY = offsetY;
-        offset.y = offsetY;
-        updateCollisionCells();
-        return offsetY;
-    }
-
     private dynamic function get_center(): Vec2 {
         return getAbsPosition();
     }
 
-    public function new(?offset: Vec2, name: String = "Collision Shape") {
+    public function new(name: String = "Collision Shape") {
         super(name);
-        if(offset != null) {
-            offsetX = offset.x;
-            offsetY = offset.y;
-        }
         updateable = true;
     }
 
     private override function init() {
-        parentEntity.onMoveEventSubscribe(onMove);
+        //parentEntity.onMoveEventSubscribe(onMove);
     }
 
     private override function onRemoved() {
-        parentEntity.onMoveEventRemove(onMove);
+        //parentEntity.onMoveEventRemove(onMove);
     }
 
     private override function addedToRoom() {
@@ -82,18 +60,15 @@ class CollisionShape extends Component {
             collisionWorld.removeShape(this);
     }
 
-    public inline function getAbsPosition(acceptOverride: Bool = true): Vec2 {
-        if(acceptOverride && overridePosition != null) 
-            return overridePosition.clone();
-        
-        if(parentEntity == null) 
-            return offset.clone();
-        else 
-            return parentEntity.getPosition2d() + offset;
-    }
-
     public function getSupportPoint(d: Vec2): Vec2 {
         return vec2(0, 0);
+    }
+
+    public function getAbsPosition() {
+        if(overridePosition != null)
+            return overridePosition.clone();
+
+        return transform.getPosition();
     }
 
     // & Checks if it can interact with another collision shape
@@ -103,13 +78,6 @@ class CollisionShape extends Component {
             if(ignoreTags.contains(tag))
                 return false;
         }
-
-        var absPos1 = getAbsPosition();
-        var absPos2 = shape.getAbsPosition();
-
-        // * Checking if both have positions
-        if(absPos1 == null || absPos2 == null)
-            return false;
 
         // * Checking if the bounds intersect
         if(!Collisions.boundsIntersection(bounds, shape.bounds))
@@ -129,6 +97,10 @@ class CollisionShape extends Component {
 
     // & Event listener for when the Transform2D moves
     private function onMove(to: Vec3, from: Vec3) {
+        updateCollisionCells();
+    }
+
+    private override function moved(to:Vec3, from:Vec3) {
         updateCollisionCells();
     }
 

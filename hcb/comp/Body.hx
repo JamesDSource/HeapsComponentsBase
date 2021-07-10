@@ -33,7 +33,7 @@ class Body extends Component {
     public var mass: Float = 0;
     public var inverseMass(get, null): Float;
     public var infiniteMass(get, null): Bool;
-    public var linearDrag(default, set): Float = 1.0;
+    public var linearDrag(default, set): Float = 1.;
 
     // * Angular components
     public var angle(default, set): Float = 0;
@@ -41,12 +41,12 @@ class Body extends Component {
     public var angularVelocity: Float = 0;
     public var angularInertia: Float = 0;
     public var inverseAngularInertia(get, null): Float;
-    public var angularDrag(default, set): Float = 1.0;
+    public var angularDrag(default, set): Float = 1.;
     public var syncPolygonRotation: Bool = true;
 
-    public var elasticity: Float = 1.0;
-    public var staticFriction: Float = 0;
-    public var dynamicFriction: Float = 0;
+    public var elasticity: Float = 1.;
+    public var staticFriction: Float = .5;
+    public var dynamicFriction: Float = .5;
 
     private var onRotateEventListeners: Array<Float -> Void> = [];
 
@@ -155,10 +155,11 @@ class Body extends Component {
     // & Updates position and angle
     @:allow(hcb.physics.PhysicsWorld.update)
     private function physicsUpdate() {
-        if(mass == 0 || parentEntity == null) return;
+        if(parentEntity == null) return;
 
-        parentEntity.move(velocity);
+        var c1 = shape.center;
         angle += angularVelocity;
+        parentEntity2d.transform.translate(velocity + (c1 - shape.center));
 
         velocity *= linearDrag;
         angularVelocity *= angularDrag;
@@ -166,15 +167,12 @@ class Body extends Component {
 
     // & Applies an impulse on a certain point of the shape
     public function impulse(force: Vec2, ?contactArm: Vec2) { 
-        var acceleration = force*inverseMass;
-        velocity += acceleration;
+        velocity += force*inverseMass;
 
-        if(contactArm == null) {
+        if(contactArm == null)
             contactArm = vec2(0, 0);
-        }
 
-        var torque = inverseAngularInertia*contactArm.cross(force);
-        angularVelocity += torque;
+        angularVelocity += inverseAngularInertia*contactArm.cross(force);
     }
 
     private override function addedToRoom() {

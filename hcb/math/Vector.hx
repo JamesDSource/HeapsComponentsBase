@@ -14,8 +14,7 @@ class Vector {
         a.z = b.z;
     }
 
-    public static function setAngle(v: Vec2, degrees: Float, ?magnitude: Null<Float>) {
-        var radi: Float = hxd.Math.degToRad(degrees);
+    public static function setAngle(v: Vec2, radi: Float, ?magnitude: Null<Float>) {
         if(magnitude == null)
             magnitude = v.length();
 

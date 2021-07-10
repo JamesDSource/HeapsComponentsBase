@@ -2,13 +2,16 @@ package hcb.comp;
 
 import h2d.Object;
 import hcb.struct.*;
+import VectorMath;
 
 class Component {
     public var name: String;
     public var pauseState: hcb.Pause.PauseState = Idle;
 
-    public var parentEntity: hcb.Entity = null;
-    // ^ Read only, should not be changed manually
+    @:allow(hcb.Entity)
+    private var parentEntity(default, set): Entity = null;
+    public var parentEntity2d(default, null): Entity2D;
+    public var parentEntity3d(default, null): Entity;
     public var attached(get, null): Bool;
 
     @:allow(hcb.Entity)
@@ -20,9 +23,16 @@ class Component {
 
     public var updateable(default, set): Bool = true;
 
-    private function get_attached(): Bool {
+    private function set_parentEntity(parentEntity: Entity): Entity {
+        parentEntity2d = Std.isOfType(parentEntity, Entity2D) ? cast(parentEntity, Entity2D) : null;
+
+        return this.parentEntity = parentEntity;
+    }
+
+    private inline function get_attached(): Bool {
         return parentEntity != null;
     }
+    
 
     private function set_roomIn(roomIn: Room): Room {
         room2d = null;

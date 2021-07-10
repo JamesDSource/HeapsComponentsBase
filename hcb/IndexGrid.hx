@@ -68,19 +68,12 @@ class IndexGrid {
                 newShape = customShapes[index](org, cellSize);
             }
             else if(index != -1) {
-                var staticColShape = new CollisionAABB("Static", cellSize, cellSize);
-                staticColShape.offsetX = org.x;
-                staticColShape.offsetY = org.y;
+                var staticColShape = new CollisionAABB(cellSize, cellSize);
+                staticColShape.setPosition(indexGrid.position != null ? indexGrid.position + org : org);
                 newShape = staticColShape;
             }
 
             if(newShape != null) {
-                // * Adding a position offset if the indexGrid has one
-                if(indexGrid.position != null) {
-                    newShape.offsetX += indexGrid.position.x;
-                    newShape.offsetY += indexGrid.position.y;
-                }
-
                 // * Adding tags if defined
                 if(tags != null) {
                     for(tag in tags) {
@@ -120,16 +113,14 @@ class IndexGrid {
             vec2(supportingPoint.x, supportingPoint.y + vDir*heightPercent*tileSize)
         ];
         
-        var shape: CollisionPolygon = new CollisionPolygon("poly", verts);
-        shape.offsetX = origin.x;
-        shape.offsetY = origin.y;
+        var shape: CollisionPolygon = new CollisionPolygon(verts);
+        shape.setPosition(origin);
         return shape;
     }
 
     public static inline function bboxBuild(widthPercent: Float, heightPercent: Float, offsetPercent: Vec2, origin: Vec2, tileSize: Float): CollisionShape {
         var shape: CollisionAABB = new CollisionAABB(widthPercent*tileSize, heightPercent*tileSize);
-        shape.offsetX = origin.x + offsetPercent.x*tileSize;
-        shape.offsetY = origin.y + offsetPercent.y*tileSize;
+        shape.setPosition(origin + offsetPercent*tileSize);
         return shape;
     }
 }

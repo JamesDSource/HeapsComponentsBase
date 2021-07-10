@@ -8,7 +8,7 @@ private typedef AnimationSlot = {
     layer: Int
 }
 
-class AnimationPlayer extends Component {
+class AnimationPlayer extends TransformComponent2D {
     private var animationSlots: Map<String, AnimationSlot> = new Map<String, AnimationSlot>();
     private var animationLayers: h2d.Layers = new h2d.Layers();
     public var layer(default, set): Int = 0;
@@ -17,9 +17,9 @@ class AnimationPlayer extends Component {
     // ^ When set to true, will automatically pause and unpause all animations when the room pauses or unpauses
 
     private function set_layer(layer: Int): Int {
-        if(parentEntity != null) {
-            parentEntity.layers.removeChild(animationLayers);
-            parentEntity.layers.add(animationLayers, layer);
+        if(parentEntity2d != null) {
+            parentEntity2d.layers.removeChild(animationLayers);
+            parentEntity2d.layers.add(animationLayers, layer);
         }
 
         this.layer = layer;
@@ -34,11 +34,13 @@ class AnimationPlayer extends Component {
     }
 
     private override function init() {
-        parentEntity.layers.add(animationLayers, layer);
+        if(parentEntity2d != null)
+            parentEntity2d.layers.add(animationLayers, layer);
     }
 
     private override function onRemoved() {
-        parentEntity.layers.removeChild(animationLayers);
+        if(parentEntity2d != null)
+            parentEntity2d.layers.removeChild(animationLayers);
     }
 
     private override function addedToRoom() {
@@ -55,14 +57,19 @@ class AnimationPlayer extends Component {
         }
     }
 
-    private override function update() {       
-        var position: Vec2 = parentEntity.getPosition2d();
+    private override function update() {      
+        var position: Vec2 = transform.getPosition();
+        var rotation: Float = transform.getRotationRad();
+        var scale: Vec2 = transform.getScale();
+
+        animationLayers.x = position.x;
+        animationLayers.y = position.y;
+        animationLayers.rotation = rotation;
+        animationLayers.scaleX = scale.x;
+        animationLayers.scaleY = scale.y;
+
         for(animationSlot in animationSlots) {
             if(animationSlot.animation != null) {
-                // * Updating the position
-                animationSlot.animation.x = position.x;
-                animationSlot.animation.y = position.y;
-
                 // * Calling the on frame event
                 var frame: Int = Std.int(animationSlot.animation.currentFrame);
                 if(animationSlot.animation.previousFrame != frame) {
@@ -90,13 +97,11 @@ class AnimationPlayer extends Component {
 
     public function setAnimationSlot(name: String, animation: Animation) {
         if(animationSlots.exists(name)) {
-            if(animationSlots[name].animation == animation) {
+            if(animationSlots[name].animation == animation)
                 return;
-            }
 
-            if(animationSlots[name].animation != null) {
+            if(animationSlots[name].animation != null)
                 animationLayers.removeChild(animationSlots[name].animation);
-            }
 
             animationSlots[name].animation = animation;
             animationLayers.add(animation, animationSlots[name].layer);

@@ -157,7 +157,7 @@ class CollisionWorld {
     }
 
     // & Returns all collisions for one shape
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, ?position: Vec2, ?tag: String): Int {
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, ?position: Vec2, ?tag: String, onlyBodies: Bool = false): Int {
         var count: Int = 0;
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
@@ -166,7 +166,7 @@ class CollisionWorld {
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
-            if(tag != null && !shape.tags.contains(tag))
+            if((tag != null && !shape.tags.contains(tag)) || (onlyBodies && shape.body == null))
                 continue;
 
             if(collisionShape != shape) {
