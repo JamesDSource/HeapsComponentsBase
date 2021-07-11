@@ -6,7 +6,7 @@ import h2d.Tile;
 import hcb.Origin;
 import VectorMath;
 
-class Sprite extends Component {
+class Sprite extends TransformComponent2D {
     public var flipX(default, set): Bool = false;
     public var flipY(default, set): Bool = false;
 
@@ -71,9 +71,9 @@ class Sprite extends Component {
     }
 
     private function set_layer(layer: Int): Int {
-        if(parentEntity != null) {
-            parentEntity.layers.removeChild(bitmap);
-            parentEntity.layers.add(bitmap, layer);
+        if(parent2d != null) {
+            parent2d.layers.removeChild(bitmap);
+            parent2d.layers.add(bitmap, layer);
         }
         
         this.layer = layer;
@@ -96,8 +96,8 @@ class Sprite extends Component {
         this.parentOverride = parentOverride;
 
         // * If null, add to the rooms to parentEntity
-        if(parentOverride == null && parentEntity != null) {
-            parentEntity.layers.add(bitmap, layer);
+        if(parentOverride == null && parent2d != null) {
+            parent2d.layers.add(bitmap, layer);
             return parentOverride;
         }
 
@@ -121,23 +121,20 @@ class Sprite extends Component {
         this.originPoint = originPoint;
         this.originOffsetX = originOffsetX;
         this.originOffsetY = originOffsetY;
+
+        transform.onTranslated =    (position) -> bitmap.setPosition(bitmap.x, bitmap.y);
+        transform.onRotated =       (rotation) -> bitmap.rotation = rotation;
+        transform.onScaled =        (scale) -> {bitmap.scaleX = scale.x; bitmap.scaleY = scale.y;};
     }
 
     private override function init() {
-        if(parentOverride == null)
-            parentEntity.layers.add(bitmap, layer);
+        if(parent2d != null && parentOverride == null)
+            parent2d.layers.add(bitmap, layer);
     }
 
     private override function onRemoved() {
         if(parentOverride == null || unparentOverrideOnRoomRemove)
             bitmap.remove();
-    }
-
-    private override function update() {
-        var position: Vec2 = parentEntity.getPosition2d();
-        // * Updating the position
-        bitmap.x = position.x;
-        bitmap.y = position.y;
     }
 
     private function setOrigin() {

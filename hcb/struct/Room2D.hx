@@ -59,11 +59,15 @@ class Room2D extends Room {
         physicsAccumulator = 0;
     }
 
-    public override function addEntity(entity:Entity):Bool {
+    public override function addEntity(entity:Entity): Bool {
         var added = super.addEntity(entity);
+        if(!Std.isOfType(entity, Entity2D))
+            return added;
 
-        if(added && entity.parentOverride == null)
-            drawTo.add(entity.layers, entity.layer);
+        var entity2d = cast(entity, Entity2D);
+
+        if(added && entity2d.parentOverride == null)
+            drawTo.add(entity2d.layers, entity2d.layer);
 
         return added;
     }
@@ -71,13 +75,14 @@ class Room2D extends Room {
     public override function removeEntity(entity:Entity):Bool {
         var removed = super.removeEntity(entity);
         
-        if(!removed)
+        if(!removed || !Std.isOfType(entity, Entity2D))
             return removed;
 
-        if(entity.parentOverride != null && entity.unparentOverrideOnRoomRemove)
-            entity.layers.remove();
+        var entity2d = cast(entity, Entity2D);
+        if(entity2d.parentOverride != null && entity2d.unparentOverrideOnRoomRemove)
+            entity2d.layers.remove();
         else 
-            drawTo.removeChild(entity.layers);
+            drawTo.removeChild(entity2d.layers);
 
         return removed;
     }

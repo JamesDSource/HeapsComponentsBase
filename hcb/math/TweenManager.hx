@@ -70,10 +70,7 @@ class TweenManager {
             var percent = hxd.Math.clamp(tween.t/tween.t1, 0, 1);
             var newValue = tween.ease(percent, tween.x0, tween.x1);
             
-            if(Std.isOfType(Reflect.getProperty(tween.o, tween.variable), Int))
-                Reflect.setProperty(tween.o, tween.variable, Std.int(newValue));
-            else
-                Reflect.setProperty(tween.o, tween.variable, newValue);
+            Reflect.setProperty(tween.o, tween.variable, newValue);
 
             if(percent == 1) {
                 if(tween.onEnd != null)
@@ -116,7 +113,7 @@ class TweenManager {
         }
 
         // * Getting the initial value
-        if(!Std.isOfType(prop, Float) && !Std.isOfType(prop, Int))
+        if(!Std.isOfType(prop, Float))
             throw "Invalid tween type. Please use a Float or Int";
         tween.x0 = cast(prop, Float);
 

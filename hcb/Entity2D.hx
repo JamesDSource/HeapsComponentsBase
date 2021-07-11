@@ -10,6 +10,10 @@ class Entity2D extends Entity {
     public var layers(default, null): h2d.Layers = new h2d.Layers();
     public var layer(default, set): Int;
 
+    private var onTranslatedEventListeners: Array<(Vec2) -> Void> = [];
+    private var onRotatedEventListeners: Array<(Float) -> Void> = [];
+    private var onScaledEventListeners: Array<(Vec2) -> Void> = [];
+
     private function set_parentOverride(parentOverride: h2d.Object): h2d.Object {
         this.parentOverride = parentOverride;
         
@@ -47,8 +51,55 @@ class Entity2D extends Entity {
         return layer;
     }
 
-    public function new(?components: Array<Component>, layer: Int = 0) {
-        super(components);
+    public function new(?components: Array<Component>, x: Float = 0, y: Float = 0, layer: Int = 0) {
+        transform = new Transform2D(x, y);
+        transform.onTranslated = onTranslatedEventCall;
+        transform.onRotated = onRotatedEventCall;
+        transform.onScaled = onScaledEventCall;
+        
         this.layer = layer;
+        super(components);
+    }
+
+    // & Translated event
+    public function onTranslatedEventSubscribe(callBack: Vec2 -> Void) {
+        onTranslatedEventListeners.push(callBack);
+    }
+
+    public function onTranslatedEventRemove(callBack: Vec2 -> Void): Bool {
+        return onTranslatedEventListeners.remove(callBack);
+    }
+
+    public function onTranslatedEventCall(position: Vec2) {
+        for(listener in onTranslatedEventListeners)
+            listener(position);
+    }
+
+    // & Rotated event
+    public function onRotatedEventSubscribe(callBack: Float -> Void) {
+        onRotatedEventListeners.push(callBack);
+    }
+
+    public function onRotatedEventRemove(callBack: Float -> Void): Bool {
+        return onRotatedEventListeners.remove(callBack);
+    }
+
+    public function onRotatedEventCall(rotation: Float) {
+        for(listener in onRotatedEventListeners)
+            listener(rotation);
+    }
+
+    // & Scaled event
+    public function onScaledEventSubscribe(callBack: Vec2 -> Void) {
+        onScaledEventListeners.push(callBack);
+    }
+
+    public function onScaledEventRemove(callBack: Vec2 -> Void): Bool {
+        return onScaledEventListeners.remove(callBack);
+    }
+
+    public function onScaledEventCall(scale: Vec2) {
+        for(listener in onScaledEventListeners)
+            listener(scale);
     }
 }

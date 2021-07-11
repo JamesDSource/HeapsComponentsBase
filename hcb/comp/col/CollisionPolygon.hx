@@ -20,13 +20,6 @@ class CollisionPolygon extends CollisionShape {
     public var worldVertices(get, null): Array<Vec2>;
     // ^ Properties only used to get the vertices, cannot be used to modify the polygon shape
 
-    public var rotation(default, set): Float;
-    // ^ Rotation is in degrees
-    public var scaleX(default, set): Float = 1;
-    public var scaleY(default, set): Float = 1;
-    private var polyScale: Vec2 = vec2(1, 1);
-    // ^ Transformation data
-
     private var lastPos: Vec2 = null;
     private var lastBounds: Bounds = null;
     private var shapeChanged: Bool = false;
@@ -56,26 +49,6 @@ class CollisionPolygon extends CollisionShape {
             returnVertices.push(vert + absPosition);
         }
         return returnVertices;
-    }
-
-    private function set_rotation(polyRotation: Float): Float {
-        this.rotation = polyRotation;
-        updateTransformations();
-        return polyRotation;
-    }
-
-    private function set_scaleX(scaleX: Float): Float {
-        this.scaleX = scaleX;
-        polyScale.x = scaleX;
-        updateTransformations();
-        return scaleX;
-    }
-
-    private function set_scaleY(scaleY: Float): Float {
-        this.scaleY = scaleY;
-        polyScale.y = scaleY;
-        updateTransformations();
-        return scaleY;
     }
 
     private override function get_bounds(): Bounds {
@@ -126,13 +99,14 @@ class CollisionPolygon extends CollisionShape {
     public function new(vertices: Array<Vec2>, name: String = "Collision Polygon") {
         super(name);
         setVertices(vertices);
+        transform.onRotated = (r) -> updateTransformations();
     }
 
     private function updateTransformations(): Void {
         transformedVertices = [];
         for(vertex in vertices) {
-            var tVertex = vertex*polyScale;
-            tVertex.setAngle(hxd.Math.degToRad(rotation + tVertex.getAngle()));
+            var tVertex = vertex*transform.getScale();
+            tVertex.setAngle(transform.getRotationRad() + tVertex.getAngle());
             transformedVertices.push(tVertex);
         }
         shapeChanged = true;

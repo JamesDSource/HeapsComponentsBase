@@ -17,9 +17,9 @@ class AnimationPlayer extends TransformComponent2D {
     // ^ When set to true, will automatically pause and unpause all animations when the room pauses or unpauses
 
     private function set_layer(layer: Int): Int {
-        if(parentEntity2d != null) {
-            parentEntity2d.layers.removeChild(animationLayers);
-            parentEntity2d.layers.add(animationLayers, layer);
+        if(parent2d != null) {
+            parent2d.layers.removeChild(animationLayers);
+            parent2d.layers.add(animationLayers, layer);
         }
 
         this.layer = layer;
@@ -31,16 +31,20 @@ class AnimationPlayer extends TransformComponent2D {
         super(name);
         this.layer = layer;
         this.autoPause = autoPause;
+
+        transform.onTranslated =    (position) -> animationLayers.setPosition(position.x, position.y);
+        transform.onRotated =       (rotation) -> animationLayers.rotation = rotation;
+        transform.onScaled =        (scale) -> {animationLayers.scaleX = scale.x; animationLayers.scaleY = scale.y;};
     }
 
     private override function init() {
-        if(parentEntity2d != null)
-            parentEntity2d.layers.add(animationLayers, layer);
+        if(parent2d != null)
+            parent2d.layers.add(animationLayers, layer);
     }
 
     private override function onRemoved() {
-        if(parentEntity2d != null)
-            parentEntity2d.layers.removeChild(animationLayers);
+        if(parent2d != null)
+            parent2d.layers.removeChild(animationLayers);
     }
 
     private override function addedToRoom() {
@@ -58,16 +62,6 @@ class AnimationPlayer extends TransformComponent2D {
     }
 
     private override function update() {      
-        var position: Vec2 = transform.getPosition();
-        var rotation: Float = transform.getRotationRad();
-        var scale: Vec2 = transform.getScale();
-
-        animationLayers.x = position.x;
-        animationLayers.y = position.y;
-        animationLayers.rotation = rotation;
-        animationLayers.scaleX = scale.x;
-        animationLayers.scaleY = scale.y;
-
         for(animationSlot in animationSlots) {
             if(animationSlot.animation != null) {
                 // * Calling the on frame event

@@ -64,14 +64,13 @@ class Entity {
 
     public function addComponents(components: Array<Component>): Void {
         for(component in components) {
-            if(component.parentEntity != null) {
+            if(component.parentEntity != null)
                 component.parentEntity.removeComponent(component);
-            }
             
             this.components.push(component);
-            if(component.updateable) {
+            if(component.updateable)
                 updatableComponents.push(component);
-            }
+            
             component.parentEntity = this;
             component.roomIn = roomIn;
             componentAddedEventCall(component);

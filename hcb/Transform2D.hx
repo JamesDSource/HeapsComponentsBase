@@ -8,9 +8,9 @@ class Transform2D {
     @:allow(hcb.Transform2D) 
     private var children: Array<Transform2D> = [];
     
-    private var position: Vec2;
-    private var rotation: Float;
-    private var scale: Vec2;
+    private var position: Vec2 = vec2(0, 0);
+    private var rotation: Float = 0;
+    private var scale: Vec2 = vec2(1, 1);
 
     public var positionSnap(default, set): Bool = true;
     // ^ Makes sure that the position remains an integer value
@@ -61,19 +61,14 @@ class Transform2D {
 
     public overload inline extern function set(position: Vec2, rotation: Float, scale: Vec2) {
         setPosition(position.x, position.y);
-        this.rotation = rotation;
-        callOnRotated();
-        this.scale = scale.clone();
-        callOnScaled();
+        setRotationRad(rotation);
+        setScale(scale);
     }
 
     public overload inline extern function set(px: Float, py: Float, rotation: Float, sx: Float, sy: Float) {
         setPosition(px, py);
-        this.rotation = rotation;
-        callOnRotated();
-        scale.x = sx;
-        scale.y = sy;
-        callOnScaled();
+        setRotationRad(rotation);
+        setScale(sx, sy);
     }
 
     public inline function model(transform: Transform2D) {
@@ -82,7 +77,7 @@ class Transform2D {
 
     // & Position functions
     public inline function translate(offset: Vec2) {
-        if(offset.x + offset.y < hxd.Math.EPSILON)
+        if(Math.abs(offset.x) + Math.abs(offset.y) < hxd.Math.EPSILON)
             return;
 
         position += offset;
@@ -120,7 +115,7 @@ class Transform2D {
 
     // & Rotation functions
     public inline function rotateDeg(rotation: Float) {
-        if(rotation < hxd.Math.EPSILON)
+        if(Math.abs(rotation) < hxd.Math.EPSILON)
             return;
 
         this.rotation += hxd.Math.degToRad(rotation);
@@ -128,7 +123,7 @@ class Transform2D {
     }
 
     public inline function rotateRad(rotation: Float) {
-        if(rotation < hxd.Math.EPSILON)
+        if(Math.abs(rotation) < hxd.Math.EPSILON)
             return;
 
         this.rotation += rotation;
@@ -166,12 +161,35 @@ class Transform2D {
     }
 
     // & Scale functions
+    public overload inline extern function scaleFactor(scale: Vec2) {
+        if(Math.abs(scale.x - 1) < hxd.Math.EPSILON && Math.abs(scale.y - 1) < hxd.Math.EPSILON)
+            return;
+
+        this.scale *= scale;
+        callOnScaled();
+    }
+
+    public overload inline extern function scaleFactor(x: Float, y: Float) {
+        if(Math.abs(x - 1) < hxd.Math.EPSILON && Math.abs(y - 1) < hxd.Math.EPSILON)
+            return;
+
+        scale.x *= x;
+        scale.y *= y;
+        callOnScaled();
+    }
+
     public overload inline extern function setScale(scale: Vec2) {
+        if(Math.abs(this.scale.x - scale.x) < hxd.Math.EPSILON && Math.abs(this.scale.y - scale.y) < hxd.Math.EPSILON)
+            return;
+        
         this.scale = scale.clone();
         callOnScaled();
     } 
     
     public overload inline extern function setScale(x: Float, y: Float) {
+        if(Math.abs(scale.x - x) < hxd.Math.EPSILON && Math.abs(scale.y - y) < hxd.Math.EPSILON)
+            return;
+
         scale.x = x;
         scale.y = y;
         callOnScaled();

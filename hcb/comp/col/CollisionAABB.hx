@@ -12,9 +12,6 @@ class CollisionAABB extends CollisionShape {
     public var height(default, set): Float;
     public var transformedWidth(default, null): Float;
     public var transformedHeight(default, null): Float;
-    public var scaleX(default, set): Float = 1;
-    public var scaleY(default, set): Float = 1;
-    private var scale: Vec2 = vec2(1, 1);
 
     public var vertices(get, null): Array<Vec2>;
 
@@ -28,20 +25,6 @@ class CollisionAABB extends CollisionShape {
         this.height = height;
         updateTransformations();
         return height;
-    }
-
-    private inline function set_scaleX(scaleX: Float): Float {
-        this.scaleX = scaleX;
-        scale.x = scaleX;
-        updateTransformations();
-        return scaleX;
-    }
-
-    private inline function set_scaleY(scaleY: Float): Float {
-        this.scaleY = scaleY;
-        scale.y = scaleY;
-        updateTransformations();
-        return scaleY;
     }
 
     private inline function get_vertices(): Array<Vec2> {
@@ -80,6 +63,7 @@ class CollisionAABB extends CollisionShape {
     }
 
     public function updateTransformations() {
+        var scale = transform.getScale();
         transformedWidth = width * scale.x;
         transformedHeight = height * scale.y;
         updateCollisionCells();

@@ -217,9 +217,8 @@ class Collisions {
                 if(overlap < minOverlap) {
                     minOverlap = overlap;
                     smallestAxis = axisProj;
-                    if((polygon1.center - polygon2.center).dot(smallestAxis) > 0) {
+                    if((polygon1.center - polygon2.center).dot(smallestAxis) > 0)
                         smallestAxis *= -1;
-                    }
                 }
             }
 
@@ -247,15 +246,15 @@ class Collisions {
             absPos2 = circle2.getAbsPosition();
 
         var depth: Float = radiusIntersectionDepth(absPos1, absPos2, circle1.radius, circle2.radius),
-            normal: Vec2 = (absPos1 - absPos2).normalize();
+            normal: Vec2 = (absPos2 - absPos1).normalize();
 
         return {
-            isColliding: depth < 0,
+            isColliding: depth >= 0,
             shape1: circle1,
             shape2: circle2,
             normal: normal,
             depth: depth,
-            contactPoints:  [absPos1 - normal*(circle1.radius + depth/2)]
+            contactPoints:  [absPos1 + normal*(circle1.radius - depth/2)]
         }
     }
 
@@ -630,7 +629,7 @@ class Collisions {
     // & Checks if two radiuses intersect
     public static inline function radiusIntersectionDepth(pos1: Vec2, pos2: Vec2, radius1: Float, radius2: Float): Float {
         var distance = (pos1 - pos2).length();
-        return distance - (radius1 + radius2);
+        return (radius1 + radius2) - distance;
     }
 
     public static inline function lineIntersection(ray1: Raycast, ray2: Raycast): Vec2 {

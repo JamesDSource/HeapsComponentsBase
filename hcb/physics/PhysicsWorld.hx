@@ -14,8 +14,8 @@ class PhysicsWorld {
     private var bodies: Array<Body> = [];
     private var collisions: Array<CollisionInfo> = [];
 
-    public var impulseIterations: Int = 20;
-    public var percentCorrection: Float = 0.4;
+    public var impulseIterations: Int = 10;
+    public var percentCorrection: Float = 0.3;
     public var slop: Float = 0.01;
 
     public function new(collisionWorld: CollisionWorld) {
@@ -64,8 +64,8 @@ class PhysicsWorld {
         
         if(invMass1 + invMass2 + invAngularInertia1 + invAngularInertia2 < hxd.Math.EPSILON) return;
 
-        var center1: Vec2 = pCollision.shape1.center;
-        var center2: Vec2 = pCollision.shape2.center;
+        var pos1: Vec2 = pCollision.shape1.getAbsPosition();
+        var pos2: Vec2 = pCollision.shape2.getAbsPosition();
 
         // * The coefficient of restitution should be the lower elasticity
         var e: Float = Math.min(body1.elasticity, body2.elasticity);
@@ -74,8 +74,8 @@ class PhysicsWorld {
 
         for(point in pCollision.contactPoints) {
             // * Get the arms
-            var ra: Vec2 = point - center1;
-            var rb: Vec2 = point - center2;
+            var ra: Vec2 = point - pos1;
+            var rb: Vec2 = point - pos2;
             
             // * Get the relative velocity and compare it to the normal
             var relativeVelocity: Vec2 =    body2.velocity + rb.crossRight(body2.angularVelocity) - 
@@ -138,11 +138,11 @@ class PhysicsWorld {
 
         var correction: Vec2 = (Math.max(pCollision.depth - slop, 0)/(invMass1 + invMass2))*percentCorrection*pCollision.normal;
         
-        if(body1.parentEntity != null)
-            body1.parentEntity.move(-invMass1*correction);
+        if(body1.parent2d != null)
+            body1.parent2d.transform.translate(-invMass1*correction);
 
-        if(body2.parentEntity != null)
-            body2.parentEntity.move(invMass2*correction);
+        if(body2.parent2d != null)
+            body2.parent2d.transform.translate(invMass2*correction);
     }
 
     public function addBody(body: Body) {

@@ -69,7 +69,7 @@ class IndexGrid {
             }
             else if(index != -1) {
                 var staticColShape = new CollisionAABB(cellSize, cellSize);
-                staticColShape.setPosition(indexGrid.position != null ? indexGrid.position + org : org);
+                staticColShape.transform.setPosition(indexGrid.position != null ? indexGrid.position + org : org);
                 newShape = staticColShape;
             }
 
@@ -114,13 +114,13 @@ class IndexGrid {
         ];
         
         var shape: CollisionPolygon = new CollisionPolygon(verts);
-        shape.setPosition(origin);
+        shape.transform.setPosition(origin);
         return shape;
     }
 
     public static inline function bboxBuild(widthPercent: Float, heightPercent: Float, offsetPercent: Vec2, origin: Vec2, tileSize: Float): CollisionShape {
         var shape: CollisionAABB = new CollisionAABB(widthPercent*tileSize, heightPercent*tileSize);
-        shape.setPosition(origin + offsetPercent*tileSize);
+        shape.transform.setPosition(origin + offsetPercent*tileSize);
         return shape;
     }
 }

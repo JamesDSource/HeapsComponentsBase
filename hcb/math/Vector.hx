@@ -23,7 +23,7 @@ class Vector {
     }
 
     public static inline function getAngle(vector: Vec2): Float {
-        return hxd.Math.radToDeg(Math.atan2(vector.y, vector.x));
+        return Math.atan2(vector.y, vector.x);
     }
 
     public static inline function cross(a: Vec2, b: Vec2): Float { 

@@ -39,14 +39,7 @@ class CollisionShape extends TransformComponent2D {
     public function new(name: String = "Collision Shape") {
         super(name);
         updateable = true;
-    }
-
-    private override function init() {
-        //parentEntity.onMoveEventSubscribe(onMove);
-    }
-
-    private override function onRemoved() {
-        //parentEntity.onMoveEventRemove(onMove);
+        transform.onTranslated = (position) -> updateCollisionCells();
     }
 
     private override function addedToRoom() {
@@ -93,15 +86,6 @@ class CollisionShape extends TransformComponent2D {
 
         if(collisionWorld != null)
             cellsIn = collisionWorld.setShapeFromBounds(bounds, this);
-    }
-
-    // & Event listener for when the Transform2D moves
-    private function onMove(to: Vec3, from: Vec3) {
-        updateCollisionCells();
-    }
-
-    private override function moved(to:Vec3, from:Vec3) {
-        updateCollisionCells();
     }
 
     // & Draws the shape

@@ -10,8 +10,9 @@ class Component {
 
     @:allow(hcb.Entity)
     private var parentEntity(default, set): Entity = null;
-    public var parentEntity2d(default, null): Entity2D;
-    public var parentEntity3d(default, null): Entity;
+    public var parent(get, null): Entity;
+    public var parent2d(default, null): Entity2D;
+    public var parent3d(default, null): Entity;
     public var attached(get, null): Bool;
 
     @:allow(hcb.Entity)
@@ -24,9 +25,13 @@ class Component {
     public var updateable(default, set): Bool = true;
 
     private function set_parentEntity(parentEntity: Entity): Entity {
-        parentEntity2d = Std.isOfType(parentEntity, Entity2D) ? cast(parentEntity, Entity2D) : null;
+        parent2d = Std.isOfType(parentEntity, Entity2D) ? cast(parentEntity, Entity2D) : null;
 
         return this.parentEntity = parentEntity;
+    }
+
+    private inline function get_parent(): Entity {
+        return parentEntity;
     }
 
     private inline function get_attached(): Bool {
@@ -47,7 +52,7 @@ class Component {
         return roomIn;
     }
 
-    private function get_room(): Room {
+    private inline function get_room(): Room {
         return roomIn;
     }
     

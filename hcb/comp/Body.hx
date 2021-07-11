@@ -13,7 +13,6 @@ typedef BodyOptions = {
     ?mass: Null<Float>,
     ?linearDrag: Null<Float>,
 
-    ?angle: Null<Float>,
     ?angularVelocity: Null<Float>,
     ?angularInertia: Null<Float>,
     ?angularDrag: Null<Float>,
@@ -36,8 +35,6 @@ class Body extends Component {
     public var linearDrag(default, set): Float = 1.;
 
     // * Angular components
-    public var angle(default, set): Float = 0;
-    // ^ Measured in radians
     public var angularVelocity: Float = 0;
     public var angularInertia: Float = 0;
     public var inverseAngularInertia(get, null): Float;
@@ -45,10 +42,8 @@ class Body extends Component {
     public var syncPolygonRotation: Bool = true;
 
     public var elasticity: Float = 1.;
-    public var staticFriction: Float = .5;
-    public var dynamicFriction: Float = .5;
-
-    private var onRotateEventListeners: Array<Float -> Void> = [];
+    public var staticFriction: Float = 0;
+    public var dynamicFriction: Float = 0;
 
     private inline function set_shape(shape: CollisionShape): CollisionShape {
         if(shape != null) {
@@ -78,18 +73,6 @@ class Body extends Component {
         return this.linearDrag;
     }
 
-    private inline function set_angle(angle: Float): Float {
-        this.angle = angle;
-        
-        if(syncPolygonRotation && Std.isOfType(shape, CollisionPolygon)) {
-            var polygon: CollisionPolygon = cast shape;
-            polygon.rotation = angle;
-        }
-        
-        onRotateEventCall(angle);
-        return angle;
-    }
-
     private inline function get_inverseAngularInertia(): Float {
         return angularInertia == 0 ? 0 : 1/angularInertia;
     }
@@ -107,49 +90,35 @@ class Body extends Component {
 
     // & Sets body properties
     public function setOptions(options: BodyOptions) {
-        if(options.shape != null) {
+        if(options.shape != null) 
             shape = options.shape;
-        }
 
-        if(options.velocity != null) {
+        if(options.velocity != null)
             velocity = options.velocity.clone();
-        }
 
-        if(options.mass != null) {
+        if(options.mass != null) 
             mass = options.mass;
-        }
 
-        if(options.linearDrag != null) {
+        if(options.linearDrag != null)
             linearDrag = options.linearDrag;
-        }
 
-        if(options.angle != null) {
-            angle = options.angle;
-        }
-
-        if(options.angularVelocity != null) {
+        if(options.angularVelocity != null)
             angularVelocity = options.angularVelocity;
-        }
 
-        if(options.angularInertia != null) {
+        if(options.angularInertia != null)
             angularInertia = options.angularInertia;
-        }
 
-        if(options.angularDrag != null) {
+        if(options.angularDrag != null)
             angularDrag = options.angularDrag;
-        }
         
-        if(options.elasticity != null) {
+        if(options.elasticity != null)
             elasticity = options.elasticity;
-        }
 
-        if(options.staticFriction != null) {
+        if(options.staticFriction != null)
             staticFriction = options.staticFriction;
-        }
 
-        if(options.dynamicFriction != null) {
-            dynamicFriction = options.dynamicFriction;
-        } 
+        if(options.dynamicFriction != null)
+            dynamicFriction = options.dynamicFriction; 
     }
 
     // & Updates position and angle
@@ -157,9 +126,8 @@ class Body extends Component {
     private function physicsUpdate() {
         if(parentEntity == null) return;
 
-        var c1 = shape.center;
-        angle += angularVelocity;
-        parentEntity2d.transform.translate(velocity + (c1 - shape.center));
+        parent2d.transform.rotateRad(angularVelocity);
+        parent2d.transform.translate(velocity);
 
         velocity *= linearDrag;
         angularVelocity *= angularDrag;
@@ -183,20 +151,5 @@ class Body extends Component {
     private override function removedFromRoom() {
         if(room2d != null)
             room2d.physicsWorld.removeBody(this);
-    }
-
-    // & onRotate event
-    public function onRotateEventSubscribe(callBack: Float -> Void) {
-        onRotateEventListeners.push(callBack);
-    }
-
-    public function onRotateEventRemove(callBack: Float -> Void): Bool {
-        return onRotateEventListeners.remove(callBack);
-    }
-
-    private function onRotateEventCall(angle: Float) {
-        for(listener in onRotateEventListeners) {
-            listener(angle);
-        }
     }
 }
