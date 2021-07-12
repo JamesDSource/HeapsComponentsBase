@@ -3,7 +3,7 @@ package hcb;
 import hcb.comp.col.*;
 import VectorMath;
 
-typedef IGrid = { 
+typedef IndexGridData = { 
     indexs: Array<Int>,
     width: Int,
     height: Int,
@@ -20,18 +20,16 @@ enum SlopeFace {
 
 class IndexGrid {
     #if ldtk_haxe_api
-    public static function ldtkTilesConvert(tileLayer: ldtk.Layer_Tiles): IGrid {
+    public static function ldtkTilesConvert(tileLayer: ldtk.Layer_Tiles): IndexGridData {
         var indexs: Array<Int> = [];
 
         for(i in 0...tileLayer.cHei) {
             for(j in 0...tileLayer.cWid) {
                 var hasTile = tileLayer.hasAnyTileAt(j, i);
-                if(hasTile) {
+                if(hasTile)
                     indexs.push(tileLayer.getTileStackAt(j, i)[0].tileId);
-                }
-                else {
+                else
                     indexs.push(-1);
-                }
             }
         }
 
@@ -47,7 +45,7 @@ class IndexGrid {
     // & Returns an array of Collision shapes. By default, these will be AABBs with their offsets set to their
     // & position on the grid. This can be overriden with the custom shapes map that stores functions with indexs 
     // & that take in grid position, the cell size, and outputs a collision shape to use.
-    public static function convertToCollisionShapes(indexGrid: IGrid, ?offset: Vec2, ?tags: Array<String>, ?customShapes: Map<Int, Vec2->Float->CollisionShape>): Array<CollisionShape> {
+    public static function convertToCollisionShapes(indexGrid: IndexGridData, ?offset: Vec2, ?tags: Array<String>, ?customShapes: Map<Int, Vec2->Float->CollisionShape>): Array<CollisionShape> {
         var shapes: Array<CollisionShape> = [];
         for(i in 0...indexGrid.indexs.length) {
             // * Getting the coordinates
