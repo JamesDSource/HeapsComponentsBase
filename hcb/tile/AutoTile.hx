@@ -123,7 +123,7 @@ class AutoTile {
     }
 
 
-    public var indexGrid: IndexGridData;
+    public var indexGrid: IndexGrid;
     private var bytes: Bytes;
 
     public var tile(default, set): h2d.Tile;
@@ -140,7 +140,7 @@ class AutoTile {
         return tile;
     }
 
-    public function new(indexGrid: IndexGridData, tile: h2d.Tile, tileWidth: Float, ?tileHeight: Null<Float>) {
+    public function new(indexGrid: IndexGrid, tile: h2d.Tile, tileWidth: Float, ?tileHeight: Null<Float>) {
         this.indexGrid = indexGrid;
 
         this.tileWidth = tileWidth;
@@ -160,12 +160,14 @@ class AutoTile {
     }
 
     public function imprintBytes(diagonals: Bool = true) {
-        bytes = Bytes.alloc(indexGrid.indexs.length);
+        bytes = Bytes.alloc(indexGrid.length);
         
         var w = indexGrid.width;
         var h = indexGrid.height;
-        for(i in 0...indexGrid.indexs.length) {
-            if(indexGrid.indexs[i] == -1)
+        for(i in 0...indexGrid.length) {
+            var v1 = indexGrid[i];
+
+            if(v1 == -1)
                 continue;
 
             var accumulator: Int = 0;
@@ -186,9 +188,13 @@ class AutoTile {
                 if(x < 0 || x >= w || y < 0 || y >= h)
                     continue;
 
-                var index = y*w + x;
+                var index = indexGrid.coordsToIndex(x, y);
+                var v2 = indexGrid[index];
 
-                if(indexGrid.indexs[index] != -1) {
+                if(v2 != -1) {
+                    if(!canInteractWith(v1, v2)) 
+                        continue;
+
                     // * Check if it's a diagonal, if so, make sure that each component isn't empty
                     if(sides[j].x != 0 && sides[j].y != 0) {
                         if(!diagonals)
@@ -197,7 +203,7 @@ class AutoTile {
                         var verticalIndex: Int = y*w + Std.int(i%w);
                         var horizontalIndex: Int = Math.floor(i/w)*w + x;
 
-                        if(indexGrid.indexs[verticalIndex] == -1 || indexGrid.indexs[horizontalIndex] == -1)
+                        if(!canInteractWith(v1, indexGrid[verticalIndex]) || !canInteractWith(v1, indexGrid[horizontalIndex]))
                             continue;
                     }
 
@@ -210,17 +216,21 @@ class AutoTile {
         }
     }
 
+    private inline function canInteractWith(i1: Int, i2: Int): Bool {
+        return i1 == i2 || (tileMappings.exists(i1) && tileMappings[i1].canSee != null && tileMappings[i1].canSee(i2));
+    }
+
     public inline function render(?tileGroup: h2d.TileGroup): h2d.TileGroup {
         if(tileGroup == null)
             tileGroup = new h2d.TileGroup(tile);
 
         var data = bytes.getData();
-        for(i in 0...indexGrid.indexs.length) {
-            if(indexGrid.indexs[i] == -1 || !tileMappings.exists(indexGrid.indexs[i]))
+        for(i in 0...indexGrid.length) {
+            if(indexGrid[i] == -1 || !tileMappings.exists(indexGrid[i]))
                 continue;
             
             var v = Bytes.fastGet(data, i);
-            var mappings = tileMappings[indexGrid.indexs[i]];
+            var mappings = tileMappings[indexGrid[i]];
             var tileIndex: Null<Int> = getMaskIndex(v, mappings.cases);
             if(tileIndex == null)
                 tileIndex = mappings.cases.defaultTile;
@@ -228,9 +238,8 @@ class AutoTile {
             if(mappings.offset != null)
                 tileIndex += mappings.offset;
             
-            var x = i%indexGrid.width;
-            var y = Math.floor(i/indexGrid.width);
-            tileGroup.add(x*tileWidth, y*tileHeight, slicedTiles[tileIndex]);
+            var coords = indexGrid.getCoords(i);
+            tileGroup.add(coords.x*tileWidth, coords.y*tileHeight, slicedTiles[tileIndex]);
         }
         
         return tileGroup;
