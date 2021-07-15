@@ -38,9 +38,11 @@ class RuleTile {
     private var tileWidth: Float;
     private var tileHeight: Float;
 
-    private var rules: Array<TileRule> = [];
+    public var rules: Array<TileRule> = [];
     private var rng: hxd.Rand;
     public var seed: Int;
+
+    private var indexs: Array<Int> = [];
 
     private inline function set_tile(tile: h2d.Tile): h2d.Tile {
         this.tile = tile;
@@ -48,7 +50,10 @@ class RuleTile {
         return tile;
     }
 
-    public function new(tile: h2d.Tile, tileWidth: Float, tileHeight: Float, seed: Int = 5381) {
+
+    public function new(indexGrid: IndexGrid, tile: h2d.Tile, tileWidth: Float, tileHeight: Float, seed: Int = 5381) {
+        this.indexGrid = indexGrid;
+        
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
 
@@ -68,26 +73,49 @@ class RuleTile {
         slicedTiles = tile.gridFlattenExt(tileWidth, tileHeight);
     }
 
+    public function render(?tileGroup: h2d.TileGroup): h2d.TileGroup {
+        if(tileGroup == null)
+            tileGroup = new h2d.TileGroup(tile);
+
+        for(i in 0...indexs.length) {
+            if(indexs[i] < 0)
+                continue;
+
+            var position = indexGrid.getCoords(i)*vec2(tileWidth, tileHeight);
+            tileGroup.add(position.x, position.y, slicedTiles[indexs[i]]);
+        }
+
+        return tileGroup;
+    }
+
+    public function getLayout(): IndexGrid {
+        var iGrid = new IndexGrid(indexGrid.width, indexGrid.height, -1);
+        iGrid.copyIndexs(indexs);
+        return iGrid;
+    }
+
     public function generateLayout() {
         rng.init(seed);
+        indexs = [];
 
         for(i in 0...indexGrid.length) {
             var tileIndex: Int = -1;
+            var found: Bool = false;
             for(rule in rules) {
-                if(ruleIsMet(i, rule)) {
+                if(found)
+                    rng.rand();
+                else if(ruleIsMet(i, rule)) {
                     tileIndex = rule.tileIndex;
-                    break;
+                    found = true;
                 }
             }
+
+            indexs.push(tileIndex);
         }
     }
 
-    public function render() {
-
-    }
-
     private function ruleIsMet(position: Int, rule: TileRule): Bool {
-        if((rule.onIndex != null && rule.onIndex != indexGrid[position]) || rng.rand() >= rule.chance)
+        if(rng.rand() >= rule.chance || (rule.onIndex != null && rule.onIndex != indexGrid[position]))
             return false;
 
         var conditionsMet: Int = 0;
@@ -114,34 +142,22 @@ class RuleTile {
     }
 
     private function conditionIsMet(position: Int, condition: TileCondition): Bool {
-        var coords = indexGrid.getCoords(position) + vec2(condition.dx, condition.dy);
+        var coords = indexGrid.getCoords(position) + vec2(condition.dx, condition.dy);        
         if(!indexGrid.inRange(Std.int(coords.x), Std.int(coords.y)))
             return condition.assume;
-        
+
         var i = indexGrid.coordsToIndex(Std.int(coords.x), Std.int(coords.y));
         var index = indexGrid[i];
 
         if(condition.customCondition != null)
             return condition.customCondition(index);
         
-        if(condition.indexIsNot != null && condition.indexIsNot.contains(index))
-            return false;
+        if(condition.indexIsNot != null)
+            return !condition.indexIsNot.contains(index);
 
-        if(condition.indexIs != null && condition.indexIs.contains(index))
-            return true;
+        if(condition.indexIs != null)
+            return condition.indexIs.contains(index);
 
         return condition.assume;
-    }
-
-    public inline function addRule(rule: TileRule) {
-        rules.push(rule);
-    }
-
-    public inline function removeRule(rule: TileRule): Bool {
-        return rules.remove(rule);
-    }
-
-    public inline function hasRule(rule: TileRule): Bool {
-        return rules.contains(rule);
     }
 }

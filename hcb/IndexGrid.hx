@@ -146,8 +146,27 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
         this.indexs[i] = v;
     }
 
-    public inline function coordsToIndex(x: Int, y: Int): Int {
+    public inline function copyIndexs(indexs: Array<Int>) {
+        this.indexs = indexs.copy();
+        
+        var idealLen: Int = this.width*this.height;
+        if(indexs.length > idealLen)
+            indexs.resize(idealLen);
+        else if(indexs.length < idealLen) {
+            var oldLen: Int = indexs.length;
+            indexs.resize(idealLen);
+            for(i in (oldLen - 1)...idealLen)
+                indexs[i] = defaultValue;
+        }
+    }
+
+    public overload inline extern function coordsToIndex(x: Int, y: Int): Int {
         return x + y*this.width;
+    }
+
+    public overload inline extern function coordsToIndex(coords: Vec2): Int {
+        coords = coords.floor();
+        return Std.int(coords.x + coords.y*this.width);
     }
 
     public inline function getCoords(i: Int): Vec2 {

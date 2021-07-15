@@ -10,6 +10,9 @@ using hcb.tile.TileExt;
 typedef AutoTileCases = {
     defaultTile: Int,
 
+    width: Int,
+    height: Int,
+
     ?b00000010: Int,
     ?b00001000: Int,
     ?b00001010: Int,
@@ -61,12 +64,15 @@ typedef AutoTileCases = {
     ?b11111011: Int,
     ?b11111110: Int,
     ?b11111111: Int,
-    ?b00000000: Int
+    ?b00000000: Int,
 }
 
 class AutoTile {
     public static final presetAutoTileCases: AutoTileCases = {
         defaultTile: 12,
+
+        width: 11,
+        height: 5,
 
         b00000010: 25,
         b00001000: 35,
@@ -119,7 +125,7 @@ class AutoTile {
         b11111011: 27,
         b11111110: 28,
         b11111111: 12,
-        b00000000: 36
+        b00000000: 36,
     }
 
 
@@ -128,10 +134,12 @@ class AutoTile {
 
     public var tile(default, set): h2d.Tile;
     private var slicedTiles: Array<h2d.Tile> = [];
+    private var slicedTileWidth: Int = 0;
+    private var slicedTileHeight: Int = 0;
     private var tileWidth: Float;
     private var tileHeight: Float;
 
-    public var tileMappings: Map<Int, {cases: AutoTileCases, ?offset: Null<Int>, ?canSee: Int -> Bool}> = [];
+    public var tileMappings: Map<Int, {cases: AutoTileCases, ?origin: Vec2, ?canSee: Int -> Bool}> = [];
 
     private inline function set_tile(tile: h2d.Tile): h2d.Tile {
         this.tile = tile;
@@ -156,6 +164,8 @@ class AutoTile {
     }
 
     private inline function cutTiles() {
+        slicedTileWidth = Std.int(tile.width/tileWidth);
+        slicedTileHeight = Std.int(tile.height/tileHeight);
         slicedTiles = tile.gridFlattenExt(tileWidth, tileHeight);
     }
 
@@ -235,9 +245,21 @@ class AutoTile {
             if(tileIndex == null)
                 tileIndex = mappings.cases.defaultTile;
 
-            if(mappings.offset != null)
-                tileIndex += mappings.offset;
+            var x: Int = Std.int(tileIndex%mappings.cases.width);
+            var y: Int = Math.floor(tileIndex/mappings.cases.width);
             
+
+            if(mappings.origin != null)  {
+                x += Std.int(mappings.origin.x);
+                y += Std.int(mappings.origin.y);
+            }
+
+            if(x < 0 || x >= slicedTileWidth || y < 0 || y >= slicedTileHeight) {
+                trace("Tile out of bounds");
+                continue;
+            }
+            
+            tileIndex = x + y*slicedTileWidth;
             var coords = indexGrid.getCoords(i);
             tileGroup.add(coords.x*tileWidth, coords.y*tileHeight, slicedTiles[tileIndex]);
         }
