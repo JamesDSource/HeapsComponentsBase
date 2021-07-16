@@ -1,42 +1,17 @@
 package hcb.comp.anim;
 
-import h2d.Anim;
 import h2d.Tile;
 import hcb.Origin;
 import VectorMath;
 
-class Animation extends Anim {
-    public var flipX(default, set): Bool = false;
-    public var flipY(default, set): Bool = false;
+class Anim extends h2d.Anim {
+    public var stop: Bool = false;
 
     public var originPoint(default, set): OriginPoint = OriginPoint.TopLeft;
     public var originOffsetX(default, set): Float = 0;
     public var originOffsetY(default, set): Float = 0;
 
     private var onFrameEventListeners: Map<Int, Array<() -> Void>> = [];
-    // ^ Only works when in an animation player
-    @:allow(hcb.comp.anim.AnimationPlayer)
-    private var previousFrame: Int = 0;
-
-    private function set_flipX(flipX: Bool): Bool {
-        if(this.flipX != flipX) {
-            for(frame in frames) {
-                frame.flipX();
-            }
-            this.flipX = flipX;
-        }
-        return flipX;
-    }
-
-    private function set_flipY(flipY: Bool): Bool {
-        if(this.flipY != flipY) {
-            for(frame in frames) {
-                frame.flipY();
-            }
-            this.flipY = flipY;
-        }
-        return flipY;
-    }
 
     private function set_originPoint(originPoint: OriginPoint): OriginPoint {
         if(this.originPoint != originPoint) {
@@ -62,7 +37,8 @@ class Animation extends Anim {
         return originOffsetY;
     }
 
-    public function new(strip: Tile, frames: Int, speed: Float = 15, originPoint: OriginPoint = OriginPoint.TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+    @:allow(hcb.comp.anim.Animation)
+    private function new(strip: Tile, frames: Int, speed: Float, originPoint: OriginPoint, originOffsetX: Float, originOffsetY: Float) {
         var animFrames: Array<Tile> = strip.split(frames);
         super(animFrames, speed);
         this.originPoint = originPoint;
@@ -81,7 +57,7 @@ class Animation extends Anim {
             animFrame.dy = offset.y + originOffsetY;
         }
     }
-     
+
     // & On frame event functions
     public function onFrameEventSubscribe(frame: Int, callBack: () -> Void) {
         if(onFrameEventListeners.exists(frame))
@@ -103,11 +79,72 @@ class Animation extends Anim {
         return false;
     }
 
-    @:allow(hcb.comp.anim.AnimationPlayer.update)
+    @:allow(hcb.comp.anim.Animation)
     private function onFrameEventCall(frame: Int) {
         if(onFrameEventListeners.exists(frame)) {
             for(listener in onFrameEventListeners[frame])
                 listener();
         }
+    }
+}
+
+@:forward(  // * hcb.Anim
+            stop, originPoint, originOffsetX, originOffsetY, 
+            onFrameEventSubscribe, onFrameEventRemove,
+            // * h2d.Anim
+            currentFrame, speed, loop, 
+            fading, getFrame, onAnimEnd,
+            // * Drawable
+            color, smooth, tileWrap,
+            colorKey, colorMatrix,
+            colorAdd, adjustColor,
+            getDebugShaderCode, getShader,
+            getShaders, addShader, removeShader,
+            // * Object
+            parent, numChildren, x, y, scaleX, scaleY, rotation, 
+            visible, alpha, filter, blendMode, #if domkit dom, #end
+            getBounds, getSize, getAbsPos, contains,
+            find, findAll, getObjectsCount, localToGlobal,
+            globalToLocal, getScene, addChild, addChildAt,
+            removeChild, removeChildren, remove, removeChildren,
+            drawTo, drawToTextures, move, setPosition,
+            rotate, scale, setScale, getChildAt, getChildIndex,
+            getObjectByName, iterator
+)
+abstract Animation(Anim) to h2d.Anim {
+    public function new(strip: Tile, frames: Int, speed: Float = 15, originPoint: OriginPoint = TopLeft, originOffsetX: Float = 0, originOffsetY: Float = 0) {
+        this = new Anim(strip, frames, speed, originPoint, originOffsetX, originOffsetY);
+        this.pause = true;
+    }
+
+    @:arrayAccess
+    public inline function get(i: Int): Tile {
+        return this.frames[i];
+    }
+
+    @:access(h2d.Anim.curFrame)
+    public inline function step(dt: Float) {
+        var prev = this.curFrame;
+		if (!this.stop)
+			this.curFrame += this.speed * dt;
+		if(this.curFrame < this.frames.length ) {
+			if(Std.int(prev) != Std.int(this.curFrame))
+                this.onFrameEventCall(Std.int(this.curFrame%this.frames.length));
+            return;
+        }
+		
+        // * When the animation ends
+        if(this.loop) {
+			if(this.frames.length == 0)
+				this.curFrame = 0;
+			else
+				this.curFrame %= this.frames.length;
+            this.onFrameEventCall(Std.int(this.curFrame));
+			this.onAnimEnd();
+		} 
+        else {
+			this.curFrame = this.frames.length;
+			if(this.curFrame != prev) this.onAnimEnd();
+		}
     }
 }

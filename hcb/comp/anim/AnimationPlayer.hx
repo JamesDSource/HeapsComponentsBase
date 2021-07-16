@@ -10,11 +10,8 @@ private typedef AnimationSlot = {
 
 class AnimationPlayer extends TransformComponent2D {
     private var animationSlots: Map<String, AnimationSlot> = new Map<String, AnimationSlot>();
-    private var animationLayers: h2d.Layers = new h2d.Layers();
+    public var animationLayers(default, null): h2d.Layers = new h2d.Layers();
     public var layer(default, set): Int = 0;
-
-    public var autoPause: Bool;
-    // ^ When set to true, will automatically pause and unpause all animations when the room pauses or unpauses
 
     private function set_layer(layer: Int): Int {
         if(parent2d != null) {
@@ -26,11 +23,10 @@ class AnimationPlayer extends TransformComponent2D {
         return layer;
     }
 
-    public function new(layer: Int = 0, autoPause: Bool = true, name: String = "Animation Player") {
+    public function new(layer: Int = 0, name: String = "Animation Player") {
         // * renderParent should be null if you want it to just be added to the scene
         super(name);
         this.layer = layer;
-        this.autoPause = autoPause;
 
         transform.onTranslated =    (position) -> animationLayers.setPosition(position.x, position.y);
         transform.onRotated =       (rotation) -> animationLayers.rotation = rotation;
@@ -47,30 +43,12 @@ class AnimationPlayer extends TransformComponent2D {
             parent2d.layers.removeChild(animationLayers);
     }
 
-    private override function addedToRoom() {
-        room.onPauseEventSubscribe(onPause);
-        if(autoPause) {
-            onPause(room.paused);
-        }
-    }
-
-    private override function removedFromRoom() {
-        room.onPauseEventRemove(onPause);
-        if(autoPause && room.paused) {
-            onPause(false);
-        }
-    }
-
-    private override function update() {      
+    private override function update() {
         for(animationSlot in animationSlots) {
-            if(animationSlot.animation != null) {
-                // * Calling the on frame event
-                var frame: Int = Std.int(animationSlot.animation.currentFrame);
-                if(animationSlot.animation.previousFrame != frame) {
-                    animationSlot.animation.onFrameEventCall(frame);
-                    animationSlot.animation.previousFrame = frame;
-                }
-            }
+            if(animationSlot.animation.stop)
+                continue;
+
+            animationSlot.animation.step(1/project.targetFrameRate);
         }
     }
 
@@ -99,8 +77,6 @@ class AnimationPlayer extends TransformComponent2D {
 
             animationSlots[name].animation = animation;
             animationLayers.add(animation, animationSlots[name].layer);
-
-            animation.previousFrame = Std.int(animation.currentFrame);
         }
     }
 
@@ -120,16 +96,5 @@ class AnimationPlayer extends TransformComponent2D {
             result.push(animSlot.animation);
         }
         return result;
-    }
-
-    private function onPause(paused: Bool) {
-        if(autoPause) {
-            for(slot in animationSlots) {
-                if(slot.animation == null)
-                    continue;
-
-                slot.animation.pause = paused;
-            }
-        }
     }
 }
