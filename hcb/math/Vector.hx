@@ -45,4 +45,13 @@ class Vector {
     public overload static inline extern function tripleProduct(a: Vec3, b: Vec3, c: Vec3): Vec3 {
         return a.cross(b).cross(c);
     }
+
+    public static inline function approach(a: Vec2, b: Vec2, scaler: Float): Vec2 {
+        scaler = Math.abs(scaler);
+        var r = a.clone();
+
+        r.x = hcb.math.TweenManager.approach(r.x, b.x, scaler);
+        r.y = hcb.math.TweenManager.approach(r.y, b.y, scaler);
+        return r;
+    }
 }

@@ -56,6 +56,22 @@ class TweenManager {
 
     public function new() {}
 
+    public static function approach(a: Float, b: Float, step: Float): Float {
+        step = Math.abs(step);
+        
+        if(a < b) {
+            a += step;
+            if(a > b)
+                return b;
+        }
+        else {
+            a -= step;
+            if(a < b)
+                return b;
+        }
+        return a;
+    }
+
     public function step(delta: Float, paused: Bool) {
         for(tween in tweens.copy()) {
             if(!tween.active || (paused && !hcb.Pause.updateOnPause(tween)))
