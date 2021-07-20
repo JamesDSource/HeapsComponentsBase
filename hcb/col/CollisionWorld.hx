@@ -7,6 +7,8 @@ import hcb.comp.col.*;
 import VectorMath;
 import hcb.SignedArray;
 
+using hcb.math.Vector;
+
 typedef RayResult = {
     intersectionPoint: Vec2,
     shape: CollisionShape
@@ -238,7 +240,7 @@ class CollisionWorld {
                 continue;
 
             var rayResult: Vec2 = Collisions.raycastTest(rayCast, shape);
-            if(rayResult != null && (result == null || rayResult.distance(rayCast.origin) < result.intersectionPoint.distance(rayCast.origin))) {
+            if(rayResult != null && (result == null || rayResult.distanceSquared(rayCast.origin) < result.intersectionPoint.distanceSquared(rayCast.origin))) {
                 result = {
                     intersectionPoint: rayResult,
                     shape: shape
@@ -249,8 +251,8 @@ class CollisionWorld {
         return result;
     }
 
-    // & Returns all raycast results
-    public extern overload inline function getCollisionAt(rayCast: Raycast, output: Array<RayResult>, ?tag:String): Int {
+    // & Returns all raycast results, if order is set to true elements further in the list are further from the ray origin
+    public extern overload inline function getCollisionAt(rayCast: Raycast, output: Array<RayResult>, order: Bool = false, ?tag:String): Int {
         var count: Int = 0;
         
         // * Check every shape if the raycast is infinite
@@ -277,7 +279,28 @@ class CollisionWorld {
 
             var rayResult: Vec2 = Collisions.raycastTest(rayCast, shape);
             if(rayResult != null) {
-                output.push({intersectionPoint: rayResult, shape: shape});
+                var result = {intersectionPoint: rayResult, shape: shape};
+                
+                if(order) {
+                    var added: Bool = false;
+                    for(i in 0...output.length + 1) {
+                        if(i == output.length) {
+                            output.push(result);
+                            break;
+                        }
+
+                        var dist1 = rayResult.distanceSquared(rayCast.origin);
+                        var dist2 = output[i].intersectionPoint.distanceSquared(rayCast.origin);
+
+                        if(dist1 < dist2) {
+                            output.insert(i, result);
+                            break;
+                        }
+                    }
+                }
+                else
+                    output.push(result);
+                
                 count++;
             }
         }

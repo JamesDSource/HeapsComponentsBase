@@ -54,4 +54,12 @@ class Vector {
         r.y = hcb.math.TweenManager.approach(r.y, b.y, scaler);
         return r;
     }
+
+    public overload static inline extern function distanceSquared(a: Vec2, b: Vec2): Float {
+        return (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y);
+    }
+
+    public overload static inline extern function distanceSquared(a: Vec3, b: Vec3): Float {
+        return (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y) + (b.z - a.z)*(b.z - a.z);
+    }
 }

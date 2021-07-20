@@ -123,13 +123,22 @@ abstract Animation(Anim) to h2d.Anim {
     }
 
     @:access(h2d.Anim.curFrame)
-    public inline function step(dt: Float) {
+    public function step(dt: Float) {
+        
         var prev = this.curFrame;
 		if (!this.stop)
 			this.curFrame += this.speed * dt;
-		if(this.curFrame < this.frames.length ) {
+		
+        if(this.speed == 0)
+            return;
+        else if(this.speed > 0 && this.curFrame < this.frames.length) {
 			if(Std.int(prev) != Std.int(this.curFrame))
-                this.onFrameEventCall(Std.int(this.curFrame%this.frames.length));
+                this.onFrameEventCall(Std.int(this.curFrame));
+            return;
+        }
+        else if(this.speed < 0 && this.curFrame > 0) {
+            if(Std.int(prev) != Std.int(this.curFrame))
+                this.onFrameEventCall(Std.int(this.curFrame));
             return;
         }
 		
@@ -137,14 +146,16 @@ abstract Animation(Anim) to h2d.Anim {
         if(this.loop) {
 			if(this.frames.length == 0)
 				this.curFrame = 0;
-			else
+			else if(this.speed > 0)
 				this.curFrame %= this.frames.length;
+            else
+                this.curFrame += this.frames.length;
             this.onFrameEventCall(Std.int(this.curFrame));
 			this.onAnimEnd();
 		} 
         else {
-			this.curFrame = this.frames.length;
-			if(this.curFrame != prev) this.onAnimEnd();
+			this.curFrame = this.speed > 0  ? this.frames.length : 0;
+            if(this.curFrame != prev) this.onAnimEnd();
 		}
     }
 }

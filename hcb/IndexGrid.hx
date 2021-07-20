@@ -36,6 +36,21 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
 
         return indexGrid;
     }
+
+    public static function ldtkIntGridConvert(intGridLayer: ldtk.Layer_IntGrid): IndexGrid {
+        var indexGrid = new IndexGrid(intGridLayer.cWid, intGridLayer.cHei);
+        indexGrid.cellSize = intGridLayer.gridSize;
+
+        for(i in 0...intGridLayer.cHei) {
+            for(j in 0...intGridLayer.cWid) {
+                var hasValue = intGridLayer.hasValue(j, i);
+                if(hasValue)
+                    indexGrid[indexGrid.coordsToIndex(j, i)] = intGridLayer.getInt(j, i);
+            }
+        }
+
+        return indexGrid;
+    }
     #end
     
     public var length(get, never): Int;
@@ -158,6 +173,10 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
             for(i in (oldLen - 1)...idealLen)
                 indexs[i] = defaultValue;
         }
+    }
+
+    public function blit(indexGrid: IndexGrid, ?position: Vec2) {
+        
     }
 
     public overload inline extern function coordsToIndex(x: Int, y: Int): Int {
