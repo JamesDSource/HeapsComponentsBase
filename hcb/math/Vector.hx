@@ -62,4 +62,12 @@ class Vector {
     public overload static inline extern function distanceSquared(a: Vec3, b: Vec3): Float {
         return (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y) + (b.z - a.z)*(b.z - a.z);
     }
+
+    public overload static inline extern function lengthSquared(v: Vec2): Float {
+        return v.x*v.x + v.y*v.y;
+    }
+
+    public overload static inline extern function lengthSquared(v: Vec3) {
+        return v.x*v.x + v.y*v.y + v.z*v.z;
+    }
 }

@@ -175,8 +175,22 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
         }
     }
 
-    public function blit(indexGrid: IndexGrid, ?position: Vec2) {
-        
+    public function blit(indexGrid: IndexGrid, ?position: Vec2, ?ignore: Array<Int>) {
+        var startPosition: Vec2 = position != null ? position : vec2(0, 0);
+
+        for(x in startPosition.x...(startPosition.x + indexGrid.width + 1)) {
+            for(y in startPosition.y...(startPosition.y + indexGrid.height + 1)) {
+                if(!inRange(x, y))
+                    continue;
+
+                var destIndex = coordsToIndex(x, y);
+                var srcIndex = coordsToIndex(x - startPosition.x, y - startPosition.y);
+                if(ignore != null && ignore.contains(indexGrid[srcIndex]))
+                    continue;
+                
+                this.indexs[destIndex] = indexGrid[srcIndex];
+            }
+        }
     }
 
     public overload inline extern function coordsToIndex(x: Int, y: Int): Int {
