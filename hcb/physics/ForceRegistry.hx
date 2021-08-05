@@ -32,9 +32,8 @@ class ForceRegistry {
     }
 
     public function updateForces() {
-        for(register in registry) {
+        for(register in registry)
             register.forceGenerator.updateForce(register.body);
-        }
     }
 
     // TODO: Impliment me

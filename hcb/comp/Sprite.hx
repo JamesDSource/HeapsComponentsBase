@@ -122,9 +122,11 @@ class Sprite extends TransformComponent2D {
         this.originOffsetX = originOffsetX;
         this.originOffsetY = originOffsetY;
 
-        transform.onTranslated =    (position) -> bitmap.setPosition(bitmap.x, bitmap.y);
+        transform.onTranslated =    (position) -> bitmap.setPosition(position.x, position.y);
         transform.onRotated =       (rotation) -> bitmap.rotation = rotation;
         transform.onScaled =        (scale) -> {bitmap.scaleX = scale.x; bitmap.scaleY = scale.y;};
+
+        updateable = false;
     }
 
     private override function init() {

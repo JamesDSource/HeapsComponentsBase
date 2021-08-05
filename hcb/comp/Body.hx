@@ -14,14 +14,12 @@ typedef BodyOptions = {
     ?linearDrag: Null<Float>,
 
     ?angularVelocity: Null<Float>,
-    ?angularInertia: Null<Float>,
+    ?inertia: Null<Float>,
     ?angularDrag: Null<Float>,
 
     ?elasticity: Null<Float>,
     ?staticFriction: Null<Float>,
     ?dynamicFriction: Null<Float>,
-    
-    
 }
 
 class Body extends Component {
@@ -29,32 +27,30 @@ class Body extends Component {
     
     // * Linear components
     public var velocity: Vec2 = vec2(0, 0);
-    public var mass: Float = 0;
+    public var mass: Float = 1;
     public var inverseMass(get, null): Float;
     public var infiniteMass(get, null): Bool;
     public var linearDrag(default, set): Float = 1.;
 
     // * Angular components
     public var angularVelocity: Float = 0;
-    public var angularInertia: Float = 0;
-    public var inverseAngularInertia(get, null): Float;
+    public var inertia: Float = 1;
+    public var inverseInertia(get, null): Float;
     public var angularDrag(default, set): Float = 1.;
     public var syncPolygonRotation: Bool = true;
 
-    public var elasticity: Float = 1.;
-    public var staticFriction: Float = 0;
-    public var dynamicFriction: Float = 0;
+    public var elasticity: Float = 0;
+    public var staticFriction: Float = .5;
+    public var dynamicFriction: Float = .5;
 
     private inline function set_shape(shape: CollisionShape): CollisionShape {
         if(shape != null) {
-            if(shape.body != null) {
+            if(shape.body != null)
                 shape.body.shape = null;
-            }
             shape.body = this;
         }
-        else if(this.shape != null) {
+        else if(this.shape != null) 
             this.shape.body = null;
-        }
         
         this.shape = shape;
         return shape;
@@ -73,8 +69,8 @@ class Body extends Component {
         return this.linearDrag;
     }
 
-    private inline function get_inverseAngularInertia(): Float {
-        return angularInertia == 0 ? 0 : 1/angularInertia;
+    private inline function get_inverseInertia(): Float {
+        return inertia == 0 ? 0 : 1/inertia;
     }
 
     private inline function set_angularDrag(angularDrag: Float): Float {
@@ -105,8 +101,8 @@ class Body extends Component {
         if(options.angularVelocity != null)
             angularVelocity = options.angularVelocity;
 
-        if(options.angularInertia != null)
-            angularInertia = options.angularInertia;
+        if(options.inertia != null)
+            inertia = options.inertia;
 
         if(options.angularDrag != null)
             angularDrag = options.angularDrag;
@@ -122,7 +118,7 @@ class Body extends Component {
     }
 
     // & Updates position and angle
-    @:allow(hcb.physics.PhysicsWorld.update)
+    @:allow(hcb.physics.PhysicsWorld)
     private function physicsUpdate() {
         if(parentEntity == null) return;
 
@@ -137,10 +133,8 @@ class Body extends Component {
     public function impulse(force: Vec2, ?contactArm: Vec2) { 
         velocity += force*inverseMass;
 
-        if(contactArm == null)
-            contactArm = vec2(0, 0);
-
-        angularVelocity += inverseAngularInertia*contactArm.cross(force);
+        if(contactArm != null)
+            angularVelocity += inverseInertia*contactArm.cross(force);
     }
 
     private override function addedToRoom() {

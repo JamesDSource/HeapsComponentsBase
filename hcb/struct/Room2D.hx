@@ -1,23 +1,34 @@
 package hcb.struct;
 
+import hcb.comp.col.CollisionShape.Bounds;
+
 class Room2D extends Room {
     public var scene(default, null): h2d.Scene;
     public var drawTo: h2d.Layers;
     // ^ The layers that parent the entity layers. Defaults to the scene
     
     public var collisionWorld(default, null): hcb.col.CollisionWorld;
-    public var physicsWorld(default, null): hcb.physics.PhysicsWorld;
+    public var physicsWorld(default, null): hcb.physics.PhysicsWorld = null;
     public var usesPhysics: Bool;
     public var physicsPauseOnPause: Bool = true;
     private var physicsAccumulator: Float = 0;
 
-    public function new(usesPhysics: Bool = false, collisionCellSize: Float = 256) {
+    public function new(collisionCellSize: Float = 256) {
         super();
         scene = new h2d.Scene();
         drawTo = scene;
         collisionWorld = new hcb.col.CollisionWorld(collisionCellSize);
-        physicsWorld = new hcb.physics.PhysicsWorld(collisionWorld);
-        this.usesPhysics = usesPhysics;
+    }
+
+    public function initializePhysics(bounds: Bounds, quadCapacity: Int = 4, impulseIterations: Int = 15, percentCorrection: Float = .4, slop: Float = 0.05) {
+        if(usesPhysics)
+            return;
+        
+        usesPhysics = true;
+        physicsWorld = new hcb.physics.PhysicsWorld(bounds, quadCapacity);
+        physicsWorld.impulseIterations = impulseIterations;
+        physicsWorld.percentCorrection = percentCorrection;
+        physicsWorld.slop = slop;
     }
 
     public override function clear() {
@@ -38,7 +49,7 @@ class Room2D extends Room {
     private override function update(delta:Float, targetFrameRate:Float, targetPhysicsFrameRate:Float): Float {
         delta = super.update(delta, targetFrameRate, targetPhysicsFrameRate);
 
-        // * Physics loop
+        // Physics loop
         if(!usesPhysics) 
             return delta;
 

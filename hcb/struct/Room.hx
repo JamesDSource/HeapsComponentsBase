@@ -71,9 +71,8 @@ class Room {
         tweens.step(delta, paused);
         
         // * Timers
-        for(timer in timers) {
+        for(timer in timers)
             timer.countDown(delta, paused);
-        }
 
         // * Normal update loop
         InputManager.get().catchInputs();

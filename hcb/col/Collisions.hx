@@ -81,9 +81,8 @@ class Collisions {
 
         result.shape1 = shape1;
         result.shape2 = shape2;
-        if(flipped && result.normal != null) {
+        if(flipped && result.normal != null)
             result.normal *= -1;
-        }
         return result;
     }
 

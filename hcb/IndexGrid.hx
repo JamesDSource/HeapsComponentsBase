@@ -178,13 +178,13 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
     public function blit(indexGrid: IndexGrid, ?position: Vec2, ?ignore: Array<Int>) {
         var startPosition: Vec2 = position != null ? position : vec2(0, 0);
 
-        for(x in startPosition.x...(startPosition.x + indexGrid.width + 1)) {
-            for(y in startPosition.y...(startPosition.y + indexGrid.height + 1)) {
+        for(x in Std.int(startPosition.x)...Std.int(startPosition.x + indexGrid.width)) {
+            for(y in Std.int(startPosition.y)...Std.int(startPosition.y + indexGrid.height)) {
                 if(!inRange(x, y))
                     continue;
 
                 var destIndex = coordsToIndex(x, y);
-                var srcIndex = coordsToIndex(x - startPosition.x, y - startPosition.y);
+                var srcIndex = coordsToIndex(Std.int(x - startPosition.x), Std.int(y - startPosition.y));
                 if(ignore != null && ignore.contains(indexGrid[srcIndex]))
                     continue;
                 

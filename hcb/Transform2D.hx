@@ -33,10 +33,28 @@ class Transform2D {
         if(this.parent != null)
             this.parent.children.remove(this);
 
+        
         if(parent != null)
             parent.children.push(this);
+        
+        var p0 = getPosition();
+        var r0 = getRotationRad();
+        var s0 = getScale();
 
-        return this.parent = parent;
+        this.parent = parent;
+
+        var p1 = getPosition();
+        var r1 = getRotationRad();
+        var s1 = getScale();
+
+        if(p1 != p0)
+            onTranslated(p1);
+        if(r1 != r0)
+            onRotated(r1);
+        if(s1 != s0)
+            onScaled(s1);
+
+        return parent;
     }
 
     private inline function set_positionSnap(positionSnap: Bool): Bool {

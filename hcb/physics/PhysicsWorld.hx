@@ -8,104 +8,105 @@ import VectorMath;
 using hcb.math.Vector;
 
 class PhysicsWorld {
-    private var collisionWorld: CollisionWorld;
     public var forceRegistry: ForceRegistry;
 
+    private var quadtree: Quadtree;
     private var bodies: Array<Body> = [];
     private var collisions: Array<CollisionInfo> = [];
 
-    public var impulseIterations: Int = 10;
-    public var percentCorrection: Float = 0.3;
-    public var slop: Float = 0.01;
+    public var impulseIterations: Int = 15;
+    public var percentCorrection: Float = 0.4;
+    public var slop: Float = 0.05;
 
-    public function new(collisionWorld: CollisionWorld) {
-        this.collisionWorld = collisionWorld;
+    public function new(bounds: hcb.comp.col.CollisionShape.Bounds, quadCapacity: Int = 4) {
+        quadtree = new Quadtree(bounds, 4);
         forceRegistry = new ForceRegistry();
     }
 
     public function update() { 
+        // Collisions
+        collisions = quadtree.getColliding();
 
-        // * Collisions
-        collisions = [];
-        for(body in bodies) {
-            // * Both cannot have infinite mass, and both must have a shape
-            if(body.shape != null)
-                collisionWorld.getCollisionAt(body.shape, collisions, true);
-        }
-
-        // * Update the forces
+        // Update the forces
         forceRegistry.updateForces();
 
-
-        // * Resolving collisions via iterative impulse resolution
-        for(i in 0...impulseIterations) {
-            for(collision in collisions) {
+        // Resolving collisions via iterative impulse resolution
+        for(i in 0...impulseIterations)
+            for(collision in collisions)
                 resolveCollision(collision);
-            }
-        }
 
         for(body in bodies)
             body.physicsUpdate();
 
         for(collision in collisions)
             positionalCorrection(collision);
+
+        rebuildQuadtree();
+    }
+
+    public function represent(g: h2d.Graphics, quadRootColor: Int = 0xFF0000, quadDivColor: Int = 0xFFFFFF) {
+        quadtree.represent(g, quadRootColor, quadDivColor);
+    }
+
+    private function rebuildQuadtree() {
+        quadtree.clear();
+        for(body in bodies)
+            quadtree.insert(body.shape);
     }
 
     private function resolveCollision(pCollision: CollisionInfo) {
         var body1 = pCollision.shape1.body;
         var body2 = pCollision.shape2.body;
 
-        if(body1 == null || body2 == null || body1.shape == null || body2.shape == null) return;
+        if(body1 == null || body2 == null || body1.shape == null || body2.shape == null) 
+            return;
 
         var invMass1: Float = body1.inverseMass;
         var invMass2: Float = body2.inverseMass;
-        var invAngularInertia1: Float = body1.inverseAngularInertia;
-        var invAngularInertia2: Float = body2.inverseAngularInertia;
+        var invInertia1: Float = body1.inverseInertia;
+        var invInertia2: Float = body2.inverseInertia;
         
-        if(invMass1 + invMass2 + invAngularInertia1 + invAngularInertia2 < hxd.Math.EPSILON) return;
+        if(invMass1 + invMass2 + invInertia1 + invInertia2 < hxd.Math.EPSILON) 
+            return;
 
         var pos1: Vec2 = pCollision.shape1.getAbsPosition();
         var pos2: Vec2 = pCollision.shape2.getAbsPosition();
 
-        // * The coefficient of restitution should be the lower elasticity
+        // The coefficient of restitution should be the lower elasticity
         var e: Float = Math.min(body1.elasticity, body2.elasticity);
+        var mu: Float = Math.sqrt(body1.staticFriction*body2.staticFriction);
+        
+        // Loop through every point of contact
+        for(contactPoint in pCollision.contactPoints) {
+            var arm1 = contactPoint - pos1;
+            var arm2 = contactPoint - pos2;
 
-        var mu: Float = length(vec2(body1.staticFriction, body2.staticFriction));
+            // Getting the relative velocity between the two points
+            // This accounts for both linear and rotational velocity
+            var relative: Vec2 =    (body2.velocity + arm2.crossRight(body2.angularVelocity)) - 
+                                    (body1.velocity + arm1.crossRight(body1.angularVelocity));
+            var velAlongNormal: Float = relative.dot(pCollision.normal);
 
-        for(point in pCollision.contactPoints) {
-            // * Get the arms
-            var ra: Vec2 = point - pos1;
-            var rb: Vec2 = point - pos2;
-            
-            // * Get the relative velocity and compare it to the normal
-            var relativeVelocity: Vec2 =    body2.velocity + rb.crossRight(body2.angularVelocity) - 
-                                            body1.velocity - ra.crossRight(body1.angularVelocity);
-            var velocityAlongNormal: Float = relativeVelocity.dot(pCollision.normal);
+            if(velAlongNormal > 0)
+                continue;
 
-            // * Do not resolve if velocities are seperating
-            if(velocityAlongNormal > 0)
-                return;
+            var impAug1 = arm1.cross(pCollision.normal);
+            impAug1 = impAug1*invInertia1*impAug1;
+            var impAug2 = arm2.cross(pCollision.normal);
+            impAug2 = impAug2*invInertia2*impAug2;
+            var invMassSum = invMass1 + invMass2 + impAug1 + impAug2;
 
+            var j = (-(1 + e)*velAlongNormal)/invMassSum;
+            var impulse = j*pCollision.normal/pCollision.contactPoints.length;
+            body1.impulse(-impulse, arm1);
+            body2.impulse( impulse, arm2);
 
-            var raCN = ra.cross(pCollision.normal);
-            var rbCN = rb.cross(pCollision.normal);
-            var invMassSum = invMass1 + invMass2 + raCN*raCN*invAngularInertia1 + rbCN*rbCN*invAngularInertia2;
+            // Getting friction
+            var relativeVelocity: Vec2 =    (body2.velocity + arm2.crossRight(body2.angularVelocity)) -
+                                            (body1.velocity + arm1.crossRight(body1.angularVelocity));
+            var tangent: Vec2 = normalize(relativeVelocity - pCollision.normal*relativeVelocity.dot(pCollision.normal));
 
-            // * Calculate the impulse scaler
-            var j: Float = -(1 + e)*velocityAlongNormal;
-            j /= invMassSum;
-            j /= pCollision.contactPoints.length;
-
-            var impulse: Vec2 = j*pCollision.normal;
-            body1.impulse(-impulse, ra);
-            body2.impulse(impulse, rb);
-
-            // * Getting friction
-            var relativeVelocity: Vec2 =    (body2.velocity + rb.crossRight(body2.angularVelocity)) - 
-                                            (body1.velocity - ra.crossRight(body1.angularVelocity));
-            var tangent: Vec2 = normalize(relativeVelocity - relativeVelocity.dot(pCollision.normal)*pCollision.normal);
-
-            // * Calculate the friction magnitude
+            // Calculate the friction magnitude
             var jt: Float = -relativeVelocity.dot(tangent)/invMassSum;
             jt /= pCollision.contactPoints.length;
 
@@ -116,12 +117,12 @@ class PhysicsWorld {
             if(Math.abs(jt) < j*mu)
                 frictionImpulse = jt*tangent;
             else {
-                var dynamicFriction = length(vec2(body1.dynamicFriction, body2.dynamicFriction));
+                var dynamicFriction = Math.sqrt(body1.dynamicFriction*body2.dynamicFriction);
                 frictionImpulse = -j*tangent*dynamicFriction;
             }
 
-            body1.impulse(-frictionImpulse, ra);
-            body2.impulse(frictionImpulse, rb);
+            body1.impulse(-frictionImpulse, arm1);
+            body2.impulse( frictionImpulse, arm2);
         }
     }
 
@@ -129,15 +130,18 @@ class PhysicsWorld {
         var body1 = pCollision.shape1.body;
         var body2 = pCollision.shape2.body;
 
-        if(body1 == null || body2 == null) return;
+        if(body1 == null || body2 == null) 
+            return;
 
         var invMass1 = body1.inverseMass;
         var invMass2 = body2.inverseMass;
+        var invMassSum = invMass1 + invMass2;
 
-        if(invMass1 + invMass2 == 0) return;
+        if(invMassSum == 0) 
+            return;
 
-        var correction: Vec2 = (Math.max(pCollision.depth - slop, 0)/(invMass1 + invMass2))*percentCorrection*pCollision.normal;
-        
+        var correction: Vec2 = (Math.max(pCollision.depth - slop, 0)/invMassSum)*percentCorrection*pCollision.normal;
+
         if(body1.parent2d != null)
             body1.parent2d.transform.translate(-invMass1*correction);
 
@@ -148,11 +152,15 @@ class PhysicsWorld {
     public function addBody(body: Body) {
         if(!bodies.contains(body)) {
             bodies.push(body);
+            quadtree.insert(body.shape);
         }
     }
 
     public function removeBody(body: Body): Bool {
-        return bodies.remove(body);
+        var r = bodies.remove(body);
+        if(r)
+            rebuildQuadtree();
+        return r;
     }
 
     public function contains(body: Body) {
@@ -164,8 +172,9 @@ class PhysicsWorld {
     }
 
     public function clear() {
-        for(body in bodies.copy()) {
+        for(body in bodies.copy())
             removeBody(body);
-        }
+
+        rebuildQuadtree();
     }
 }
