@@ -1,5 +1,6 @@
 package hcb.struct;
 
+import hcb.physics.PhysicsWorld;
 import hcb.comp.col.CollisionShape.Bounds;
 
 class Room2D extends Room {
@@ -20,7 +21,7 @@ class Room2D extends Room {
         collisionWorld = new hcb.col.CollisionWorld(collisionCellSize);
     }
 
-    public function initializePhysics(bounds: Bounds, quadCapacity: Int = 4, impulseIterations: Int = 15, percentCorrection: Float = .4, slop: Float = 0.05) {
+    public function initializePhysics(bounds: Bounds, quadCapacity: Int = 4, impulseIterations: Int = 20, percentCorrection: Float = .4, slop: Float = 0.005) {
         if(usesPhysics)
             return;
         
@@ -46,23 +47,25 @@ class Room2D extends Room {
         }
     }
 
-    private override function update(delta:Float, targetFrameRate:Float, targetPhysicsFrameRate:Float): Float {
-        delta = super.update(delta, targetFrameRate, targetPhysicsFrameRate);
+    private override function update(delta:Float) {
+        super.update(delta);
 
         // Physics loop
         if(!usesPhysics) 
-            return delta;
+            return;
+
+        var physicsFps: Float = physicsWorld.overrideTargetPhysicsFramerate == null
+                                ? PhysicsWorld.targetPhysicsFramerate
+                                : physicsWorld.overrideTargetPhysicsFramerate;
 
         physicsAccumulator += delta;
-        while(physicsAccumulator >= 1/targetPhysicsFrameRate) {
+        while(physicsAccumulator >= 1/physicsFps) {
             if(!paused || !physicsPauseOnPause) {
                 onPhysicsUpdate();
-                physicsWorld.update();
+                physicsWorld.update(1/physicsFps);
             }
-            physicsAccumulator -= 1/targetPhysicsFrameRate;
+            physicsAccumulator -= 1/physicsFps;
         }
-
-        return delta;
     }
 
     public override function resync() {

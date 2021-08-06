@@ -132,7 +132,7 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
                 newShape = customShapes[index](org, cellSize);
             }
             else if(index != -1) {
-                var staticColShape = new CollisionAABB(cellSize, cellSize);
+                var staticColShape = CollisionPolygon.rectangle(cellSize, cellSize);
                 staticColShape.transform.setPosition(this.position != null ? this.position + org : org);
                 newShape = staticColShape;
             }
@@ -260,8 +260,8 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
         return shape;
     }
 
-    public static inline function bboxBuild(widthPercent: Float, heightPercent: Float, offsetPercent: Vec2, origin: Vec2, tileSize: Float): CollisionShape {
-        var shape: CollisionAABB = new CollisionAABB(widthPercent*tileSize, heightPercent*tileSize);
+    public static inline function boxBuild(widthPercent: Float, heightPercent: Float, offsetPercent: Vec2, origin: Vec2, tileSize: Float): CollisionShape {
+        var shape: CollisionPolygon = CollisionPolygon.rectangle(widthPercent*tileSize, heightPercent*tileSize);
         shape.transform.setPosition(origin + offsetPercent*tileSize);
         return shape;
     }

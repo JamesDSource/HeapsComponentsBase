@@ -13,7 +13,7 @@ class Grid {
     public var height(get, null): Float;
 
     public var originPoint: Vec2;
-    public var collisionShape: CollisionAABB;
+    public var collisionShape: CollisionPolygon;
     
     private inline function get_width(): Float {
         return cWidth*cellSize;
@@ -39,7 +39,7 @@ class Grid {
 
 
         // * Collision box
-        collisionShape = new CollisionAABB(cellSize, cellSize);
+        collisionShape = CollisionPolygon.rectangle(cellSize, cellSize);
     }
 
     // & Gets a node from a vector

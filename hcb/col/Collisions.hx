@@ -38,24 +38,8 @@ class Collisions {
 
         var flipped: Bool = false;
         switch(Type.getClass(shape1)) {
-            case CollisionAABB:
-                switch(Type.getClass(shape2)) {
-                    // * AABB with AABB
-                    case CollisionAABB:
-                        result = aabbWithAabb(cast shape1, cast shape2);
-                    // * AABB with poly
-                    case CollisionPolygon:
-                        result = aabbWithPoly(cast shape1, cast shape2);
-                    // * AABB with circle
-                    case CollisionCircle:
-                        result = aabbWithCircle(cast shape1, cast shape2);
-                }
             case CollisionPolygon:
                 switch(Type.getClass(shape2)) {
-                    // * poly with AABB
-                    case CollisionAABB:
-                        result = aabbWithPoly(cast shape2, cast shape1);
-                        flipped = true;
                     // * Poly with poly
                     case CollisionPolygon:
                         result = polyWithPoly(cast shape1, cast shape2);
@@ -65,10 +49,6 @@ class Collisions {
                 }
             case CollisionCircle:
                 switch(Type.getClass(shape2)) {
-                    // * Circle with AABB
-                    case CollisionAABB:
-                        result = aabbWithCircle(cast shape2, cast shape1);
-                        flipped = true;
                     // * Circle with poly
                     case CollisionPolygon:
                         result = polyWithCircle(cast shape2, cast shape1);
@@ -94,8 +74,6 @@ class Collisions {
             return result;
 
         switch(Type.getClass(shape)) {
-            case CollisionAABB:
-                result = aabbRaycast(cast shape, raycast);
             case CollisionPolygon:
                 result = polyRaycast(cast shape, raycast);
             case CollisionCircle:
@@ -113,9 +91,6 @@ class Collisions {
 
     public static function pointTest(point: Vec2, shape: CollisionShape): Bool {
         switch(Type.getClass(shape)) {
-            case CollisionAABB:
-                var bounds = shape.bounds;
-                return pointInAABB(point, bounds.min, bounds.max);
             case CollisionPolygon:
                 var poly: CollisionPolygon = cast(shape, CollisionPolygon);
                 return pointInPolygon(point, poly.worldVertices);
@@ -124,54 +99,6 @@ class Collisions {
                 return pointInCircle(point, circle.getAbsPosition(), circle.radius);
             default: 
                 return false;
-        }
-    }
-
-    // & Checks for a collision between two AABBs
-    public static inline function aabbWithAabb(aabb1: CollisionAABB, aabb2: CollisionAABB): CollisionInfo {
-        var verts1 = aabb1.vertices;
-        var verts2 = aabb2.vertices;
-
-        var isColliding = boundsIntersection(aabb1.bounds, aabb2.bounds);
-        var minOverlap: Float = Math.POSITIVE_INFINITY;
-        var smallestAxis: Vec2 = null;
-        var contactPoints: Array<Vec2> = [];
-
-        if(isColliding) {
-            var checkAxis: Array<Vec2> = [
-                vec2(1, 0),
-                vec2(0, 1)
-            ];
-
-            for(axis in checkAxis) {
-                var interval1 = getInterval(verts1, axis);
-                var interval2 = getInterval(verts2, axis);
-                var overlap = overlapOnAxis(interval1, interval2);
-                
-                // * Getting the depth and seperation normal
-                if(overlap < minOverlap) {
-                    minOverlap = overlap;
-                    smallestAxis = axis.normalize();
-                    if((aabb1.center - aabb2.center).dot(smallestAxis) > 0) {
-                        smallestAxis *= -1;
-                    }
-                }
-            }
-
-            if(smallestAxis != null) {
-                contactPoints = getPolygonContactPoints(verts1, verts2, smallestAxis);
-            }
-        }
-
-        
-        
-        return {
-            isColliding: isColliding,
-            shape1: aabb1,
-            shape2: aabb2,
-            normal: smallestAxis,
-            depth: minOverlap,
-            contactPoints: contactPoints
         }
     }
 
@@ -361,135 +288,6 @@ class Collisions {
         };
     }
 
-    // & Checks for a collision between an AABB and a polygon
-    public static inline function aabbWithPoly(aabb: CollisionAABB, poly: CollisionPolygon): CollisionInfo {
-        var isCollision: Bool = true;
-        var minOverlap: Float = Math.POSITIVE_INFINITY;
-        var smallestAxis: Vec2 = null;
-
-        // * Runs the code twice, switching between checking the poly to the AABB
-        var aabbVerts: Array<Vec2> = aabb.vertices;
-        var polyVerts: Array<Vec2> = poly.worldVertices;
-        for(i in 0...2) {
-            var poly1V: Array<Vec2> = [];
-            var poly2V: Array<Vec2> = [];
-            if(i == 0) {
-                poly1V = polyVerts;
-                poly2V = aabbVerts;
-            }
-            else {
-                poly1V = aabbVerts;
-                poly2V = polyVerts;
-            }
-
-            
-            for(j in 0...poly1V.length) {
-                var vert: Vec2 = poly1V[j];
-                var nextVert: Vec2 = poly1V[(j + 1)%poly1V.length];
-                var axisProj: Vec2 = vec2(-(vert.y - nextVert.y), vert.x - nextVert.x).normalize();
-
-                var interval1 = getInterval(poly1V, axisProj);
-                var interval2 = getInterval(poly2V, axisProj);
-                var overlap: Float = overlapOnAxis(interval1, interval2);
-                if(overlap < 0) {
-                    isCollision = false;
-                    break;
-                }
-
-                // * Getting the depth and seperation normal
-                if(overlap < minOverlap) {
-                    minOverlap = overlap;
-                    smallestAxis = axisProj.normalize();
-                    if((aabb.center - poly.center).dot(smallestAxis) > 0) {
-                        smallestAxis *= -1;
-                    }
-                }
-            }
-
-            if(!isCollision) break;
-        }
-
-        var contactPoints: Array<Vec2> = [];
-        if(isCollision && smallestAxis != null)
-            contactPoints = getPolygonContactPoints(aabbVerts, polyVerts, smallestAxis);
-
-        return {
-            isColliding: isCollision,
-            shape1: aabb,
-            shape2: poly,
-            normal: smallestAxis,
-            depth: minOverlap ,
-            contactPoints: contactPoints
-        };
-    }
-
-    // & Checks for a collision between an AABB and a circle
-    public static inline function aabbWithCircle(aabb: CollisionAABB, circle: CollisionCircle): CollisionInfo {
-        var aabbCenter = aabb.center;
-        var circleCenter = circle.getAbsPosition();
-        var r = circle.radius;
-        var verticies = aabb.vertices;
-
-        var axisCheck: Array<Vec2> = [
-            vec2(1, 0),
-            vec2(0, 1),
-            vec2(0, -1)
-        ];
-
-        var isColliding: Bool = true;
-        var minOverlap: Float = Math.POSITIVE_INFINITY;
-        var seperationAxis: Vec2 = null;
-        for(axis in axisCheck) {
-            var aabbI = getInterval(verticies, axis);
-            var circleI = getInterval([circleCenter + axis*r, circleCenter - axis*r], axis);
-            var overlap = overlapOnAxis(aabbI, circleI);
-
-            if(overlap < 0) {
-                isColliding = false;
-                break;
-            }
-
-            if(overlap < minOverlap) {
-                minOverlap = overlap;
-                seperationAxis = axis;
-                if(seperationAxis.dot(aabbCenter - circleCenter) > 0)
-                    seperationAxis *= -1;
-            }
-        }
-
-        var contactPoints: Array<Vec2> = [];
-        if(isColliding) {
-            var seperation: Float = Math.NEGATIVE_INFINITY;
-            var v1: Vec2 = null;
-            var v2: Vec2 = null;
-            for(i in 0...verticies.length) {
-                var n = (verticies[(i + 1)%verticies.length] - verticies[i]).crossRight().normalize();
-                var s = n.dot(circleCenter - aabbCenter);
-                if(s > seperation) {
-                    seperation = s;
-                    v1 = verticies[i];
-                    v2 = verticies[(i + 1)%verticies.length];
-                }
-            }
-
-            var edge = v2 - v1;
-            var d1 = edge.dot(v1);
-            var d2 = edge.dot(v2);
-            var c = edge.dot(circleCenter);
-            c = hxd.Math.clamp((c - d1)/(d2 - d1), 0, 1);
-            contactPoints.push(v1 + edge*c - seperationAxis*minOverlap/2);
-        }
-
-        return {
-            isColliding: isColliding,
-            shape1: aabb,
-            shape2: circle,
-            normal: seperationAxis,
-            depth: minOverlap,
-            contactPoints: contactPoints
-        }
-    }
-
     // & Checks if two polygons overlap on a certain axis
     public static inline function overlapOnAxis(interval1: {max: Float, min: Float}, interval2: {max: Float, min: Float}): Float {
         return interval1.max < interval2.max ? interval1.max - interval2.min : interval2.max - interval1.min;
@@ -659,10 +457,10 @@ class Collisions {
     }
 
     public static inline function boundsIntersection(bounds1: Bounds, bounds2: Bounds): Bool {
-        return  (bounds1.min.x < bounds2.max.x &&
-                 bounds1.max.x > bounds2.min.x &&
-                 bounds1.min.y < bounds2.max.y &&
-                 bounds1.max.y > bounds2.min.y );
+        return  (bounds1.min.x <= bounds2.max.x &&
+                 bounds1.max.x >= bounds2.min.x &&
+                 bounds1.min.y <= bounds2.max.y &&
+                 bounds1.max.y >= bounds2.min.y );
     }
     
     // & Finds the intersection point between a polygon and a ray
@@ -688,19 +486,23 @@ class Collisions {
     }
 
     // & Checks for a collision between an AABB and a ray
-    public static inline function aabbRaycast(aabb: CollisionAABB, ray: Raycast): Vec2 {
+    public static inline function boundsRaycast(bounds: Bounds, ray: Raycast): Vec2 {
         var rayPos = ray.origin;
         var castPoint = rayPos + ray.castTo;
-        var boxBounds = aabb.bounds;
 
         var intersectionPoint: Vec2 = null;
 
         // * Checking if the ray origin is inside the AABB
-        if(pointInAABB(rayPos, boxBounds.min, boxBounds.max))
+        if(pointInAABB(rayPos, bounds))
             intersectionPoint = rayPos;
         else {
             // * Get every vertex of the AABB to make lines with them
-            var vertices: Array<Vec2> = aabb.vertices;
+            var vertices: Array<Vec2> = [
+                bounds.min,
+                vec2(bounds.min.x, bounds.max.y),
+                bounds.max,
+                vec2(bounds.max.x, bounds.min.y)
+            ];
             
             // * Find all line intersection with the edges of the AABB and keep track of the closest
             var minDistance: Float = Math.POSITIVE_INFINITY;
@@ -801,11 +603,11 @@ class Collisions {
     }
 
     // & Checks if a coordinite is inside an AABB
-    public static inline function pointInAABB(point: Vec2, topLeft: Vec2, bottomRight: Vec2): Bool {
-        return  point.x <= bottomRight.x    &&
-                point.x >= topLeft.x        &&
-                point.y <= bottomRight.y    &&
-                point.y >= topLeft.y;
+    public static inline function pointInAABB(point: Vec2, bounds: Bounds): Bool {
+        return  point.x <= bounds.max.x    &&
+                point.x >= bounds.min.x        &&
+                point.y <= bounds.max.y    &&
+                point.y >= bounds.min.y;
     }
 
     // & Checks if a coordinite is inside a polygon

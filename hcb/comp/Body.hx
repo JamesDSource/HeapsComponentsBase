@@ -119,14 +119,14 @@ class Body extends Component {
 
     // & Updates position and angle
     @:allow(hcb.physics.PhysicsWorld)
-    private function physicsUpdate() {
+    private function step(dt: Float) {
         if(parentEntity == null) return;
 
-        parent2d.transform.rotateRad(angularVelocity);
-        parent2d.transform.translate(velocity);
+        parent2d.transform.rotateRad(angularVelocity*dt);
+        parent2d.transform.translate(velocity*dt);
 
-        velocity *= linearDrag;
-        angularVelocity *= angularDrag;
+        velocity *= Math.pow(linearDrag, dt);
+        angularVelocity *= Math.pow(angularDrag, dt);
     }
 
     // & Applies an impulse on a certain point of the shape

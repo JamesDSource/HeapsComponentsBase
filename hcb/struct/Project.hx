@@ -8,9 +8,6 @@ class Project {
     private var room2d: Room2D = null;
     private var room3d: Room3D = null;
 
-    public var targetFrameRate: Float = 60;
-    public var targetPhysicsFrameRate: Float = 60;
-
     private function set_room(room: Room): Room {
         if(this.room != room) {
             if(this.room != null) {
@@ -40,9 +37,19 @@ class Project {
     }
 
     public function update(delta: Float) {
-        if(room != null) {
-            room.update(delta, targetFrameRate, targetPhysicsFrameRate);
-        }
+        // * Frame snapping
+        var threshold: Float  = 0.0002;
+        if(Math.abs(delta - 1/30) < threshold)
+            delta = 1/30;
+        else if(Math.abs(delta - 1/60) < threshold)
+            delta = 1/60;
+        else if(Math.abs(delta - 1/90) < threshold)
+            delta = 1/60;
+        else if(Math.abs(delta - 1/144) < threshold)
+            delta = 1/120;
+
+        if(room != null)
+            room.update(delta);
     }
 
     public function updateRoomScene() {

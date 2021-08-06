@@ -1,7 +1,5 @@
-package hcb.col;
+package hcb.physics;
 
-import hcb.comp.col.CollisionPolygon;
-import hcb.comp.col.CollisionAABB;
 import hcb.col.Collisions;
 import hcb.comp.col.CollisionShape;
 import VectorMath;
@@ -37,14 +35,15 @@ class Quadtree {
         
         if(this.shapes.length < capacity)
             shapes.push(shape);
-        else if(divided) {
+        else {
+            if(!divided)
+                subDivide();
+
             nw.insert(shape);
             ne.insert(shape);
             sw.insert(shape);
             se.insert(shape);
         }
-        else
-            subDivide();
     }
 
     public function getColliding(): Array<CollisionInfo> {
@@ -57,8 +56,7 @@ class Quadtree {
             if(testShapes.length == 0)
                 continue;
 
-            if(!checked.exists(shape))
-                checked[shape] = [];
+            checked[shape] = [];
 
             for(testShape in testShapes) {
                 if ( 
@@ -80,7 +78,7 @@ class Quadtree {
         return collisions;
     }
 
-    private function query(inBounds: Bounds, queryTo: Array<CollisionShape>, precise: Bool = false) {
+    public function query(inBounds: Bounds, queryTo: Array<CollisionShape>, precise: Bool = false) {
         if(!Collisions.boundsIntersection(inBounds, bounds))
             return;
         
@@ -138,7 +136,7 @@ class Quadtree {
         }
         var neBounds: Bounds = {
             min: vec2(bounds.min.x + (bounds.max.x - bounds.min.x)/2, bounds.min.y),
-            max: vec2(bounds.max.y, bounds.min.y + (bounds.max.y - bounds.min.y)/2)
+            max: vec2(bounds.max.x, bounds.min.y + (bounds.max.y - bounds.min.y)/2)
         }
         var swBounds: Bounds = {
             min: vec2(bounds.min.x, bounds.min.y + (bounds.max.y - bounds.min.y)/2),

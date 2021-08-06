@@ -8,6 +8,9 @@ import VectorMath;
 using hcb.math.Vector;
 
 class PhysicsWorld {
+    public static var targetPhysicsFramerate: Float = 60;
+    public var overrideTargetPhysicsFramerate: Null<Float> = null;
+
     public var forceRegistry: ForceRegistry;
 
     private var quadtree: Quadtree;
@@ -16,16 +19,19 @@ class PhysicsWorld {
 
     public var impulseIterations: Int = 15;
     public var percentCorrection: Float = 0.4;
-    public var slop: Float = 0.05;
+    public var slop: Float = 0.01;
+
+    public var collisionWorld: CollisionWorld;
 
     public function new(bounds: hcb.comp.col.CollisionShape.Bounds, quadCapacity: Int = 4) {
-        quadtree = new Quadtree(bounds, 4);
+        quadtree = new Quadtree(bounds, quadCapacity);
         forceRegistry = new ForceRegistry();
     }
 
-    public function update() { 
+    public function update(dt: Float) { 
         // Collisions
-        collisions = quadtree.getColliding();
+        rebuildQuadtree();
+        collisions = quadtree.getColliding();      
 
         // Update the forces
         forceRegistry.updateForces();
@@ -36,16 +42,35 @@ class PhysicsWorld {
                 resolveCollision(collision);
 
         for(body in bodies)
-            body.physicsUpdate();
+            body.step(dt);
 
         for(collision in collisions)
             positionalCorrection(collision);
-
-        rebuildQuadtree();
     }
 
-    public function represent(g: h2d.Graphics, quadRootColor: Int = 0xFF0000, quadDivColor: Int = 0xFFFFFF) {
-        quadtree.represent(g, quadRootColor, quadDivColor);
+    public function represent(  
+        g: h2d.Graphics,
+        shapeColor: Int = 0xFFFFFF,
+        staticShapeColor: Int = 0xAAAAAA,
+        contactColor: Int = 0x00FFFF, 
+        drawQuadtree: Bool = false, 
+        quadRootColor: Int = 0xFF0000, 
+        quadDivColor: Int = 0xFFFF00
+    ) {
+        for(body in bodies) {
+            var c: Int = body.infiniteMass ? staticShapeColor : shapeColor;
+            body.shape.represent(g, c);
+        }
+
+        g.lineStyle();
+        g.beginFill(contactColor);
+        for(collision in collisions)
+            for(point in collision.contactPoints)
+                g.drawCircle(point.x, point.y, 2);
+        g.endFill();
+
+        if(drawQuadtree)
+            quadtree.represent(g, quadRootColor, quadDivColor);
     }
 
     private function rebuildQuadtree() {

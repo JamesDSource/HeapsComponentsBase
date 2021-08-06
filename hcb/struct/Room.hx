@@ -1,6 +1,9 @@
 package hcb.struct;
 
 class Room {
+    public static var targetFramerate: Float = 60;
+    public var overrideTargetFramerate: Null<Float> = null;
+
     @:allow(hcb.struct.Project)
     public var project(default, null): Project;
     // ^ Do not set this manually, should only be accessed by Project class
@@ -48,25 +51,9 @@ class Room {
     }
 
     @:allow(hcb.struct.Project.update)
-    private function update(delta: Float, targetFrameRate: Float, targetPhysicsFrameRate: Float): Float {
-        // * Frame snapping
-        var threshold: Float  = 0.0002;
-        if(Math.abs(delta - 1/targetFrameRate) < threshold) {
-            delta = 1/targetFrameRate;
-        }
-        else if(Math.abs(delta - 1/targetPhysicsFrameRate) < threshold) {
-            delta = 1/targetPhysicsFrameRate;
-        }
-        else if(Math.abs(delta - 1/30) < threshold) {
-            delta = 1/30;
-        }
-        else if(Math.abs(delta - 1/60) < threshold) {
-            delta = 1/60;
-        }
-        else if(Math.abs(delta - 1/120) < threshold) {
-            delta = 1/120;
-        }
-
+    private function update(delta: Float) {
+        var fps = overrideTargetFramerate == null ? targetFramerate : overrideTargetFramerate;
+        
         // * Tweening
         tweens.step(delta, paused);
         
@@ -78,18 +65,16 @@ class Room {
         InputManager.get().catchInputs();
         accumulator += delta;
         var frames: Int = 0;
-        while(accumulator >= 1/targetFrameRate) {
+        while(accumulator >= 1/fps) {
             onUpdate();
             for(entity in entities) {
                 entity.update(paused);
             }
-            accumulator -= 1/targetFrameRate;
+            accumulator -= 1/fps;
             frames++;
         }
         if(frames > 0)
             InputManager.get().clearInputs();
-
-        return delta;
     }
 
     public function resync() {
