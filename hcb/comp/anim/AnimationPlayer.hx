@@ -1,5 +1,6 @@
 package hcb.comp.anim;
 
+import hcb.struct.Room;
 import hcb.comp.anim.Animation;
 import VectorMath;
 
@@ -48,7 +49,8 @@ class AnimationPlayer extends TransformComponent2D {
             if(animationSlot.animation.stop)
                 continue;
 
-            animationSlot.animation.step(1/project.targetFrameRate);
+            var dt = room.overrideTargetFramerate == null ? Room.targetFramerate : room.overrideTargetFramerate;
+            animationSlot.animation.step(1/dt);
         }
     }
 

@@ -109,7 +109,7 @@ class Grid {
     public function addCollisionShapes(collisionWorld: hcb.col.CollisionWorld, ?tag: Null<String>) {
         for(node in grid) {
             if(!node.obsticle)
-                node.obsticle = collisionWorld.getCollisionAt(collisionShape, originPoint + vec2(node.x*cellSize, node.y*cellSize), tag) != null;
+                node.obsticle = collisionWorld.getCollisionAt(collisionShape, originPoint + vec2(node.x*cellSize, node.y*cellSize), tag);
         }
     }
 

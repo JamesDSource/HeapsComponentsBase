@@ -1,6 +1,6 @@
 package hcb.physics;
 
-import hcb.col.Collisions;
+import hcb.col.*;
 import hcb.comp.col.CollisionShape;
 import VectorMath;
 
@@ -46,8 +46,8 @@ class Quadtree {
         }
     }
 
-    public function getColliding(): Array<CollisionInfo> {
-        var collisions: Array<CollisionInfo> = [];
+    public function updateArbitors(): Array<Arbiter> {
+        var arbiters: Array<Arbiter> = [];
         var checked: Map<CollisionShape, Array<CollisionShape>> = [];
         
         for(shape in globalShapes) {
@@ -70,12 +70,12 @@ class Quadtree {
 
                 checked[shape].push(testShape);
 
-                var result = Collisions.test(shape, testShape);
-                if(result.isColliding)
-                    collisions.push(result);
+                var m = new Manifold();
+                if(Collisions.test(shape, testShape, m))
+                    arbiters.push(new Arbiter(shape.body, testShape.body, m.convertToContacts()));
             }
         }
-        return collisions;
+        return arbiters;
     }
 
     public function query(inBounds: Bounds, queryTo: Array<CollisionShape>, precise: Bool = false) {

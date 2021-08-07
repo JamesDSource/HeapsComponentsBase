@@ -1,13 +1,18 @@
 package hcb.col;
 
-import hcb.col.Collisions.Raycast;
-import hcb.col.Collisions.CollisionInfo;
+import hcb.col.*;
+import hcb.col.Collisions;
 import hcb.comp.col.CollisionShape.Bounds;
 import hcb.comp.col.*;
 import VectorMath;
 import hcb.SignedArray;
 
 using hcb.math.Vector;
+
+typedef CollisionInfo = {
+    shape: CollisionShape,
+    ?manifold: Manifold
+}
 
 typedef RayResult = {
     intersectionPoint: Vec2,
@@ -59,14 +64,10 @@ class CollisionWorld {
                 for(j in y0...(y1 + 1)) {
                     var cellShapes: Array<CollisionShape> = collisionCells.get(i).get(j);
                     
-                    if(cellShapes != null) {
-                        for(shape in cellShapes) {
-                            if(!shapes.contains(shape)) {
+                    if(cellShapes != null)
+                        for(shape in cellShapes)
+                            if(!shapes.contains(shape))
                                 shapes.push(shape);
-                            }
-                        }
-                    }
-
                 }
             }
         }
@@ -83,14 +84,12 @@ class CollisionWorld {
             y1: Int = Math.floor(bounds.max.y/collisionCellSize);
 
         for(i in x0...(x1 + 1)) {
-            if(collisionCells.get(i) == null) {
+            if(collisionCells.get(i) == null)
                 collisionCells.set(i, new SignedArray<Array<CollisionShape>>());
-            }
 
             for(j in y0...(y1 + 1)) {
-                if(collisionCells.get(i).get(j) == null) {
+                if(collisionCells.get(i).get(j) == null)
                     collisionCells.get(i).set(j, new Array<CollisionShape>());
-                }
 
                 collisionCells.get(i).get(j).push(shape);
                 shapeLists.push(collisionCells.get(i).get(j));
@@ -100,9 +99,8 @@ class CollisionWorld {
         return shapeLists;
     }
 
-    // & Returns the largest depth collision for one shape. The largestDepth parameter when set true will return the collision with the largest depth
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?returnLargestDepth: Bool = false, ?position: Vec2, ?tag: String): CollisionInfo {
-        var result: CollisionInfo = null;
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?manifold: Manifold, ?returnLargestDepth: Bool = false, ?position: Vec2, ?tag: String): Bool {
+        var result: Bool = false;
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
         if(position != null) 
@@ -111,32 +109,35 @@ class CollisionWorld {
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         var largestDepth: Float = Math.NEGATIVE_INFINITY;
         for(shape in cellShapes) {
-            if(tag != null && !shape.tags.contains(tag))
+            if((tag != null && !shape.tags.contains(tag)) || collisionShape == shape)
                 continue;
 
-            if(collisionShape != shape) {
-                var colResult = Collisions.test(collisionShape, shape);
-                if(colResult.isColliding) {
-                    if(!returnLargestDepth) {
-                        result = colResult;
-                        break;
-                    }
-                    else if(colResult.depth > largestDepth) {
-                        result = colResult;
-                        largestDepth = colResult.depth;
-                    }
+            if(returnLargestDepth) {
+                var m = new Manifold();
+                var colResult = Collisions.test(collisionShape, shape, m);
+
+                if(m.penetration > largestDepth) {
+                    result = colResult;
+                    largestDepth = manifold.penetration;
+
+                    if(manifold != null)
+                        manifold.copy(m);
                 }
+            }
+            else {
+                result = Collisions.test(collisionShape, shape, manifold);
+                if(result)
+                    break;
             }
         }
         
         collisionShape.overridePosition = prevOverride;
-
         return result;
     }
 
-    // & Returns the largest depth collision for multiple shapes
-    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?returnLargestDepth: Bool = false, ?position: Vec2, ?tag: String): CollisionInfo {
-        var result: CollisionInfo = null;
+    // Returns the largest depth collision for multiple shapes
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?manifold: Manifold, ?returnLargestDepth: Bool = false, ?position: Vec2, ?tag: String): Bool {
+        var result: Bool = false;
         
         for(collisionShape in collisionShapes) {
             var prevOverride: Vec2 = collisionShape.overridePosition;
@@ -146,32 +147,38 @@ class CollisionWorld {
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             var largestDepth: Float = Math.NEGATIVE_INFINITY;
             for(shape in cellShapes) {
-                if(tag != null && !shape.tags.contains(tag))
+                if((tag != null && !shape.tags.contains(tag)) || collisionShapes.contains(shape))
                     continue;
 
-                if(!collisionShapes.contains(shape)) {
-                    var colResult = Collisions.test(collisionShape, shape);
-                    if(colResult.isColliding) {
-                        if(!returnLargestDepth) {
-                            result = colResult;
-                            break;
-                        }
-                        else if(colResult.depth > largestDepth) {
-                            result = colResult;
-                            largestDepth = colResult.depth;
-                        }
+                if(returnLargestDepth) {
+                    var m = new Manifold();
+                    var colResult = Collisions.test(collisionShape, shape, m);
+    
+                    if(m.penetration > largestDepth) {
+                        result = colResult;
+                        largestDepth = manifold.penetration;
+    
+                        if(manifold != null)
+                            manifold.copy(m);
                     }
+                }
+                else {
+                    result = Collisions.test(collisionShape, shape, manifold);
+                    if(result)
+                        break;
                 }
             }
             
             collisionShape.overridePosition = prevOverride;
+            if(result && !returnLargestDepth)
+                break;
         }
         
         return result;
     }
 
-    // & Returns all collisions for one shape
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, ?position: Vec2, ?tag: String, onlyBodies: Bool = false): Int {
+    // Returns all collisions for one shape
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, getManifold: Bool = false, ?position: Vec2, ?tag: String): Int {
         var count: Int = 0;
         
         var prevOverride: Vec2 = collisionShape.overridePosition;
@@ -180,25 +187,26 @@ class CollisionWorld {
         
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
-            if((tag != null && !shape.tags.contains(tag)) || (onlyBodies && shape.body == null))
+            if((tag != null && !shape.tags.contains(tag)) || collisionShape == shape)
                 continue;
 
-            if(collisionShape != shape) {
-                var result = Collisions.test(collisionShape, shape);
-                if(result.isColliding) {
-                    output.push(result);
-                    count++;
-                }
+            var m: Manifold = getManifold ? new Manifold() : null;
+            var result = Collisions.test(collisionShape, shape, m);
+            if(result) {
+                output.push({
+                    shape: shape,
+                    manifold: m
+                });
+                count++;
             }
         }
         
         collisionShape.overridePosition = prevOverride;
-
         return count;
     }
 
-    // & Returns all collisions for multiple shapes
-    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, output: Array<CollisionInfo>, ?position: Vec2, ?tag: String): Int {
+    // Returns all collisions for multiple shapes
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, output: Array<CollisionInfo>, getManifold: Bool = false, ?position: Vec2, ?tag: String): Int {
         var count: Int = 0;
         
         for(collisionShape in collisionShapes) {
@@ -208,15 +216,17 @@ class CollisionWorld {
 
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {
-                if(tag != null && !shape.tags.contains(tag))
+                if((tag != null && !shape.tags.contains(tag)) || collisionShapes.contains(shape))
                     continue;
 
-                if(!collisionShapes.contains(shape)) {
-                    var result = Collisions.test(collisionShape, shape);
-                    if(result.isColliding) {
-                        output.push(result);
-                        count++;
-                    }
+                var m: Manifold = getManifold ? new Manifold() : null;
+                var result = Collisions.test(collisionShape, shape, m);
+                if(result) {
+                    output.push({
+                        shape: shape,
+                        manifold: m
+                    });
+                    count++;
                 }
             }
             
@@ -225,7 +235,7 @@ class CollisionWorld {
         return count;
     }
 
-    // & Returns a raycast result closest to the ray origin
+    // Returns a raycast result closest to the ray origin
     public extern overload inline function getCollisionAt(rayCast: Raycast, ?tag: String): RayResult {
         var result: RayResult = null;
         
@@ -263,7 +273,7 @@ class CollisionWorld {
         return result;
     }
 
-    // & Returns all raycast results, if order is set to true elements further in the list are further from the ray origin
+    // Returns all raycast results, if order is set to true elements further in the list are further from the ray origin
     public extern overload inline function getCollisionAt(rayCast: Raycast, output: Array<RayResult>, order: Bool = false, ?tag:String): Int {
         var count: Int = 0;
         
@@ -320,7 +330,7 @@ class CollisionWorld {
         return count;
     }
 
-    // & Returns first collision at a certain point
+    // Returns first collision at a certain point
     public extern overload inline function getCollisionAt(point: Vec2, ?tag: String): CollisionShape {
         var result: CollisionShape = null;
 
@@ -335,7 +345,7 @@ class CollisionWorld {
         return result;
     }
 
-    // & Returns all collisions at a certain point
+    // Returns all collisions at a certain point
     public extern overload inline function getCollisionAt(point: Vec2, output: Array<CollisionShape>, ?tag: String): Int {
         var count: Int = 0;
         

@@ -21,7 +21,7 @@ class Room2D extends Room {
         collisionWorld = new hcb.col.CollisionWorld(collisionCellSize);
     }
 
-    public function initializePhysics(bounds: Bounds, quadCapacity: Int = 4, impulseIterations: Int = 20, percentCorrection: Float = .4, slop: Float = 0.005) {
+    public function initializePhysics(bounds: Bounds, quadCapacity: Int = 4, impulseIterations: Int = 20, percentCorrection: Float = .2, slop: Float = 0.01) {
         if(usesPhysics)
             return;
         

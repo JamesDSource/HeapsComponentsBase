@@ -11,15 +11,12 @@ typedef BodyOptions = {
 
     ?velocity: Vec2,
     ?mass: Null<Float>,
-    ?linearDrag: Null<Float>,
 
     ?angularVelocity: Null<Float>,
     ?inertia: Null<Float>,
-    ?angularDrag: Null<Float>,
 
     ?elasticity: Null<Float>,
-    ?staticFriction: Null<Float>,
-    ?dynamicFriction: Null<Float>,
+    ?friction: Null<Float>
 }
 
 class Body extends Component {
@@ -30,18 +27,15 @@ class Body extends Component {
     public var mass: Float = 1;
     public var inverseMass(get, null): Float;
     public var infiniteMass(get, null): Bool;
-    public var linearDrag(default, set): Float = 1.;
 
     // * Angular components
     public var angularVelocity: Float = 0;
     public var inertia: Float = 1;
     public var inverseInertia(get, null): Float;
-    public var angularDrag(default, set): Float = 1.;
     public var syncPolygonRotation: Bool = true;
 
     public var elasticity: Float = 0;
-    public var staticFriction: Float = .5;
-    public var dynamicFriction: Float = .5;
+    public var friction: Float = .5;
 
     private inline function set_shape(shape: CollisionShape): CollisionShape {
         if(shape != null) {
@@ -64,19 +58,10 @@ class Body extends Component {
         return mass == 0;
     }
 
-    private inline function set_linearDrag(linearDrag: Float): Float {
-        this.linearDrag = hxd.Math.clamp(linearDrag, 0.0, 1.0);
-        return this.linearDrag;
-    }
-
     private inline function get_inverseInertia(): Float {
         return inertia == 0 ? 0 : 1/inertia;
     }
 
-    private inline function set_angularDrag(angularDrag: Float): Float {
-        this.angularDrag = hxd.Math.clamp(angularDrag, 0.0, 1.0);
-        return this.angularDrag;
-    }
 
     public function new(options: BodyOptions, name: String = "Body") {
         super(name);
@@ -95,26 +80,17 @@ class Body extends Component {
         if(options.mass != null) 
             mass = options.mass;
 
-        if(options.linearDrag != null)
-            linearDrag = options.linearDrag;
-
         if(options.angularVelocity != null)
             angularVelocity = options.angularVelocity;
 
         if(options.inertia != null)
             inertia = options.inertia;
-
-        if(options.angularDrag != null)
-            angularDrag = options.angularDrag;
         
         if(options.elasticity != null)
             elasticity = options.elasticity;
 
-        if(options.staticFriction != null)
-            staticFriction = options.staticFriction;
-
-        if(options.dynamicFriction != null)
-            dynamicFriction = options.dynamicFriction; 
+        if(options.friction != null)
+            friction = options.friction;
     }
 
     // & Updates position and angle
@@ -124,9 +100,6 @@ class Body extends Component {
 
         parent2d.transform.rotateRad(angularVelocity*dt);
         parent2d.transform.translate(velocity*dt);
-
-        velocity *= Math.pow(linearDrag, dt);
-        angularVelocity *= Math.pow(angularDrag, dt);
     }
 
     // & Applies an impulse on a certain point of the shape
