@@ -135,4 +135,11 @@ class Arbiter {
             b2.impulse( friction, r2);
         }
     }
+
+    public function getContactPoints(): Array<Vec2> {
+        return [
+            for(contact in contacts)
+                contact.position
+        ];
+    }
 }

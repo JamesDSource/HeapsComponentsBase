@@ -12,7 +12,7 @@ class Transform2D {
     private var rotation: Float = 0;
     private var scale: Vec2 = vec2(1, 1);
 
-    public var positionSnap(default, set): Bool = true;
+    public var positionSnap(default, set): Bool = false;
     // ^ Makes sure that the position remains an integer value
     private var positionRemainder: Vec2 = vec2(0, 0);
 

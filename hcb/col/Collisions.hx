@@ -29,21 +29,21 @@ class Collisions {
                         result = polyWithPoly(cast shape1, cast shape2, manifold);
                     // Poly with circle
                     case CollisionCircle:
-                        result = polyWithCircle(cast shape1, cast shape2);
+                        result = polyWithCircle(cast shape1, cast shape2, manifold);
                 }
             case CollisionCircle:
                 switch(Type.getClass(shape2)) {
                     // Circle with poly
                     case CollisionPolygon:
-                        result = polyWithCircle(cast shape2, cast shape1);
+                        result = polyWithCircle(cast shape2, cast shape1, manifold);
                         flipped = true;
                     // Circle with circle
                     case CollisionCircle:
-                        result = circleWithCircle(cast shape1, cast shape2);
+                        result = circleWithCircle(cast shape1, cast shape2, manifold);
                 }
         }
 
-        if(manifold != null && flipped && manifold.normal != null)
+        if(flipped && manifold != null && manifold.normal != null)
             manifold.normal *= -1;
         return result;
     }
@@ -228,7 +228,58 @@ class Collisions {
 
     // Checks for a collision between a polygon and a circle
     public static function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle, ?manifold: Manifold): Bool {
-        return false;
+        var circleCenter: Vec2 = circle.getAbsPosition();
+        var verticies: Array<Vec2> = poly.worldVertices;
+
+        // Find edge with minimun penetration
+        var seperation: Float = Math.NEGATIVE_INFINITY;
+        var v1: Vec2 = null, v2: Vec2 = null, faceNormal: Vec2 = null;
+        for(i in 0...verticies.length) {
+            var vertex: Vec2 = verticies[i];
+            var nextVertex = verticies[(i + 1)%verticies.length];
+            var edgeNormal: Vec2 = normalize(nextVertex - vertex).crossRight();
+
+            var s = edgeNormal.dot(circleCenter - vertex);
+            if(s > circle.radius)
+                return false;
+
+            if(s > seperation) {
+                seperation = s;
+                v1 = vertex;
+                v2 = nextVertex;
+                faceNormal = edgeNormal;
+            }
+        }
+
+        if(manifold == null)
+            return true;
+
+        if(seperation < hxd.Math.EPSILON) {
+            manifold.normal = faceNormal;
+            manifold.penetration = circle.radius;
+            manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
+            return true;
+        }
+
+        // Voronoi regions
+        var dot1: Float = dot(circleCenter - v1, v2 - v1);
+        var dot2: Float = dot(circleCenter - v2, v1 - v2);
+        manifold.penetration = circle.radius - seperation;
+
+        if(dot1 <= 0) {
+            manifold.normal = normalize(circleCenter - v1);
+            manifold.contactPoints = [v1];
+        }
+        else if(dot2 <= 0) {
+            manifold.normal = normalize(circleCenter - v2);
+            manifold.contactPoints = [v2];
+        }
+        else {
+            manifold.normal = faceNormal;
+            manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
+        }
+
+        return true;
         /*
         var polyV = poly.worldVertices;
         var polyCenter = poly.center;

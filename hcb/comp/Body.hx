@@ -35,7 +35,7 @@ class Body extends Component {
     public var syncPolygonRotation: Bool = true;
 
     public var elasticity: Float = 0;
-    public var friction: Float = .5;
+    public var friction: Float = .2;
 
     private inline function set_shape(shape: CollisionShape): CollisionShape {
         if(shape != null) {

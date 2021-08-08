@@ -64,6 +64,10 @@ class PhysicsWorld {
 
         g.lineStyle();
         g.beginFill(contactColor);
+        for(arbiter in collisions) {
+            for(point in arbiter.getContactPoints())
+                g.drawCircle(point.x, point.y, 2);
+        }
         g.endFill();
 
         if(drawQuadtree)

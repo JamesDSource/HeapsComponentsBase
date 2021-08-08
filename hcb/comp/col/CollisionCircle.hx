@@ -34,5 +34,9 @@ class CollisionCircle extends CollisionShape {
         super.represent(g, color, alpha);
         var pos = getAbsPosition();
         g.drawCircle(pos.x, pos.y, radius);
+
+        var lineEnd: Vec2 = transform.getDirection()*radius + pos;
+        g.moveTo(pos.x, pos.y);
+        g.lineTo(lineEnd.x, lineEnd.y);
     }
 } 
