@@ -13,13 +13,6 @@ typedef IndexGridData = {
     
 }
 
-enum SlopeFace {
-    TopLeft;
-    TopRight;
-    BottomLeft;
-    BottomRight;
-}
-
 abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
     #if ldtk_haxe_api
     public static function ldtkTilesConvert(tileLayer: ldtk.Layer_Tiles): IndexGrid {
@@ -227,42 +220,5 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
         this.width = w;
         this.height = h;
         this.indexs = newIndexs;
-    }
-
-    public static inline function slopeBuild(slopeFace: SlopeFace, widthPercent: Float = 1.0, heightPercent: Float = 1.0, origin: Vec2, tileSize: Float): CollisionShape {
-        var supportingPoint: Vec2;
-        var hDir: Int = 0, vDir: Int = 0;
-        switch(slopeFace) {
-            case SlopeFace.TopLeft:
-                supportingPoint = vec2(tileSize, tileSize);
-                hDir = vDir = -1;
-            case SlopeFace.TopRight:
-                supportingPoint = vec2(0, tileSize);
-                hDir = 1;
-                vDir = -1;
-            case SlopeFace.BottomLeft:
-                supportingPoint = vec2(tileSize, 0);
-                hDir = -1;
-                vDir = 1;
-            case SlopeFace.BottomRight:
-                supportingPoint = vec2(0, 0);
-                hDir = vDir = 1;
-        }
-        
-        var verts: Array<Vec2> = [
-            supportingPoint,
-            vec2(supportingPoint.x + hDir*widthPercent*tileSize, supportingPoint.y),
-            vec2(supportingPoint.x, supportingPoint.y + vDir*heightPercent*tileSize)
-        ];
-        
-        var shape: CollisionPolygon = new CollisionPolygon(verts);
-        shape.transform.setPosition(origin);
-        return shape;
-    }
-
-    public static inline function boxBuild(widthPercent: Float, heightPercent: Float, offsetPercent: Vec2, origin: Vec2, tileSize: Float): CollisionShape {
-        var shape: CollisionPolygon = CollisionPolygon.rectangle(widthPercent*tileSize, heightPercent*tileSize);
-        shape.transform.setPosition(origin + offsetPercent*tileSize);
-        return shape;
     }
 }

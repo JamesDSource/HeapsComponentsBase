@@ -46,8 +46,8 @@ class Quadtree {
         }
     }
 
-    public function updateArbitors(): Array<Arbiter> {
-        var arbiters: Array<Arbiter> = [];
+    public function updateArbiters(arbiters: Array<Arbiter>): Array<Arbiter> {
+        var result: Array<Arbiter> = [];
         var checked: Map<CollisionShape, Array<CollisionShape>> = [];
         
         for(shape in globalShapes) {
@@ -71,11 +71,27 @@ class Quadtree {
                 checked[shape].push(testShape);
 
                 var m = new Manifold();
-                if(Collisions.test(shape, testShape, m))
-                    arbiters.push(new Arbiter(shape.body, testShape.body, m.convertToContacts()));
+                if(!Collisions.test(shape, testShape, m))
+                    continue;
+                
+                // Update the Arbiter if it exists from the previous frame
+                var found: Bool = false;
+                for(arb in arbiters) {
+                    if( 
+                        (arb.b1 == shape.body && arb.b2 == testShape.body) || 
+                        (arb.b1 == testShape.body && arb.b2 == shape.body)
+                    ) {
+                        found = true;
+                        arb.update(m.convertToContacts());
+                        result.push(arb);
+                        break;
+                    }
+                }
+                if(!found)
+                    result.push(new Arbiter(shape.body, testShape.body, m.convertToContacts()));
             }
         }
-        return arbiters;
+        return result;
     }
 
     public function query(inBounds: Bounds, queryTo: Array<CollisionShape>, precise: Bool = false) {

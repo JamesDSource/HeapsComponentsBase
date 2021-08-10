@@ -9,7 +9,7 @@ using hcb.math.Vector;
 
 // TODO: Make rotation work
 class CollisionPolygon extends CollisionShape {
-    // * All vertices are relative to the x/y position
+    //  All vertices are relative to the x/y position
     private var vertices: Array<Vec2> = [];
     // ^ The points that define the polygon
     private var transformedVertices: Array<Vec2> = [];
@@ -42,20 +42,15 @@ class CollisionPolygon extends CollisionShape {
     }
 
     private inline function get_worldVertices(): Array<Vec2> {
-        var returnVertices: Array<Vec2> = [];
         var absPosition: Vec2 = getAbsPosition();
-        
-        for(vert in transformedVertices) {
-            returnVertices.push(vert + absPosition);
-        }
-        return returnVertices;
+        return transformedVertices.map((vert) -> vert + absPosition);
     }
 
     private override function get_bounds(): Bounds {
         var pos = getAbsPosition();
         
-        // * If the polygon has not changed position or shape from the last time get_bounds was called,
-        // * it just returns the result from the last time
+        // If the polygon has not changed position or shape from the last time get_bounds was called,
+        // it just returns the result from the last time
         if(shapeChanged || lastPos == null || lastBounds == null || pos != lastPos) {
             var smX = Math.POSITIVE_INFINITY,
                 smY = Math.POSITIVE_INFINITY,
@@ -80,7 +75,7 @@ class CollisionPolygon extends CollisionShape {
             lastBounds = {min : vec2(pos.x + smX, pos.y + smY), max: vec2(pos.x + lgX, pos.y + lgY)};
             shapeChanged = false;
         }
-        lastPos = pos.clone();
+        lastPos = pos;
 
         return lastBounds;
     }
@@ -96,9 +91,9 @@ class CollisionPolygon extends CollisionShape {
         return center;
     }
 
-    public function new(vertices: Array<Vec2>, name: String = "Collision Polygon") {
+    public function new(vertices: Array<Vec2>, forceCCW: Bool = true, name: String = "Collision Polygon") {
         super(name);
-        setVertices(vertices);
+        setVertices(vertices, forceCCW);
         transform.onRotated = (r) -> updateTransformations();
     }
 
@@ -115,7 +110,7 @@ class CollisionPolygon extends CollisionShape {
 
     // & Sets the verticies on the polygon relative to the origin. KeepWindingCCW will make sure that the
     // & the points are winding counter clockwise if set to true
-    public function setVertices(vertices: Array<Vec2>) {
+    public function setVertices(vertices: Array<Vec2>, forceCCW: Bool = true) {
         if(vertices.length < 2)
             throw "Need at least two vertices in a CollisionPolygon";
         
@@ -129,7 +124,7 @@ class CollisionPolygon extends CollisionShape {
             this.vertices.push(vert.clone());
         }
 
-        if(signedAreaSum > 0)
+        if(signedAreaSum > 0 && forceCCW) 
             this.vertices.reverse();
         
         updateTransformations();
@@ -157,6 +152,8 @@ class CollisionPolygon extends CollisionShape {
             var nextVert = vertices[(i + 1)%vertices.length];
             g.moveTo(vert.x, vert.y);
             g.lineTo(nextVert.x, nextVert.y);
+
+            g.drawCircle(vert.x, vert.y, 2, 10);
         }
     }
 

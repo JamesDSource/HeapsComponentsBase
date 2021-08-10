@@ -36,7 +36,8 @@ class Room2D extends Room {
         super.clear();
 
         collisionWorld.clear();
-        physicsWorld.clear();
+        if(physicsWorld != null)
+            physicsWorld.clear();
 
         scene.dispose();
         scene = new h2d.Scene();

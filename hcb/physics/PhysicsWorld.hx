@@ -30,7 +30,7 @@ class PhysicsWorld {
     public function update(dt: Float) { 
         // Collisions
         rebuildQuadtree();
-        collisions = quadtree.updateArbitors();      
+        collisions = quadtree.updateArbiters(collisions);      
 
         // Update the forces
         forceRegistry.updateForces();
@@ -106,6 +106,6 @@ class PhysicsWorld {
         for(body in bodies.copy())
             removeBody(body);
 
-        rebuildQuadtree();
+        quadtree.clear();
     }
 }

@@ -44,7 +44,21 @@ class Arbiter {
     }
 
     public function update(contacts: Array<Contact>) {
-        this.contacts = contacts.copy();
+        var merged: Array<Contact> = [];
+        for(newContact in contacts) {
+            for(oldContact in this.contacts) {
+                if(oldContact.position.distanceSquared(newContact.position) < hxd.Math.EPSILON*hxd.Math.EPSILON) {
+                    newContact.pn = oldContact.pn;
+                    newContact.pn = oldContact.pt;
+                    newContact.pn = oldContact.pnb;
+                    break;
+                }
+            }
+
+            merged.push(newContact);
+        }
+
+        this.contacts = merged;
     }
 
     public function preCompile(dt: Float, positionCorrection: Float = 0, slop: Float = 0) {

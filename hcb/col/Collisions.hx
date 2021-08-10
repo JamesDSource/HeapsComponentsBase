@@ -149,64 +149,55 @@ class Collisions {
 
     // Checks for a collision between two polygons
     public static function polyWithPoly(polygon1: CollisionPolygon, polygon2: CollisionPolygon, ?manifold: Manifold): Bool {
-        var polygon1Vertices = polygon1.worldVertices;
-        var polygon2Vertices = polygon2.worldVertices;
+        var penetration1 = polyFindMTV(polygon1, polygon2);
+        if(penetration1.penetration < 0)
+            return false;
 
-        var isCollision: Bool = true;
+        var penetration2 = polyFindMTV(polygon2, polygon1, true);
+        if(penetration2.penetration < 0)
+            return false;
+
+        if(manifold == null)
+            return true;
+
+        if(penetration1.penetration < penetration2.penetration) {
+            manifold.normal = penetration1.normal;
+            manifold.penetration = penetration1.penetration;
+        }
+        else {
+            manifold.normal = penetration2.normal;
+            manifold.penetration = penetration2.penetration;
+        }
+
+        manifold.contactPoints = getPolygonContactPoints(polygon1.worldVertices, polygon2.worldVertices, manifold.normal);
+
+        return true;
+    }
+
+    public static function polyFindMTV(polygon1: CollisionPolygon, polygon2: CollisionPolygon, flip: Bool = false): {penetration: Float, normal: Vec2} {
+        var poly1V = polygon1.worldVertices;
+        var poly2V = polygon2.worldVertices;
+        
         var minOverlap: Float = Math.POSITIVE_INFINITY;
-        var smallestAxis: Vec2 = null;
-        var contactPoints: Array<Vec2> = [];
+        var axis: Vec2 = null;
+        for(i in 0...poly1V.length) {
+            var vertex: Vec2 = poly1V[i];
+            var nextVertex: Vec2 = poly1V[(i + 1)%poly1V.length];
+            var normal: Vec2 =  normalize(nextVertex - vertex).crossRight();
+            if(flip)
+                normal *= -1;
 
-        // Runs the code twice, switching which role each polygon plays both times
-        for(i in 0...2) {
-            var poly1V: Array<Vec2>;
-            var poly2V: Array<Vec2>;
-            
-            if(i == 0) {
-                poly1V = polygon1Vertices;
-                poly2V = polygon2Vertices;
+            var interval1 = getInterval(poly1V, normal);
+            var interval2 = getInterval(poly2V, normal);
+            var overlap = flip ? interval2.max - interval1.min : interval1.max - interval2.min;
+
+            if(overlap < minOverlap) {
+                axis = normal;
+                minOverlap = overlap;
             }
-            else {
-                poly1V = polygon2Vertices;
-                poly2V = polygon1Vertices;
-            }
-
-            for(j in 0...poly1V.length) {
-                var vert: Vec2 = poly1V[j];
-                var nextVert: Vec2 = poly1V[(j + 1)%poly1V.length];
-                var axisProj: Vec2 = (nextVert - vert).crossRight().normalize();
-
-                var interval1 = getInterval(poly1V, axisProj);
-                var interval2 = getInterval(poly2V, axisProj);
-                var overlap = overlapOnAxis(interval1, interval2);
-                if(overlap < 0) {
-                    if(manifold == null)
-                        return false;
-
-                    isCollision = false;
-                    break;
-                }
-
-                // Getting the depth and seperation normal
-                if(overlap < minOverlap) {
-                    minOverlap = overlap;
-                    smallestAxis = axisProj;
-                    if((polygon1.center - polygon2.center).dot(smallestAxis) > 0)
-                        smallestAxis *= -1;
-                }
-            }
-
-            if(!isCollision) break;
         }
-
-        // Filling the manifold
-        if(manifold != null && smallestAxis != null) {
-            manifold.normal = smallestAxis;
-            manifold.penetration = minOverlap;
-            manifold.contactPoints = getPolygonContactPoints(polygon1Vertices, polygon2Vertices, smallestAxis);
-        }
-
-        return isCollision;
+        
+        return {penetration: minOverlap, normal: axis};
     }
 
     // Checks for a collision between two circles
@@ -256,7 +247,7 @@ class Collisions {
 
         if(seperation < hxd.Math.EPSILON) {
             manifold.normal = faceNormal;
-            manifold.penetration = circle.radius;
+            manifold.penetration = circle.radius - seperation;
             manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
             return true;
         }
@@ -264,128 +255,26 @@ class Collisions {
         // Voronoi regions
         var dot1: Float = dot(circleCenter - v1, v2 - v1);
         var dot2: Float = dot(circleCenter - v2, v1 - v2);
-        manifold.penetration = circle.radius - seperation;
 
         if(dot1 <= 0) {
-            manifold.normal = normalize(circleCenter - v1);
+            var dif = circleCenter - v1;
+            manifold.normal = dif.normalize();
+            manifold.penetration = circle.radius - dif.length();
             manifold.contactPoints = [v1];
         }
         else if(dot2 <= 0) {
-            manifold.normal = normalize(circleCenter - v2);
+            var dif = circleCenter - v2;
+            manifold.normal = dif.normalize();
+            manifold.penetration = circle.radius - dif.length();
             manifold.contactPoints = [v2];
         }
         else {
             manifold.normal = faceNormal;
             manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
+            manifold.penetration = circle.radius - seperation;
         }
 
         return true;
-        /*
-        var polyV = poly.worldVertices;
-        var polyCenter = poly.center;
-        var circleCenter = circle.getAbsPosition();
-        var circleRadius = circle.radius;
-        
-        var closestVertexDistance: Float = Math.POSITIVE_INFINITY;
-        var closestVertex: Vec2 = null;
-
-        var closestEdge: {v1: Vec2, v2: Vec2} = null;
-        var closestEdgeSeperation: Float = Math.NEGATIVE_INFINITY;
-        
-        var isCollision: Bool = true;
-
-        var minOverlap: Float = Math.POSITIVE_INFINITY;
-        var smallestAxis: Vec2 = vec2(0, 0);
-
-        // First iteration checks the polygon
-        for(i in 0...polyV.length) {
-            var vert = polyV[i];
-            var nextVert = polyV[(i + 1)%polyV.length];
-            var axisProj: Vec2 =  (nextVert - vert).crossRight().normalize();
-
-            // Getting the closest edge
-            var s = axisProj.dot(circleCenter - polyCenter);
-            if(s > closestEdgeSeperation) {
-                closestEdgeSeperation = s;
-                closestEdge = {
-                    v1: vert,
-                    v2: nextVert,
-                }
-            }
-            
-            // Getting the vetex closest to the center of the circle
-            var vDistance = distance(vert, circleCenter);
-            if(closestVertex == null || closestVertexDistance > vDistance) {
-                closestVertexDistance = vDistance;
-                closestVertex = vert;
-            }
-
-            var polyInterval = getInterval(polyV, axisProj);
-            var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
-            var overlap: Float = overlapOnAxis(polyInterval, circleInterval);
-            if(overlap < 0) {
-                isCollision = false;
-                break;
-            }
-
-            // Getting the depth and seperation normal
-            if(overlap < minOverlap) {
-                minOverlap = overlap;
-                smallestAxis = axisProj.normalize();
-                if((polyCenter - circleCenter).dot(smallestAxis) > 0)
-                    smallestAxis *= -1;
-            }
-        }
-        
-        
-        // Checking the axis between the closest vertex and the circle center
-        var contactPoint: Vec2 = null;
-        if(closestVertex == null) {
-            isCollision = false;
-        }
-        else if(isCollision) { 
-            var axisProj: Vec2 = (closestVertex - circleCenter).crossRight().normalize();
-            var polyInterval = getInterval(polyV, axisProj);
-            var circleInterval = getInterval([circleCenter - axisProj*circleRadius, circleCenter + axisProj*circleRadius], axisProj);
-            var overlap: Float = overlapOnAxis(polyInterval, circleInterval);
-            if(overlap < 0)
-                isCollision = false;
-
-            // Getting the depth and seperation normal
-            if(overlap < minOverlap) {
-                minOverlap = overlap;
-                smallestAxis = axisProj.normalize();
-                
-                if((polyCenter - circleCenter).dot(smallestAxis) > 0) 
-                    smallestAxis *= -1;
-            }
-
-            if(closestEdge != null) {
-                var edge = closestEdge.v2 - closestEdge.v1;
-
-                var d1 = edge.dot(closestEdge.v1);
-                var d2 = edge.dot(closestEdge.v2);
-                var c = edge.dot(circleCenter);
-
-                c = hxd.Math.clamp((c - d1)/(d2 - d1), 0, 1);
-                contactPoint = closestEdge.v1 + edge*c - smallestAxis*minOverlap/2;
-            }
-        }
-
-        return {
-            isColliding: isCollision,
-            shape1: poly,
-            shape2: circle,
-            normal: smallestAxis,
-            depth: minOverlap,
-            contactPoints: contactPoint == null ? [closestEdge.v1, closestEdge.v2] : [contactPoint]
-        };
-        */
-    }
-
-    // Checks if two polygons overlap on a certain axis
-    public static inline function overlapOnAxis(interval1: {max: Float, min: Float}, interval2: {max: Float, min: Float}): Float {
-        return interval1.max < interval2.max ? interval1.max - interval2.min : interval2.max - interval1.min;
     }
 
     // Gets the interval of a polygon with a certain axis
@@ -516,9 +405,9 @@ class Collisions {
         }
     }
 
-    // & Checks if two radiuses intersect
+    // Checks if two radiuses intersect
     public static inline function radiusIntersectionDepth(pos1: Vec2, pos2: Vec2, radius1: Float, radius2: Float): Float {
-        var distance = (pos1 - pos2).length();
+        var distance = pos1.distance(pos2);
         return (radius1 + radius2) - distance;
     }
 
@@ -529,7 +418,7 @@ class Collisions {
                  bounds1.max.y >= bounds2.min.y );
     }
     
-    // & Finds the intersection point between a polygon and a ray
+    // Finds the intersection point between a polygon and a ray
     public static inline function polyRaycast(poly: CollisionPolygon, ray: Raycast): Vec2 {    
         var vertices: Array<Vec2> = poly.worldVertices;
         var closestIntersection: Vec2 = null;
@@ -550,7 +439,7 @@ class Collisions {
         return closestIntersection;
     }
 
-    // & Finds the intersection point between a circle and a ray
+    // Finds the intersection point between a circle and a ray
     public static inline function circleRaycast(circle: CollisionCircle, ray: Raycast): {closer: Vec2, ?further: Vec2} {
         // Fields
         var circlePos = circle.getAbsPosition(),
