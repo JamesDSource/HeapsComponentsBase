@@ -65,8 +65,8 @@ class Arbiter {
         e = Math.min(b1.elasticity, b2.elasticity);
         fric = Math.sqrt(b1.friction*b2.friction);
 
-        var pos1: Vec2 = b1.shape.getAbsPosition();
-        var pos2: Vec2 = b2.shape.getAbsPosition();
+        var pos1: Vec2 = b1.shape.transform.getPosition();
+        var pos2: Vec2 = b2.shape.transform.getPosition();
         
         for(contact in contacts) {
             var r1 = contact.arm1 = contact.position - pos1;
@@ -101,8 +101,8 @@ class Arbiter {
         var invInertia1: Float = b1.inverseInertia;
         var invInertia2: Float = b2.inverseInertia;
 
-        var pos1: Vec2 = b1.shape.getAbsPosition();
-        var pos2: Vec2 = b2.shape.getAbsPosition();
+        var pos1: Vec2 = b1.shape.transform.getPosition();
+        var pos2: Vec2 = b2.shape.transform.getPosition();
         
         // Loop through every point of contact
         for(contact in contacts) {

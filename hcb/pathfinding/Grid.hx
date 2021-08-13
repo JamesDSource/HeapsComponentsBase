@@ -108,8 +108,10 @@ class Grid {
     // & Adds collision shapes with certain tags as obsticles
     public function addCollisionShapes(collisionWorld: hcb.col.CollisionWorld, ?tag: Null<String>) {
         for(node in grid) {
-            if(!node.obsticle)
-                node.obsticle = collisionWorld.getCollisionAt(collisionShape, originPoint + vec2(node.x*cellSize, node.y*cellSize), tag);
+            if(!node.obsticle) {
+                collisionShape.transform.setPosition(originPoint.x + node.x*cellSize, originPoint.y + node.y*cellSize);
+                node.obsticle = collisionWorld.getCollisionAt(collisionShape, tag);
+            }
         }
     }
 

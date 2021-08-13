@@ -99,13 +99,8 @@ class CollisionWorld {
         return shapeLists;
     }
 
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?manifold: Manifold, ?returnLargestDepth: Bool = false, ?position: Vec2, ?tag: String): Bool {
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, ?manifold: Manifold, ?returnLargestDepth: Bool = false, ?tag: String): Bool {
         var result: Bool = false;
-        
-        var prevOverride: Vec2 = collisionShape.overridePosition;
-        if(position != null) 
-            collisionShape.overridePosition = position;
-        
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         var largestDepth: Float = Math.NEGATIVE_INFINITY;
         for(shape in cellShapes) {
@@ -131,19 +126,14 @@ class CollisionWorld {
             }
         }
         
-        collisionShape.overridePosition = prevOverride;
         return result;
     }
 
     // Returns the largest depth collision for multiple shapes
-    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?manifold: Manifold, ?returnLargestDepth: Bool = false, ?position: Vec2, ?tag: String): Bool {
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, ?manifold: Manifold, ?returnLargestDepth: Bool = false, ?tag: String): Bool {
         var result: Bool = false;
         
         for(collisionShape in collisionShapes) {
-            var prevOverride: Vec2 = collisionShape.overridePosition;
-            if(position != null) 
-                collisionShape.overridePosition = position;
-
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             var largestDepth: Float = Math.NEGATIVE_INFINITY;
             for(shape in cellShapes) {
@@ -169,7 +159,6 @@ class CollisionWorld {
                 }
             }
             
-            collisionShape.overridePosition = prevOverride;
             if(result && !returnLargestDepth)
                 break;
         }
@@ -178,13 +167,8 @@ class CollisionWorld {
     }
 
     // Returns all collisions for one shape
-    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, getManifold: Bool = false, ?position: Vec2, ?tag: String): Int {
+    public extern overload inline function getCollisionAt(collisionShape: CollisionShape, output: Array<CollisionInfo>, getManifold: Bool = false, ?tag: String): Int {
         var count: Int = 0;
-        
-        var prevOverride: Vec2 = collisionShape.overridePosition;
-        if(position != null) 
-            collisionShape.overridePosition = position;
-        
         var cellShapes = getShapesFromBounds(collisionShape.bounds);
         for(shape in cellShapes) {
             if((tag != null && !shape.tags.contains(tag)) || collisionShape == shape)
@@ -201,19 +185,14 @@ class CollisionWorld {
             }
         }
         
-        collisionShape.overridePosition = prevOverride;
         return count;
     }
 
     // Returns all collisions for multiple shapes
-    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, output: Array<CollisionInfo>, getManifold: Bool = false, ?position: Vec2, ?tag: String): Int {
+    public extern overload inline function getCollisionAt(collisionShapes: Array<CollisionShape>, output: Array<CollisionInfo>, getManifold: Bool = false, ?tag: String): Int {
         var count: Int = 0;
         
         for(collisionShape in collisionShapes) {
-            var prevOverride: Vec2 = collisionShape.overridePosition;
-            if(position != null) 
-                collisionShape.overridePosition = position;
-
             var cellShapes = getShapesFromBounds(collisionShape.bounds);
             for(shape in cellShapes) {
                 if((tag != null && !shape.tags.contains(tag)) || collisionShapes.contains(shape))
@@ -229,8 +208,6 @@ class CollisionWorld {
                     count++;
                 }
             }
-            
-            collisionShape.overridePosition = prevOverride;
         }
         return count;
     }

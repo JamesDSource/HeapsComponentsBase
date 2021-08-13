@@ -19,7 +19,7 @@ class CollisionCircle extends CollisionShape {
     }
 
     private override function get_bounds(): Bounds {
-        var pos = getAbsPosition();
+        var pos = transform.getPosition();
         return {
             min: vec2(pos.x - radius, pos.y - radius),
             max: vec2(pos.x + radius, pos.y + radius)
@@ -27,12 +27,12 @@ class CollisionCircle extends CollisionShape {
     }
 
     public override function getSupportPoint(d:Vec2):Vec2 {
-        return getAbsPosition() + d*radius;
+        return transform.getPosition() + d*radius;
     }
 
     public override function represent(g:Graphics, ?color: Int, alpha: Float = 1.) {
         super.represent(g, color, alpha);
-        var pos = getAbsPosition();
+        var pos = transform.getPosition();
         g.drawCircle(pos.x, pos.y, radius);
 
         var lineEnd: Vec2 = transform.getDirection()*radius + pos;

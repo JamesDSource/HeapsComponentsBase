@@ -141,7 +141,7 @@ class Collisions {
                 return pointInPolygon(point, poly.worldVertices);
             case CollisionCircle:
                 var circle: CollisionCircle = cast(shape, CollisionCircle);
-                return pointInCircle(point, circle.getAbsPosition(), circle.radius);
+                return pointInCircle(point, circle.transform.getPosition(), circle.radius);
             default: 
                 return false;
         }
@@ -196,14 +196,14 @@ class Collisions {
                 minOverlap = overlap;
             }
         }
-        
+
         return {penetration: minOverlap, normal: axis};
     }
 
     // Checks for a collision between two circles
     public static function circleWithCircle(circle1: CollisionCircle, circle2: CollisionCircle, ?manifold: Manifold): Bool {
-        var absPos1 = circle1.getAbsPosition(),
-            absPos2 = circle2.getAbsPosition();
+        var absPos1 = circle1.transform.getPosition(),
+            absPos2 = circle2.transform.getPosition();
 
         var depth: Float = radiusIntersectionDepth(absPos1, absPos2, circle1.radius, circle2.radius);
 
@@ -219,7 +219,7 @@ class Collisions {
 
     // Checks for a collision between a polygon and a circle
     public static function polyWithCircle(poly: CollisionPolygon, circle: CollisionCircle, ?manifold: Manifold): Bool {
-        var circleCenter: Vec2 = circle.getAbsPosition();
+        var circleCenter: Vec2 = circle.transform.getPosition();
         var verticies: Array<Vec2> = poly.worldVertices;
 
         // Find edge with minimun penetration
@@ -270,8 +270,8 @@ class Collisions {
         }
         else {
             manifold.normal = faceNormal;
-            manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
             manifold.penetration = circle.radius - seperation;
+            manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
         }
 
         return true;
@@ -293,8 +293,8 @@ class Collisions {
 
     // Gets the contact points between two polygons
     public static function getPolygonContactPoints(vertices1: Array<Vec2>, vertices2: Array<Vec2>, sepAxis: Vec2): Array<Vec2> {
-        var edge1 = getBestEdge(vertices1, sepAxis.normalize());
-        var edge2 = getBestEdge(vertices2, -sepAxis.normalize());
+        var edge1 = getBestEdge(vertices1,  sepAxis);
+        var edge2 = getBestEdge(vertices2, -sepAxis);
 
         // Getting the ref and inc edge, the ref edge is more perpendicular to the seperation normal
         var refEdge: {max: Vec2, v1: Vec2, v2: Vec2, edge: Vec2};
@@ -302,7 +302,7 @@ class Collisions {
         
         var edge1Dot = Math.abs(edge1.edge.dot(sepAxis));
         var edge2Dot = Math.abs(edge2.edge.dot(sepAxis));
-        if(edge1Dot < edge2Dot || Math.abs(edge1Dot - edge2Dot) < 0.0001) {
+        if(edge1Dot < edge2Dot || Math.abs(edge1Dot - edge2Dot) < hxd.Math.EPSILON) {
             refEdge = edge1;
             incEdge = edge2;
         }
@@ -404,6 +404,7 @@ class Collisions {
             }
         }
     }
+    
 
     // Checks if two radiuses intersect
     public static inline function radiusIntersectionDepth(pos1: Vec2, pos2: Vec2, radius1: Float, radius2: Float): Float {
@@ -442,7 +443,7 @@ class Collisions {
     // Finds the intersection point between a circle and a ray
     public static inline function circleRaycast(circle: CollisionCircle, ray: Raycast): {closer: Vec2, ?further: Vec2} {
         // Fields
-        var circlePos = circle.getAbsPosition(),
+        var circlePos = circle.transform.getPosition(),
             radius = circle.radius,
             rayPos = ray.origin,
             castPoint = rayPos + ray.castTo,

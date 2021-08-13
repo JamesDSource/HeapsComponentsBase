@@ -28,17 +28,17 @@ class CollisionShape extends TransformComponent2D {
     public var body: Body = null;
     // ^ Variable only set inside of the body, do not set manually
 
-    private dynamic function get_bounds(): Bounds {
+    private function get_bounds(): Bounds {
         return {min: vec2(0, 0), max: vec2(0, 0)};
     }
 
-    private dynamic function get_center(): Vec2 {
-        return getAbsPosition();
+    private function get_center(): Vec2 {
+        return transform.getPosition();
     }
 
     public function new(name: String = "Collision Shape") {
         super(name);
-        updateable = true;
+        updateable = false;
         transform.onTranslated = (position) -> updateCollisionCells();
     }
 
@@ -55,13 +55,6 @@ class CollisionShape extends TransformComponent2D {
 
     public function getSupportPoint(d: Vec2): Vec2 {
         return vec2(0, 0);
-    }
-
-    public function getAbsPosition() {
-        if(overridePosition != null)
-            return overridePosition.clone();
-
-        return transform.getPosition();
     }
 
     // & Checks if it can interact with another collision shape

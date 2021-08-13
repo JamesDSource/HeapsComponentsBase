@@ -26,28 +26,20 @@ class CollisionPolygon extends CollisionShape {
     // ^ Varuiables for saving the bounding data if the shape hasn't moved
 
     private inline function get_localVertices(): Array<Vec2> {
-        var returnVertices: Array<Vec2> = [];
-        for(vertex in vertices) {
-            returnVertices.push(vertex.clone());
-        }
-        return returnVertices;
+        return vertices.map((vert) -> vert.clone());
     }
 
     private inline function get_transLocalVertices(): Array<Vec2> {
-        var returnVertices: Array<Vec2> = [];
-        for(vertex in transformedVertices) {
-            returnVertices.push(vertex.clone());
-        }
-        return returnVertices;
+        return transformedVertices.map((vert) -> vert.clone());
     }
 
     private inline function get_worldVertices(): Array<Vec2> {
-        var absPosition: Vec2 = getAbsPosition();
-        return transformedVertices.map((vert) -> vert + absPosition);
+        var position: Vec2 = transform.getPosition();
+        return transformedVertices.map((vert) -> vert + position);
     }
 
     private override function get_bounds(): Bounds {
-        var pos = getAbsPosition();
+        var pos = transform.getPosition();
         
         // If the polygon has not changed position or shape from the last time get_bounds was called,
         // it just returns the result from the last time
@@ -58,18 +50,10 @@ class CollisionPolygon extends CollisionShape {
                 lgY = Math.NEGATIVE_INFINITY;
 
             for(vertex in transformedVertices) {
-                if(vertex.x < smX) {
-                    smX = vertex.x;
-                }
-                if(vertex.x > lgX) {
-                    lgX = vertex.x;
-                }
-                if(vertex.y < smY) {
-                    smY = vertex.y;
-                }
-                if(vertex.y > lgY) {
-                    lgY = vertex.y;
-                }
+                smX = Math.min(smX, vertex.x);
+                lgX = Math.max(lgX, vertex.x);
+                smY = Math.min(smY, vertex.y);
+                lgY = Math.max(lgY, vertex.y);
             }
 
             lastBounds = {min : vec2(pos.x + smX, pos.y + smY), max: vec2(pos.x + lgX, pos.y + lgY)};
@@ -154,6 +138,13 @@ class CollisionPolygon extends CollisionShape {
             g.lineTo(nextVert.x, nextVert.y);
 
             g.drawCircle(vert.x, vert.y, 2, 10);
+
+            var dif = nextVert - vert;
+            var difN = dif.normalize();
+            var pos = vert + difN*dif.length()/2;
+            g.moveTo(pos.x, pos.y);
+            pos += difN.crossRight()*2;
+            g.lineTo(pos.x, pos.y);
         }
     }
 
