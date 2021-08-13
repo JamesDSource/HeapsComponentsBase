@@ -30,6 +30,8 @@ class Collisions {
                     // Poly with circle
                     case CollisionCircle:
                         result = polyWithCircle(cast shape1, cast shape2, manifold);
+                    // Poly with edge
+                    case CollisionEdge:
                 }
             case CollisionCircle:
                 switch(Type.getClass(shape2)) {
@@ -40,6 +42,20 @@ class Collisions {
                     // Circle with circle
                     case CollisionCircle:
                         result = circleWithCircle(cast shape1, cast shape2, manifold);
+                    // Circle with edge
+                    case CollisionEdge:
+                        result = edgeWithCircle(cast shape2, cast shape1, manifold);
+                        flipped = true;
+                }
+            case CollisionEdge:
+                switch(Type.getClass(shape2)) {
+                    // Edge with poly
+                    case CollisionPolygon:
+                    // Edge with circle
+                    case CollisionCircle:
+                        result = edgeWithCircle(cast shape1, cast shape2, manifold);
+                    // Edge with edge
+                    case CollisionEdge:
                 }
         }
 
@@ -274,6 +290,40 @@ class Collisions {
             manifold.contactPoints = [-faceNormal*circle.radius + circleCenter];
         }
 
+        return true;
+    }
+
+    public static function edgeWithCircle(edge: CollisionEdge, circle: CollisionCircle, ?manifold: Manifold): Bool {
+        var circleCenter = circle.transform.getPosition();
+        var edgeNormal: Vec2 = edge.getNormal();
+
+        var seperation: Float = edgeNormal.dot(circleCenter - edge.vertex1);
+        if(seperation < 0 || seperation > circle.radius)
+            return false;
+        else if(manifold == null)
+            return true;
+        
+        var e = edge.vertex2 - edge.vertex1;
+        var u = e.dot(edge.vertex2 - circleCenter);
+        var v = e.dot(circleCenter - edge.vertex1);
+
+        if(v <= 0) {
+            manifold.normal = normalize(circleCenter - edge.vertex1);
+            manifold.penetration = circle.radius - circleCenter.distance(edge.vertex1);
+            manifold.contactPoints = [edge.vertex1];   
+            return true;
+        }
+
+        if(u <= 0) {
+            manifold.normal = normalize(circleCenter - edge.vertex2);
+            manifold.penetration = circle.radius - circleCenter.distance(edge.vertex2);
+            manifold.contactPoints = [edge.vertex2];
+            return true;
+        }
+
+        manifold.normal = edgeNormal;
+        manifold.penetration = circle.radius - seperation;
+        manifold.contactPoints = [circleCenter - edgeNormal*seperation];
         return true;
     }
 

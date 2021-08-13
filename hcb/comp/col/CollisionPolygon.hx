@@ -137,8 +137,6 @@ class CollisionPolygon extends CollisionShape {
             g.moveTo(vert.x, vert.y);
             g.lineTo(nextVert.x, nextVert.y);
 
-            g.drawCircle(vert.x, vert.y, 2, 10);
-
             var dif = nextVert - vert;
             var difN = dif.normalize();
             var pos = vert + difN*dif.length()/2;

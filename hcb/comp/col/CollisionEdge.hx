@@ -19,6 +19,28 @@ class CollisionEdge extends CollisionShape {
 
     private var normal: Vec2 = null;
 
+
+    public var vertex1(get, never): Vec2;
+    public var vertex2(get, never): Vec2;
+    public var ghost1(get, never): Vec2;
+    public var ghost2(get, never): Vec2;
+
+    private inline function get_vertex1(): Vec2 {
+        return v2.clone();
+    }
+
+    private inline function get_vertex2(): Vec2 {
+        return v3.clone();
+    }
+
+    private inline function get_ghost1(): Vec2 {
+        return v1 == null ? null : v1.clone();
+    }
+
+    private inline function get_ghost2(): Vec2 {
+        return v4 == null ? null : v4.clone();
+    }
+
     private override function get_bounds():Bounds {
         return {
             min: vec2(Math.min(v2.x, v3.x), Math.min(v2.y, v3.y)),
@@ -56,9 +78,18 @@ class CollisionEdge extends CollisionShape {
         v4 = ghost2 == null ? null : ghost2.clone();        
     }
 
+    public inline function getNormal(): Vec2 {
+        return normal.clone();
+    }
+
     public override function represent(g:Graphics, ?color:Int, alpha:Float = 1.0) {
         super.represent(g, color, alpha);
         g.moveTo(v2.x, v2.y);
         g.lineTo(v3.x, v3.y);
+
+        var halfway = (v2 + v3)/2;
+        g.moveTo(halfway.x, halfway.y);
+        halfway += normal*3;
+        g.lineTo(halfway.x, halfway.y);
     }
 }

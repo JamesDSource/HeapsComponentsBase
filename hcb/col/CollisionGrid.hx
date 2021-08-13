@@ -92,7 +92,7 @@ class CollisionGrid {
             grid.push(collider);
         }
 
-        var edges: Array<CollisionPolygon> = [];
+        var edges: Array<CollisionEdge> = [];
 
         // Reduce the polygons into edges
         for(i in 0...grid.length) {
@@ -100,7 +100,11 @@ class CollisionGrid {
                 continue;
 
             var collider = grid[i];
-            if(!Std.isOfType(collider, CollisionPolygon)) {
+            if(Std.isOfType(collider, CollisionEdge)) {
+                edges.push(cast(collider, CollisionEdge));
+                continue;
+            }
+            else if(!Std.isOfType(collider, CollisionPolygon)) {
                 addCollider(collider);
                 continue;
             }
@@ -154,10 +158,7 @@ class CollisionGrid {
 
                 var vertex: Vec2 = wv[j];
                 var nextVertex: Vec2 = wv[(j + 1)%wv.length];
-                var edge = new CollisionPolygon([vec2(0, 0), nextVertex - vertex], false);
-                edge.transform.setPosition(vertex);
-
-                edges.push(edge);
+                edges.push(new CollisionEdge(vertex, nextVertex));
             }
         }
 
@@ -166,18 +167,18 @@ class CollisionGrid {
             if(!edges.contains(edge1))
                 continue;
 
-            var wv1 = edge1.worldVertices;
-            var across1 = normalize(wv1[1] - wv1[0]);
+            var normal1: Vec2 = edge1.getNormal();
             for(edge2 in edges.copy()) {
                 if(edge1 == edge2)
                     continue;
 
-                var wv2 = edge2.worldVertices;
-                var across2 = normalize(wv2[1] - wv2[0]);
-                if(across1.distanceSquared(across2) > epSqr)
+                var normal2: Vec2 = edge2.getNormal();
+                if(normal1.distanceSquared(normal2) > epSqr)
                     continue;
                 
                 var found: Bool = false;
+                var wv1 = [edge1.vertex1, edge1.vertex2];
+                var wv2 = [edge2.vertex1, edge2.vertex2];
                 for(i in 0...wv1.length) {
                     for(j in 0...wv2.length) {
                         if(wv1[i].distanceSquared(wv2[j]) < epSqr) {
@@ -185,11 +186,10 @@ class CollisionGrid {
 
                             var v1 = i == 0 ? wv1[1] : wv1[0];
                             var v2 = j == 0 ? wv2[1] : wv2[0];
-                            var newEdges =  v1.dot(across1) < v2.dot(across2)
+                            var across = edge1.vertex2 - edge1.vertex1;
+                            var newEdges =  v1.dot(across) < v2.dot(across)
                                             ? [v1, v2] : [v2, v1];
-                            edge1.setVertices([vec2(0, 0), newEdges[1] - newEdges[0]], false);
-                            edge1.transform.setPosition(newEdges[0]);
-                            wv1 = edge1.worldVertices;
+                            edge1.setVerticies(newEdges[0], newEdges[1]);
                             found = true;
                             break;
                         }
