@@ -101,49 +101,6 @@ abstract IndexGrid(IndexGridData) to IndexGridData from IndexGridData {
         }
     }
 
-    // & Returns an array of Collision shapes. By default, these will be AABBs with their offsets set to their
-    // & position on the grid. This can be overriden with the custom shapes map that stores functions with indexs 
-    // & that take in grid position, the cell size, and outputs a collision shape to use.
-    public function convertToCollisionShapes(?offset: Vec2, ?tags: Array<String>, ?customShapes: Map<Int, Vec2->Float->CollisionShape>): Array<CollisionShape> {
-        var shapes: Array<CollisionShape> = [];
-        for(i in 0...length) {
-            // * Getting the coordinates
-            var y: Int = hxd.Math.floor(i / this.width);
-            var x: Int = i - y*this.width;
-
-            // * Getting the origin point
-            var org: Vec2 = vec2(x, y);
-            var cellSize = this.cellSize == null ? 1 : this.cellSize;
-            org *= cellSize;
-            if(offset != null)
-                org += offset;
-
-            // * Getting the collision shape
-            var index: Int = get(i);
-            var newShape: CollisionShape = null;
-            if(customShapes != null && customShapes.exists(index)) {
-                newShape = customShapes[index](org, cellSize);
-            }
-            else if(index != -1) {
-                var staticColShape = CollisionPolygon.rectangle(cellSize, cellSize);
-                staticColShape.transform.setPosition(this.position != null ? this.position + org : org);
-                newShape = staticColShape;
-            }
-
-            if(newShape != null) {
-                // * Adding tags if defined
-                if(tags != null) {
-                    for(tag in tags) {
-                        newShape.tags.push(tag);
-                    }
-                }
-
-                shapes.push(newShape);
-            }
-        }
-        return shapes;
-    }
-
     @:arrayAccess
     public overload inline extern function get(i: Int): Int {
         return this.indexs[i];

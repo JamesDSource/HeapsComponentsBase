@@ -20,25 +20,51 @@ class CollisionEdge extends CollisionShape {
     private var normal: Vec2 = null;
 
 
-    public var vertex1(get, never): Vec2;
-    public var vertex2(get, never): Vec2;
-    public var ghost1(get, never): Vec2;
-    public var ghost2(get, never): Vec2;
+    public var vertex1(get, set): Vec2;
+    public var vertex2(get, set): Vec2;
+    public var ghost1(get, set): Vec2;
+    public var ghost2(get, set): Vec2;
 
     private inline function get_vertex1(): Vec2 {
         return v2.clone();
+    }
+
+    private inline function set_vertex1(vertex1: Vec2): Vec2 {
+        if(vertex1 == null)
+            return null;
+
+        v2 = vertex1.clone();
+        return vertex1;
     }
 
     private inline function get_vertex2(): Vec2 {
         return v3.clone();
     }
 
+    private inline function set_vertex2(vertex2: Vec2): Vec2 {
+        if(vertex2 == null)
+            return null;
+
+        v3 = vertex2.clone();
+        return vertex2;
+    }
+
     private inline function get_ghost1(): Vec2 {
         return v1 == null ? null : v1.clone();
     }
 
+    private inline function set_ghost1(ghost1: Vec2): Vec2 {
+        v1 = ghost1 == null ? null : ghost1.clone();
+        return ghost1;
+    }
+
     private inline function get_ghost2(): Vec2 {
         return v4 == null ? null : v4.clone();
+    }
+
+    private inline function set_ghost2(ghost2: Vec2): Vec2 { 
+        v4 = ghost2 == null ? null : ghost2.clone();
+        return ghost2;
     }
 
     private override function get_bounds():Bounds {

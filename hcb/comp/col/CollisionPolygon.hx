@@ -25,6 +25,9 @@ class CollisionPolygon extends CollisionShape {
     private var shapeChanged: Bool = false;
     // ^ Varuiables for saving the bounding data if the shape hasn't moved
 
+    public var radius(default, null): Float;
+    private var localCentroid: Vec2;
+
     private inline function get_localVertices(): Array<Vec2> {
         return vertices.map((vert) -> vert.clone());
     }
@@ -65,14 +68,7 @@ class CollisionPolygon extends CollisionShape {
     }
 
     private override function get_center(): Vec2 {
-        var center: Vec2 = vec2(0, 0);
-
-        for(vert in worldVertices) {
-            center += vert;
-        }
-        center /= vertices.length;
-
-        return center;
+       return localCentroid + transform.getPosition();
     }
 
     public function new(vertices: Array<Vec2>, forceCCW: Bool = true, name: String = "Collision Polygon") {
@@ -82,12 +78,22 @@ class CollisionPolygon extends CollisionShape {
     }
 
     private function updateTransformations(): Void {
+        var sum: Vec2 = vec2(0, 0);
+        
         transformedVertices = [];
         for(vertex in vertices) {
             var tVertex = vertex*transform.getScale();
             tVertex.setAngle(transform.getRotationRad() + tVertex.getAngle());
             transformedVertices.push(tVertex);
+            
+            sum += tVertex;
         }
+
+        localCentroid = sum/vertices.length;
+        radius = 0;
+        for(vertex in transformedVertices)
+            radius = Math.max(vertex.distance(localCentroid), radius);
+
         shapeChanged = true;
         updateCollisionCells();
     }

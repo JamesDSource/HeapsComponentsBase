@@ -107,5 +107,6 @@ class PhysicsWorld {
             removeBody(body);
 
         quadtree.clear();
+        collisions = [];
     }
 }

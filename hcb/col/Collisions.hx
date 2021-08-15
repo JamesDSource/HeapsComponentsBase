@@ -32,6 +32,8 @@ class Collisions {
                         result = polyWithCircle(cast shape1, cast shape2, manifold);
                     // Poly with edge
                     case CollisionEdge:
+                        result = edgeWithPoly(cast shape2, cast shape1, manifold);
+                        flipped = true;
                 }
             case CollisionCircle:
                 switch(Type.getClass(shape2)) {
@@ -51,6 +53,7 @@ class Collisions {
                 switch(Type.getClass(shape2)) {
                     // Edge with poly
                     case CollisionPolygon:
+                        result = edgeWithPoly(cast shape1, cast shape2, manifold);
                     // Edge with circle
                     case CollisionCircle:
                         result = edgeWithCircle(cast shape1, cast shape2, manifold);
@@ -293,6 +296,85 @@ class Collisions {
         return true;
     }
 
+    public static function edgeWithPoly(edge: CollisionEdge, polygon: CollisionPolygon, ?manifold: Manifold): Bool {
+        var v1 = edge.vertex1;
+        var v2 = edge.vertex2;
+        var wv = polygon.worldVertices;
+        
+        // Get the edge normal
+        var normal1 = edge.getNormal();
+
+        // Check the center of the polygon across the normal
+        var offset1 = normal1.dot(polygon.center - v1);
+        if(offset1 < 0 || offset1 > polygon.radius)
+            return false;
+        
+        var interval1 = getInterval([v1, v2], normal1);
+        var interval2 = getInterval(wv, normal1);
+        var penetration = interval1.max - interval2.min;
+
+        if(penetration < 0)
+            return false;
+        else if(manifold == null)
+            return true;
+
+        // Get the edge seperation
+        var edgeSeperation: {p: Float, n: Vec2} = {
+            p: penetration,
+            n: normal1
+        }
+
+        // Get the polygon seperation
+        var smallestPenetration: Float = Math.POSITIVE_INFINITY;
+        var polyAxis: Vec2 = null;
+        for(i in 0...wv.length) {
+            var normal2 = normalize(wv[(i + 1)%wv.length] - wv[i]).crossRight();
+            var interval1 = getInterval([v1, v2], normal2);
+            var interval2 = getInterval(wv, normal2);
+            var penetration = interval1.max - interval2.min;
+
+            if(penetration < smallestPenetration) {
+                smallestPenetration = penetration;
+                polyAxis = normal2;
+            }
+        }
+
+        var polygonSeperation: {p: Float, n: Vec2} = {
+            p: smallestPenetration,
+            n: polyAxis
+        }
+
+        var primaryAxis: {p: Float, n: Vec2} =  edgeSeperation.p < polygonSeperation.p
+                                                ? edgeSeperation
+                                                : polygonSeperation;
+
+        var acrossEdge = normalize(v2 - v1);
+        var sinTol = .1;
+        var side1 = primaryAxis.n.dot(acrossEdge) < 0;
+
+        if(side1 && edge.ghost1 != null) {
+            var ghostEdge = normalize(v1 - edge.ghost1);
+            if(acrossEdge.cross(ghostEdge) >= 0)
+                if(primaryAxis.n.cross(ghostEdge.crossLeft()) > sinTol)
+                    return false;
+            else
+                primaryAxis = edgeSeperation;
+        }
+        else if(edge.ghost2 != null) {
+            var ghostEdge = normalize(edge.ghost2 - v2);
+            if(acrossEdge.cross(ghostEdge) >= 0)
+                if(primaryAxis.n.cross(ghostEdge.crossLeft()) > sinTol)
+                    return false;
+            else
+                primaryAxis = edgeSeperation;
+        }
+        
+        manifold.penetration = primaryAxis.p;
+        manifold.normal = primaryAxis.n;
+        manifold.contactPoints = getPolygonContactPoints([v1, v2], polygon.worldVertices, primaryAxis.n);
+        return true;
+    }
+
     public static function edgeWithCircle(edge: CollisionEdge, circle: CollisionCircle, ?manifold: Manifold): Bool {
         var circleCenter = circle.transform.getPosition();
         var edgeNormal: Vec2 = edge.getNormal();
@@ -308,6 +390,14 @@ class Collisions {
         var v = e.dot(circleCenter - edge.vertex1);
 
         if(v <= 0) {
+            if(edge.ghost1 != null) {
+                var ghostEdge = edge.vertex1 - edge.ghost1;
+                var u = ghostEdge.dot(edge.vertex1 - circleCenter);
+
+                if(u > 0)
+                    return false;
+            }
+
             manifold.normal = normalize(circleCenter - edge.vertex1);
             manifold.penetration = circle.radius - circleCenter.distance(edge.vertex1);
             manifold.contactPoints = [edge.vertex1];   
@@ -315,6 +405,14 @@ class Collisions {
         }
 
         if(u <= 0) {
+            if(edge.ghost2 != null) {
+                var ghostEdge = edge.ghost2 - edge.vertex2;
+                var u = ghostEdge.dot(circleCenter - edge.vertex2);
+
+                if(u > 0)
+                    return false;
+            }
+
             manifold.normal = normalize(circleCenter - edge.vertex2);
             manifold.penetration = circle.radius - circleCenter.distance(edge.vertex2);
             manifold.contactPoints = [edge.vertex2];
@@ -352,7 +450,7 @@ class Collisions {
         
         var edge1Dot = Math.abs(edge1.edge.dot(sepAxis));
         var edge2Dot = Math.abs(edge2.edge.dot(sepAxis));
-        if(edge1Dot < edge2Dot || Math.abs(edge1Dot - edge2Dot) < hxd.Math.EPSILON) {
+        if(edge1Dot <= edge2Dot) {
             refEdge = edge1;
             incEdge = edge2;
         }
@@ -367,17 +465,18 @@ class Collisions {
         var clippedPoints = clip(incEdge.v1, incEdge.v2, refV, o1);
 
         // We need at least two points
-        if(clippedPoints.length < 2) return []; 
+        if(clippedPoints.length < 2) 
+            return []; 
         
         var o2: Float = refV.dot(refEdge.v2);
         clippedPoints = clip(clippedPoints[0], clippedPoints[1], -refV, -o2);
         
         // Once more, we need at least two points
-        if(clippedPoints.length < 2) return [];
+        if(clippedPoints.length < 2) 
+            return [];
         
         // Ref edge normal for final clip
-        var refNorm: Vec2 = refEdge.edge;
-        refNorm = refNorm.crossRight();
+        var refNorm: Vec2 = refEdge.edge.crossRight();
         
         var max: Float = refNorm.dot(refEdge.max);
         var fPoint = clippedPoints[0];
@@ -432,8 +531,18 @@ class Collisions {
         
         // Getting the edge that is the most perpendicular
         var maxVert: Vec2 = vertices[index];
-        var v0 = vertices[(index + 1)%vertices.length];
+        if(vertices.length == 2) {
+            return {
+                max: maxVert,
+                v1: vertices[1],
+                v2: vertices[0],
+                edge: vertices[0] - vertices[1]
+            }
+        }
+
         var v1 = vertices[index == 0 ? vertices.length - 1 : index - 1];
+        var v0 = vertices[(index + 1)%vertices.length];
+
         var l: Vec2 = (maxVert - v1).normalize();
         var r: Vec2 = (maxVert - v0).normalize();
         

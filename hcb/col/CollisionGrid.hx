@@ -200,6 +200,33 @@ class CollisionGrid {
             }
         }
 
+        // Add the ghost verticies
+        for(edge1 in edges) {
+            for(edge2 in edges) {
+                if(edge1 == edge2)
+                    continue;
+
+                var found: Bool = false;
+                var wv1 = [edge1.vertex1, edge1.vertex2];
+                var wv2 = [edge2.vertex1, edge2.vertex2];
+                for(i in 0...wv1.length) {
+                    for(j in 0...wv2.length) {
+                        if(wv1[i].distanceSquared(wv2[j]) < epSqr) {
+                            var ghost: Vec2 = j == 0 ? wv2[1] : wv2[0];
+                            if(i == 0)
+                                edge1.ghost1 = ghost;
+                            else
+                                edge1.ghost2 = ghost;
+                            found = true;
+                            break;
+                        }
+                        if(found)
+                            break;
+                    }
+                }
+            }
+        }
+
         // Add the edges
         for(edge in edges)
             addCollider(edge);
